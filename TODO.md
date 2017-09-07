@@ -1,5 +1,5 @@
 - Add !dj- support
-- Fix youtube downloading in bot instead of shellscript
+- Update mpd db after adding/removing mp3
 - Add !next command
 - Add !np command
 - Add !radio command
