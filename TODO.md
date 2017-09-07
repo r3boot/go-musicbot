@@ -1,3 +1,5 @@
+- Add !dj- support
+- Fix youtube downloading in bot instead of shellscript
 - Add !next command
 - Add !np command
 - Add !radio command

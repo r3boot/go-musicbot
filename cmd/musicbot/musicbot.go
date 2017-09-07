@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/tls"
 	"flag"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"regexp"
 
 	"github.com/thoj/go-ircevent"
-	"gopkg.in/sevlyar/go-daemon.v0"
+	_ "gopkg.in/sevlyar/go-daemon.v0"
 )
 
 const (
@@ -19,12 +20,15 @@ const (
 	D_NICKNAME  string = "IrcBot"
 	D_CHANNEL   string = "#zzz-someircbot"
 	D_DAEMONIZE bool   = false
+	D_BASEDIR   string = "/music"
+	D_YTDL      string = "/usr/local/bin/youtube-dl"
+
+	YOUTUBE_URL  string = "https://www.youtube.com/watch?v="
+	YOUTUBE_SEEN string = "/var/spool/fetch_youtube.seen"
 
 	CMD_DJPLUS string = "!dj"
 	CMD_NEXT   string = "!next"
 )
-
-const FETCH_YOUTUBE = "/usr/local/bin/fetch_youtube.sh"
 
 var irccon *irc.Connection
 
@@ -38,12 +42,47 @@ var (
 	nickname  = flag.String("nick", D_NICKNAME, "Nickname to use")
 	channel   = flag.String("chan", D_CHANNEL, "Channel to chill in")
 	daemonize = flag.Bool("d", D_DAEMONIZE, "Daemonize process")
+	baseDir   = flag.String("dir", D_BASEDIR, "Basedir under which to write files")
+	ytdl      = flag.String("ytdl", D_YTDL, "Path to youtube-dl")
+
+	musicDir string
 )
 
+func hasYID(yid string) bool {
+	fd, err := os.Open(YOUTUBE_SEEN)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
+		return false
+	}
+
+	scanner := bufio.NewScanner(fd)
+	for scanner.Scan() {
+		if scanner.Text() == yid {
+			return true
+		}
+	}
+
+	return false
+}
+
+func stripChannel(channel string) string {
+	result := ""
+	for i := 0; i < len(channel); i++ {
+		if channel[i] == '#' {
+			continue
+		}
+		result += string(channel[i])
+	}
+
+	return result
+}
+
 func DownloadYID(yid string) {
-	cmd := exec.Command(FETCH_YOUTUBE, yid)
+	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%(ext)s", musicDir)
+	url := fmt.Sprintf("%s%s", YOUTUBE_URL, yid)
+	cmd := exec.Command(*ytdl, "-x", "--audio-format", "mp3", "-o", output, url)
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Failed to run %s: %v\n", FETCH_YOUTUBE, err)
+		fmt.Printf("Failed to run %s: %v\n", *ytdl, err)
 	}
 }
 
@@ -110,30 +149,39 @@ func RunIrcBot() {
 func main() {
 	flag.Parse()
 
-	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, *channel)
-	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, *channel)
+	chanName := stripChannel(*channel)
+	musicDir := fmt.Sprintf("%s/%s", *baseDir, chanName)
 
-	if *daemonize {
-		ctx := daemon.Context{
-			PidFileName: pidFile,
-			PidFilePerm: 0644,
-			LogFileName: logFile,
-			LogFilePerm: 0640,
-			WorkDir:     "/tmp",
-			Umask:       022,
-			Args:        []string{},
+	/*
+		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, chanName)
+		logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, chanName)
+
+		if *daemonize {
+			ctx := daemon.Context{
+				PidFileName: pidFile,
+				PidFilePerm: 0644,
+				LogFileName: logFile,
+				LogFilePerm: 0640,
+				WorkDir:     "/tmp",
+				Umask:       022,
+				Args:        []string{},
+			}
+
+			d, err := ctx.Reborn()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
+				os.Exit(1)
+			}
+			if d != nil {
+				return
+			}
+			defer ctx.Release()
 		}
 
-		d, err := ctx.Reborn()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
-			os.Exit(1)
-		}
-		if d != nil {
-			return
-		}
-		defer ctx.Release()
-	}
+		RunIrcBot()
+	*/
 
-	RunIrcBot()
+	fmt.Printf("HasYID: %v\n", hasYID("ADaoQizLQDA"))
+	fmt.Printf("ChanName: %s\n", chanName)
+	fmt.Printf("MusicDir: %s\n", musicDir)
 }
