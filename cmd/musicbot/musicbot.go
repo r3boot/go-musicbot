@@ -4,17 +4,21 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/thoj/go-ircevent"
+	"os"
 	"os/exec"
 	"regexp"
+
+	"github.com/thoj/go-ircevent"
+	"gopkg.in/sevlyar/go-daemon.v0"
 )
 
 const (
-	D_SERVER   string = "irc.mononoke.nl"
-	D_PORT     int    = 6697
-	D_TLS      bool   = true
-	D_NICKNAME string = "IrcBot"
-	D_CHANNEL  string = "#zzz-someircbot"
+	D_SERVER    string = "irc.mononoke.nl"
+	D_PORT      int    = 6697
+	D_TLS       bool   = true
+	D_NICKNAME  string = "IrcBot"
+	D_CHANNEL   string = "#zzz-someircbot"
+	D_DAEMONIZE bool   = false
 
 	CMD_DJPLUS string = "!dj"
 	CMD_NEXT   string = "!next"
@@ -28,11 +32,12 @@ var RE_CMD = regexp.MustCompile("^(\\![a-z]{2,4})")
 var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 
 var (
-	server   = flag.String("server", D_SERVER, "Connect to this server")
-	port     = flag.Int("port", D_PORT, "Port to connect to")
-	useTLS   = flag.Bool("tls", D_TLS, "Enable TLS")
-	nickname = flag.String("nick", D_NICKNAME, "Nickname to use")
-	channel  = flag.String("chan", D_CHANNEL, "Channel to chill in")
+	server    = flag.String("server", D_SERVER, "Connect to this server")
+	port      = flag.Int("port", D_PORT, "Port to connect to")
+	useTLS    = flag.Bool("tls", D_TLS, "Enable TLS")
+	nickname  = flag.String("nick", D_NICKNAME, "Nickname to use")
+	channel   = flag.String("chan", D_CHANNEL, "Channel to chill in")
+	daemonize = flag.Bool("d", D_DAEMONIZE, "Daemonize process")
 )
 
 func DownloadYID(yid string) {
@@ -83,15 +88,7 @@ func ParsePrivmsg(e *irc.Event) {
 	}
 }
 
-func main() {
-	flag.Parse()
-
-	fmt.Printf("Server: %s\n", *server)
-	fmt.Printf("Port: %d\n", *port)
-	fmt.Printf("TLS: %v\n", *useTLS)
-	fmt.Printf("Nickname: %s\n", *nickname)
-	fmt.Printf("Channel: %s\n", *channel)
-
+func RunIrcBot() {
 	server := fmt.Sprintf("%s:%d", *server, *port)
 
 	irccon = irc.IRC(*nickname, *nickname)
@@ -108,4 +105,35 @@ func main() {
 		return
 	}
 	irccon.Loop()
+}
+
+func main() {
+	flag.Parse()
+
+	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, *channel)
+	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, *channel)
+
+	if *daemonize {
+		ctx := daemon.Context{
+			PidFileName: pidFile,
+			PidFilePerm: 0644,
+			LogFileName: logFile,
+			LogFilePerm: 0640,
+			WorkDir:     "/tmp",
+			Umask:       022,
+			Args:        []string{},
+		}
+
+		d, err := ctx.Reborn()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
+			os.Exit(1)
+		}
+		if d != nil {
+			return
+		}
+		defer ctx.Release()
+	}
+
+	RunIrcBot()
 }
