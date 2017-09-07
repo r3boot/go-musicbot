@@ -10,7 +10,7 @@ import (
 	"regexp"
 
 	"github.com/thoj/go-ircevent"
-	_ "gopkg.in/sevlyar/go-daemon.v0"
+	"gopkg.in/sevlyar/go-daemon.v0"
 )
 
 const (
@@ -150,38 +150,32 @@ func main() {
 	flag.Parse()
 
 	chanName := stripChannel(*channel)
-	musicDir := fmt.Sprintf("%s/%s", *baseDir, chanName)
+	musicDir = fmt.Sprintf("%s/%s", *baseDir, chanName)
 
-	/*
-		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, chanName)
-		logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, chanName)
+	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, chanName)
+	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, chanName)
 
-		if *daemonize {
-			ctx := daemon.Context{
-				PidFileName: pidFile,
-				PidFilePerm: 0644,
-				LogFileName: logFile,
-				LogFilePerm: 0640,
-				WorkDir:     "/tmp",
-				Umask:       022,
-				Args:        []string{},
-			}
-
-			d, err := ctx.Reborn()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
-				os.Exit(1)
-			}
-			if d != nil {
-				return
-			}
-			defer ctx.Release()
+	if *daemonize {
+		ctx := daemon.Context{
+			PidFileName: pidFile,
+			PidFilePerm: 0644,
+			LogFileName: logFile,
+			LogFilePerm: 0640,
+			WorkDir:     "/tmp",
+			Umask:       022,
+			Args:        []string{},
 		}
 
-		RunIrcBot()
-	*/
+		d, err := ctx.Reborn()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
+			os.Exit(1)
+		}
+		if d != nil {
+			return
+		}
+		defer ctx.Release()
+	}
 
-	fmt.Printf("HasYID: %v\n", hasYID("ADaoQizLQDA"))
-	fmt.Printf("ChanName: %s\n", chanName)
-	fmt.Printf("MusicDir: %s\n", musicDir)
+	RunIrcBot()
 }
