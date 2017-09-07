@@ -78,12 +78,14 @@ func stripChannel(channel string) string {
 }
 
 func DownloadYID(yid string) {
-	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%(ext)s", musicDir)
+	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", musicDir)
 	url := fmt.Sprintf("%s%s", YOUTUBE_URL, yid)
 	cmd := exec.Command(*ytdl, "-x", "--audio-format", "mp3", "-o", output, url)
+	fmt.Printf("Running command: %v\n", cmd)
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("Failed to run %s: %v\n", *ytdl, err)
 	}
+	cmd.Wait()
 }
 
 func HandleYidDownload(channel, line string) {
@@ -132,7 +134,7 @@ func RunIrcBot() {
 
 	irccon = irc.IRC(*nickname, *nickname)
 	irccon.VerboseCallbackHandler = true
-	irccon.Debug = true
+	irccon.Debug = false
 	irccon.UseTLS = *useTLS
 	irccon.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	irccon.AddCallback("001", func(e *irc.Event) { irccon.Join(*channel) })
