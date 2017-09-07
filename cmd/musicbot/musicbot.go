@@ -78,6 +78,9 @@ func stripChannel(channel string) string {
 }
 
 func DownloadYID(yid string) {
+	if hasYID(yid) {
+		fmt.Printf("YID %s has already been downloaded\n", yid)
+	}
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", musicDir)
 	url := fmt.Sprintf("%s%s", YOUTUBE_URL, yid)
 	cmd := exec.Command(*ytdl, "-x", "--audio-format", "mp3", "-o", output, url)
