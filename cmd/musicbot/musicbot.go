@@ -119,8 +119,8 @@ func (m *MPD) KeepAlive() {
 				time.Sleep(time.Second * 10)
 				continue
 			}
-			time.Sleep(time.Second * 3)
 		}
+		time.Sleep(time.Second * 3)
 	}
 }
 
