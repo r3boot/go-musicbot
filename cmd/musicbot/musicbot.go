@@ -98,7 +98,7 @@ func NewMPD() (*MPD, error) {
 func (m *MPD) NowPlaying() string {
 	attrs, err := m.conn.CurrentSong()
 	if err != nil {
-		return "Error: Failed to fetch current song info"
+		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
 	}
 	return attrs["file"]
 }
