@@ -15,6 +15,14 @@ bot:
     - "np"
     - "radio"
   stream_url: "http://radio.as65342.net:8000/2600nl.ogg.m3u"
+  radio_messages:
+    - "Tired of waiting for DJShuffle?"
+    - "Fed up with the youtube links of berm?"
+    - "Cant wait till friday?"
+    - "Gaat de meet nog door?"
+    - "Feeling lonely?"
+    - "Are you missing DJShuffle?"
+    - "Did you miss Sjaak?"
 
 youtube:
   music_basedir: "/music"

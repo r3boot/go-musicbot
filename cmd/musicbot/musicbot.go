@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
@@ -39,6 +40,7 @@ type BotConfig struct {
 	CommandChar   string   `yaml:"command_character"`
 	ValidCommands []string `yaml:"valid_commands"`
 	StreamURL     string   `yaml:"stream_url"`
+	RadioMsgs     []string `yaml:"radio_messages"`
 }
 
 type YoutubeConfig struct {
@@ -160,6 +162,10 @@ func LoadConfig(filename string) (config *MusicBotConfig, err error) {
 	return config, nil
 }
 
+func randomRadioMessage() string {
+	return Config.Bot.RadioMsgs[rand.Intn(len(Config.Bot.RadioMsgs))]
+}
+
 func isValidCommand(cmd string) (string, bool) {
 	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,6})", Config.Bot.CommandChar)
 	fmt.Printf("%v\n", cmdReString)
@@ -252,7 +258,7 @@ func HandleNowPlaying(channel, line string) {
 }
 
 func HandleRadioUrl(channel, line string) {
-	response := fmt.Sprintf("Cant get enough of DJShuffle and Sjaak?? Sick of berms youtube links?? Listen to %s", Config.Bot.StreamURL)
+	response := fmt.Sprintf("%s Listen to %s", randomRadioMessage(), Config.Bot.StreamURL)
 	irccon.Privmsg(channel, response)
 }
 
