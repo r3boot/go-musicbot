@@ -163,7 +163,8 @@ func LoadConfig(filename string) (config *MusicBotConfig, err error) {
 }
 
 func randomRadioMessage() string {
-	return Config.Bot.RadioMsgs[rand.Intn(len(Config.Bot.RadioMsgs))]
+	n := rand.Int() % len(Config.Bot.RadioMsgs)
+	return Config.Bot.RadioMsgs[n]
 }
 
 func isValidCommand(cmd string) (string, bool) {
