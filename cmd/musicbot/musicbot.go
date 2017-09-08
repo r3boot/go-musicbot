@@ -22,6 +22,7 @@ const (
 	CMD_DJPLUS  string = "dj+"
 	CMD_NEXT    string = "next"
 	CMD_PLAYING string = "np"
+	CMD_RADIO   string = "radio"
 )
 
 type IrcConfig struct {
@@ -36,6 +37,7 @@ type IrcConfig struct {
 type BotConfig struct {
 	CommandChar   string   `yaml:"command_character"`
 	ValidCommands []string `yaml:"valid_commands"`
+	StreamURL     string   `yaml:"stream_url"`
 }
 
 type YoutubeConfig struct {
@@ -59,7 +61,8 @@ type MusicBotConfig struct {
 }
 
 type MPD struct {
-	conn *mpd.Client
+	address string
+	conn    *mpd.Client
 }
 
 var irccon *irc.Connection
@@ -75,27 +78,45 @@ var (
 )
 
 func NewMPD() (*MPD, error) {
-	var err error
-
-	address := fmt.Sprintf("%s:%d", Config.MPD.Address, Config.MPD.Port)
-
-	client := &MPD{}
-	if Config.MPD.Password != "" {
-		client.conn, err = mpd.DialAuthenticated("tcp", address, Config.MPD.Password)
-		if err != nil {
-			return nil, fmt.Errorf("NewMPD: %v", err)
-		}
-	} else {
-		client.conn, err = mpd.Dial("tcp", address)
-		if err != nil {
-			return nil, fmt.Errorf("NewMPD: %v", err)
-		}
+	client := &MPD{
+		address: fmt.Sprintf("%s:%d", Config.MPD.Address, Config.MPD.Port),
 	}
 
 	return client, nil
 }
 
+func (m *MPD) Connect() error {
+	var err error
+
+	if Config.MPD.Password != "" {
+		m.conn, err = mpd.DialAuthenticated("tcp", m.address, Config.MPD.Password)
+		if err != nil {
+			return fmt.Errorf("MPD.Connect failed: %v", err)
+		}
+	} else {
+		m.conn, err = mpd.Dial("tcp", m.address)
+		if err != nil {
+			return fmt.Errorf("MPD.Connect failed: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (m *MPD) Close() error {
+	var err error
+
+	if err = m.conn.Close(); err != nil {
+		return fmt.Errorf("MPD.Close failed: %v\n", err)
+	}
+
+	return nil
+}
+
 func (m *MPD) NowPlaying() string {
+	m.Connect()
+	defer m.Close()
+
 	attrs, err := m.conn.CurrentSong()
 	if err != nil {
 		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
@@ -104,7 +125,8 @@ func (m *MPD) NowPlaying() string {
 }
 
 func (m *MPD) Next() string {
-	m.conn.Next()
+	m.Connect()
+	defer m.Close()
 	return m.NowPlaying()
 }
 
@@ -214,6 +236,11 @@ func HandleNowPlaying(channel, line string) {
 	irccon.Privmsg(channel, response)
 }
 
+func HandleRadioUrl(channel, line string) {
+	response := fmt.Sprintf("Cant get enough of DJShuffle?? Listen to %s", Config.Bot.StreamURL)
+	irccon.Privmsg(channel, response)
+}
+
 func ParsePrivmsg(e *irc.Event) {
 	if len(e.Arguments) != 2 {
 		return
@@ -241,6 +268,8 @@ func ParsePrivmsg(e *irc.Event) {
 		HandleNext(channel, line)
 	case CMD_PLAYING:
 		HandleNowPlaying(channel, line)
+	case CMD_RADIO:
+		HandleRadioUrl(channel, line)
 	}
 }
 
