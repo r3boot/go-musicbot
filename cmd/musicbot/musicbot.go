@@ -169,7 +169,6 @@ func randomRadioMessage() string {
 
 func isValidCommand(cmd string) (string, bool) {
 	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,6})", Config.Bot.CommandChar)
-	fmt.Printf("%v\n", cmdReString)
 	reValidCmd := regexp.MustCompile(cmdReString)
 
 	result := reValidCmd.FindAllStringSubmatch(cmd, -1)
