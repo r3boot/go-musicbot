@@ -12,6 +12,7 @@ bot:
   valid_commands:
     - "dj+"
     - "next"
+    - "np"
 
 youtube:
   music_basedir: "/music"

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"regexp"
 
+	"github.com/fhs/gompd/mpd"
 	"github.com/thoj/go-ircevent"
 	"gopkg.in/sevlyar/go-daemon.v0"
 	"gopkg.in/yaml.v2"
@@ -18,8 +19,9 @@ import (
 const (
 	D_CFGFILE string = "musicbot.yaml"
 
-	CMD_DJPLUS string = "dj+"
-	CMD_NEXT   string = "next"
+	CMD_DJPLUS  string = "dj+"
+	CMD_NEXT    string = "next"
+	CMD_PLAYING string = "np"
 )
 
 type IrcConfig struct {
@@ -56,8 +58,13 @@ type MusicBotConfig struct {
 	MPD     MpdConfig     `yaml:"mpd"`
 }
 
+type MPD struct {
+	conn *mpd.Client
+}
+
 var irccon *irc.Connection
 var Config *MusicBotConfig
+var MpdClient *MPD
 
 var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,4})")
 var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
@@ -66,6 +73,40 @@ var (
 	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
 	musicDir string
 )
+
+func NewMPD() (*MPD, error) {
+	var err error
+
+	address := fmt.Sprintf("%s:%d", Config.MPD.Address, Config.MPD.Port)
+
+	client := &MPD{}
+	if Config.MPD.Password != "" {
+		client.conn, err = mpd.DialAuthenticated("tcp", address, Config.MPD.Password)
+		if err != nil {
+			return nil, fmt.Errorf("NewMPD: %v", err)
+		}
+	} else {
+		client.conn, err = mpd.Dial("tcp", address)
+		if err != nil {
+			return nil, fmt.Errorf("NewMPD: %v", err)
+		}
+	}
+
+	return client, nil
+}
+
+func (m *MPD) NowPlaying() string {
+	attrs, err := m.conn.CurrentSong()
+	if err != nil {
+		return "Error: Failed to fetch current song info"
+	}
+	return attrs["file"]
+}
+
+func (m *MPD) Next() string {
+	m.conn.Next()
+	return m.NowPlaying()
+}
 
 func LoadConfig(filename string) (config *MusicBotConfig, err error) {
 	config = &MusicBotConfig{}
@@ -162,7 +203,15 @@ func HandleYidDownload(channel, line string) {
 }
 
 func HandleNext(channel, line string) {
-	fmt.Printf("Skipping to next song in playlist\n")
+	fileName := MpdClient.Next()
+	response := fmt.Sprintf("Now playing: %s", fileName)
+	irccon.Privmsg(channel, response)
+}
+
+func HandleNowPlaying(channel, line string) {
+	fileName := MpdClient.NowPlaying()
+	response := fmt.Sprintf("Now playing: %s", fileName)
+	irccon.Privmsg(channel, response)
 }
 
 func ParsePrivmsg(e *irc.Event) {
@@ -190,6 +239,8 @@ func ParsePrivmsg(e *irc.Event) {
 		HandleYidDownload(channel, line)
 	case CMD_NEXT:
 		HandleNext(channel, line)
+	case CMD_PLAYING:
+		HandleNowPlaying(channel, line)
 	}
 }
 
@@ -222,7 +273,12 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v\n", Config)
+
+	MpdClient, err = NewMPD()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
+		os.Exit(1)
+	}
 
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
