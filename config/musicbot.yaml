@@ -1,0 +1,25 @@
+---
+irc:
+  nickname: "IrcBot"
+  server: "irc.mononoke.nl"
+  port: 6697
+  channel: "#bot-test"
+  tls: true
+  daemonize: false
+
+bot:
+  command_character: "!"
+  valid_commands:
+    - "dj+"
+    - "next"
+
+youtube:
+  music_basedir: "/music"
+  downloader: "/usr/local/bin/youtube-dl"
+  seen_file: "/var/spool/fetch_youtube.seen"
+  url: "https://www.youtube.com/watch?v="
+
+mpd:
+  address: "127.0.0.1"
+  port: 6600
+  password: ""

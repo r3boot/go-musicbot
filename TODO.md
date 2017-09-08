@@ -3,3 +3,5 @@
 - Add !next command
 - Add !np command
 - Add !radio command
+- Add !play command (use fuzzy search to push item to front of queue)
+- Add !vote command

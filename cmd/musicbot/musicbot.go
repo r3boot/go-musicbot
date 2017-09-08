@@ -5,51 +5,108 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 
 	"github.com/thoj/go-ircevent"
 	"gopkg.in/sevlyar/go-daemon.v0"
+	"gopkg.in/yaml.v2"
 )
 
 const (
-	D_SERVER    string = "irc.mononoke.nl"
-	D_PORT      int    = 6697
-	D_TLS       bool   = true
-	D_NICKNAME  string = "IrcBot"
-	D_CHANNEL   string = "#zzz-someircbot"
-	D_DAEMONIZE bool   = false
-	D_BASEDIR   string = "/music"
-	D_YTDL      string = "/usr/local/bin/youtube-dl"
+	D_CFGFILE string = "musicbot.yaml"
 
-	YOUTUBE_URL  string = "https://www.youtube.com/watch?v="
-	YOUTUBE_SEEN string = "/var/spool/fetch_youtube.seen"
-
-	CMD_DJPLUS string = "!dj"
-	CMD_NEXT   string = "!next"
+	CMD_DJPLUS string = "dj+"
+	CMD_NEXT   string = "next"
 )
 
-var irccon *irc.Connection
+type IrcConfig struct {
+	Nickname  string `yaml:"nickname"`
+	Server    string `yaml:"server"`
+	Port      int    `yaml:"port"`
+	Channel   string `yaml:"channel"`
+	UseTLS    bool   `yaml:"tls"`
+	Daemonize bool   `yaml:"daemonize"`
+}
 
-var RE_CMD = regexp.MustCompile("^(\\![a-z]{2,4})")
+type BotConfig struct {
+	CommandChar   string   `yaml:"command_character"`
+	ValidCommands []string `yaml:"valid_commands"`
+}
+
+type YoutubeConfig struct {
+	BaseDir    string `yaml:"music_basedir"`
+	BaseUrl    string `yaml:"url"`
+	Downloader string `yaml:"downloader"`
+	SeenFile   string `yaml:"seen_file"`
+}
+
+type MpdConfig struct {
+	Address  string `yaml:"address"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+}
+
+type MusicBotConfig struct {
+	IRC     IrcConfig     `yaml:"irc"`
+	Bot     BotConfig     `yaml:"bot"`
+	Youtube YoutubeConfig `yaml:"youtube"`
+	MPD     MpdConfig     `yaml:"mpd"`
+}
+
+var irccon *irc.Connection
+var Config *MusicBotConfig
+
+var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,4})")
 var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 
 var (
-	server    = flag.String("server", D_SERVER, "Connect to this server")
-	port      = flag.Int("port", D_PORT, "Port to connect to")
-	useTLS    = flag.Bool("tls", D_TLS, "Enable TLS")
-	nickname  = flag.String("nick", D_NICKNAME, "Nickname to use")
-	channel   = flag.String("chan", D_CHANNEL, "Channel to chill in")
-	daemonize = flag.Bool("d", D_DAEMONIZE, "Daemonize process")
-	baseDir   = flag.String("dir", D_BASEDIR, "Basedir under which to write files")
-	ytdl      = flag.String("ytdl", D_YTDL, "Path to youtube-dl")
-
+	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
 	musicDir string
 )
 
+func LoadConfig(filename string) (config *MusicBotConfig, err error) {
+	config = &MusicBotConfig{}
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("LoadConfig failed: %v", err)
+	}
+
+	if err = yaml.Unmarshal(data, config); err != nil {
+		return nil, fmt.Errorf("LoadConfig failed: %v", err)
+	}
+
+	return config, nil
+}
+
+func isValidCommand(cmd string) (string, bool) {
+	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,5})", Config.Bot.CommandChar)
+	fmt.Printf("%v\n", cmdReString)
+	reValidCmd := regexp.MustCompile(cmdReString)
+
+	result := reValidCmd.FindAllStringSubmatch(cmd, -1)
+
+	if len(result) == 0 {
+		fmt.Printf("isValidCommand: %s does not match the valid command regexp\n", cmd)
+		return "", false
+	}
+
+	wantedCommand := result[0][1]
+	for _, validCommand := range Config.Bot.ValidCommands {
+		if wantedCommand == validCommand {
+			return wantedCommand, true
+		}
+	}
+
+	fmt.Printf("isValidCommand: Unknown command: %s\n", cmd)
+	return "", false
+}
+
 func hasYID(yid string) bool {
-	fd, err := os.Open(YOUTUBE_SEEN)
+	fd, err := os.Open(Config.Youtube.SeenFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
 		return false
@@ -82,11 +139,11 @@ func DownloadYID(yid string) {
 		fmt.Printf("YID %s has already been downloaded\n", yid)
 	}
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", musicDir)
-	url := fmt.Sprintf("%s%s", YOUTUBE_URL, yid)
-	cmd := exec.Command(*ytdl, "-x", "--audio-format", "mp3", "-o", output, url)
+	url := fmt.Sprintf("%s%s", Config.Youtube.BaseUrl, yid)
+	cmd := exec.Command(Config.Youtube.Downloader, "-x", "--audio-format", "mp3", "-o", output, url)
 	fmt.Printf("Running command: %v\n", cmd)
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Failed to run %s: %v\n", *ytdl, err)
+		fmt.Printf("Failed to run %s: %v\n", Config.Youtube.Downloader, err)
 	}
 	cmd.Wait()
 }
@@ -122,9 +179,13 @@ func ParsePrivmsg(e *irc.Event) {
 	}
 
 	cmd := cmdResult[0][1]
-	fmt.Printf("cmd: %s\n", cmd)
 
-	switch cmd {
+	command, ok := isValidCommand(cmd)
+	if !ok {
+		return
+	}
+
+	switch command {
 	case CMD_DJPLUS:
 		HandleYidDownload(channel, line)
 	case CMD_NEXT:
@@ -133,14 +194,14 @@ func ParsePrivmsg(e *irc.Event) {
 }
 
 func RunIrcBot() {
-	server := fmt.Sprintf("%s:%d", *server, *port)
+	server := fmt.Sprintf("%s:%d", Config.IRC.Server, Config.IRC.Port)
 
-	irccon = irc.IRC(*nickname, *nickname)
+	irccon = irc.IRC(Config.IRC.Nickname, Config.IRC.Nickname)
 	irccon.VerboseCallbackHandler = true
 	irccon.Debug = false
-	irccon.UseTLS = *useTLS
+	irccon.UseTLS = Config.IRC.UseTLS
 	irccon.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	irccon.AddCallback("001", func(e *irc.Event) { irccon.Join(*channel) })
+	irccon.AddCallback("001", func(e *irc.Event) { irccon.Join(Config.IRC.Channel) })
 	irccon.AddCallback("366", func(e *irc.Event) {})
 	irccon.AddCallback("PRIVMSG", ParsePrivmsg)
 	err := irccon.Connect(server)
@@ -152,15 +213,24 @@ func RunIrcBot() {
 }
 
 func main() {
+	var err error
+
 	flag.Parse()
 
-	chanName := stripChannel(*channel)
-	musicDir = fmt.Sprintf("%s/%s", *baseDir, chanName)
+	Config, err = LoadConfig(*cfgFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
+		os.Exit(1)
+	}
+	fmt.Printf("%v\n", Config)
 
-	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", *nickname, chanName)
-	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", *nickname, chanName)
+	chanName := stripChannel(Config.IRC.Channel)
+	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
-	if *daemonize {
+	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
+	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", Config.IRC.Nickname, chanName)
+
+	if Config.IRC.Daemonize {
 		ctx := daemon.Context{
 			PidFileName: pidFile,
 			PidFilePerm: 0644,
