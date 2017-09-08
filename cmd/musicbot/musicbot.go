@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"time"
 
 	"github.com/fhs/gompd/mpd"
 	"github.com/thoj/go-ircevent"
@@ -82,6 +83,9 @@ func NewMPD() (*MPD, error) {
 		address: fmt.Sprintf("%s:%d", Config.MPD.Address, Config.MPD.Port),
 	}
 
+	client.Connect()
+	go client.KeepAlive()
+
 	return client, nil
 }
 
@@ -103,6 +107,21 @@ func (m *MPD) Connect() error {
 	return nil
 }
 
+func (m *MPD) KeepAlive() {
+	var err error
+
+	for {
+		if err = m.conn.Ping(); err != nil {
+			m.Close()
+			if err = m.Connect(); err != nil {
+				time.Sleep(time.Second * 10)
+				continue
+			}
+			time.Sleep(time.Second * 3)
+		}
+	}
+}
+
 func (m *MPD) Close() error {
 	var err error
 
@@ -114,9 +133,6 @@ func (m *MPD) Close() error {
 }
 
 func (m *MPD) NowPlaying() string {
-	m.Connect()
-	defer m.Close()
-
 	attrs, err := m.conn.CurrentSong()
 	if err != nil {
 		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
@@ -125,8 +141,7 @@ func (m *MPD) NowPlaying() string {
 }
 
 func (m *MPD) Next() string {
-	m.Connect()
-	defer m.Close()
+	m.conn.Next()
 	return m.NowPlaying()
 }
 
