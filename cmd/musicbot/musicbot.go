@@ -237,7 +237,7 @@ func HandleNowPlaying(channel, line string) {
 }
 
 func HandleRadioUrl(channel, line string) {
-	response := fmt.Sprintf("Cant get enough of DJShuffle?? Listen to %s", Config.Bot.StreamURL)
+	response := fmt.Sprintf("Cant get enough of DJShuffle and Sjaak?? Sick of berms youtube links?? Listen to %s", Config.Bot.StreamURL)
 	irccon.Privmsg(channel, response)
 }
 
