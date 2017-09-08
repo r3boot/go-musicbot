@@ -69,7 +69,7 @@ var irccon *irc.Connection
 var Config *MusicBotConfig
 var MpdClient *MPD
 
-var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,4})")
+var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,6})")
 var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 
 var (
@@ -146,7 +146,7 @@ func LoadConfig(filename string) (config *MusicBotConfig, err error) {
 }
 
 func isValidCommand(cmd string) (string, bool) {
-	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,5})", Config.Bot.CommandChar)
+	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,6})", Config.Bot.CommandChar)
 	fmt.Printf("%v\n", cmdReString)
 	reValidCmd := regexp.MustCompile(cmdReString)
 
