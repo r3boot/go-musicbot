@@ -2,4 +2,6 @@
 - Update mpd db after adding/removing mp3
 - Add !play command (use fuzzy search to push item to front of queue)
 - Add !vote command
-- Add random messages to !radio
+- Add !help function
+- Add possibility to send reply via /q
+- Add ratelimiting to !next
