@@ -330,6 +330,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	rand.Seed(time.Now().Unix())
+
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
