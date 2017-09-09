@@ -8,4 +8,5 @@ ${TARGET}:
 	go build -v -o ${BUILD_DIR}/${TARGET} cmd/${TARGET}/${TARGET}.go
 
 install:
+	install -o root -m 0644 config/musicbot.yaml /etc/musicbot.yaml
 	install -o root -m 0755 ${BUILD_DIR}/${TARGET} ${PREFIX}/bin/${TARGET}

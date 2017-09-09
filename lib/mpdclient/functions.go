@@ -27,10 +27,6 @@ func (m *MPDClient) Connect() error {
 func (m *MPDClient) KeepAlive() {
 	var err error
 
-	if m.conn == nil {
-
-	}
-
 	for {
 		if err = m.conn.Ping(); err != nil {
 			m.Close()
@@ -39,8 +35,8 @@ func (m *MPDClient) KeepAlive() {
 				continue
 			}
 		}
-		time.Sleep(time.Second * 3)
 	}
+	time.Sleep(time.Second * 3)
 }
 
 func (m *MPDClient) UpdateDB() error {
