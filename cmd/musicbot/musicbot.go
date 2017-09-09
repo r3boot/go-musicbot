@@ -16,6 +16,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"gopkg.in/sevlyar/go-daemon.v0"
 	"gopkg.in/yaml.v2"
+	"sync"
 )
 
 const (
@@ -75,6 +76,8 @@ var MpdClient *MPD
 var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,6})")
 var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 
+var seenFileMutex sync.RWMutex
+
 var (
 	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
 	musicDir string
@@ -122,6 +125,11 @@ func (m *MPD) KeepAlive() {
 		}
 		time.Sleep(time.Second * 3)
 	}
+}
+
+func (m *MPD) UpdateDB() error {
+	_, err := m.conn.Update("")
+	return err
 }
 
 func (m *MPD) Close() error {
@@ -190,6 +198,9 @@ func isValidCommand(cmd string) (string, bool) {
 }
 
 func hasYID(yid string) bool {
+	seenFileMutex.RLock()
+	defer seenFileMutex.RUnlock()
+
 	fd, err := os.Open(Config.Youtube.SeenFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
@@ -204,6 +215,23 @@ func hasYID(yid string) bool {
 	}
 
 	return false
+}
+
+func addYID(yid string) error {
+	seenFileMutex.Lock()
+	defer seenFileMutex.Unlock()
+
+	fd, err := os.OpenFile(Config.Youtube.SeenFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("addYID failed: %v", err)
+	}
+	defer fd.Close()
+
+	if _, err = fd.WriteString(yid); err != nil {
+		return fmt.Errorf("addYID failed to add yid to file: %v", err)
+	}
+
+	return nil
 }
 
 func stripChannel(channel string) string {
@@ -230,6 +258,14 @@ func DownloadYID(yid string) {
 		fmt.Printf("Failed to run %s: %v\n", Config.Youtube.Downloader, err)
 	}
 	cmd.Wait()
+
+	if err := addYID(yid); err != nil {
+		fmt.Printf("Failed to add yid to seen file: %v\n", err)
+	}
+
+	if err := MpdClient.UpdateDB(); err != nil {
+		fmt.Printf("Failed to update mpd database: %v\n", err)
+	}
 }
 
 func HandleYidDownload(channel, line string) {
@@ -335,10 +371,10 @@ func main() {
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
-	pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
-	logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", Config.IRC.Nickname, chanName)
-
 	if Config.IRC.Daemonize {
+		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
+		logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", Config.IRC.Nickname, chanName)
+
 		ctx := daemon.Context{
 			PidFileName: pidFile,
 			PidFilePerm: 0644,
