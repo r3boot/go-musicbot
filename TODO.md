@@ -5,3 +5,7 @@
 - Add !help function
 - Add possibility to send reply via /q
 - Add ratelimiting to !next
+- New irc command: `!tune` to add +1 to the rating of the current song
+- Web interface showing the library + able to queue songs?
+- Have the ability to let DJs connect to the stream for a live set
+- Don't spam `$song added to download queue` after a song has been added on irc
