@@ -1,80 +1,24 @@
 package main
 
 import (
-	"bufio"
-	"crypto/tls"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
-	"os/exec"
-	"regexp"
+	"sync"
 	"time"
 
-	"github.com/fhs/gompd/mpd"
-	"github.com/thoj/go-ircevent"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/mpdclient"
+
+	"github.com/r3boot/go-musicbot/lib/ircclient"
+	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"gopkg.in/sevlyar/go-daemon.v0"
-	"gopkg.in/yaml.v2"
-	"sync"
 )
 
 const (
 	D_CFGFILE string = "musicbot.yaml"
-
-	CMD_DJPLUS  string = "dj+"
-	CMD_NEXT    string = "next"
-	CMD_PLAYING string = "np"
-	CMD_RADIO   string = "radio"
 )
-
-type IrcConfig struct {
-	Nickname  string `yaml:"nickname"`
-	Server    string `yaml:"server"`
-	Port      int    `yaml:"port"`
-	Channel   string `yaml:"channel"`
-	UseTLS    bool   `yaml:"tls"`
-	Daemonize bool   `yaml:"daemonize"`
-}
-
-type BotConfig struct {
-	CommandChar   string   `yaml:"command_character"`
-	ValidCommands []string `yaml:"valid_commands"`
-	StreamURL     string   `yaml:"stream_url"`
-	RadioMsgs     []string `yaml:"radio_messages"`
-}
-
-type YoutubeConfig struct {
-	BaseDir    string `yaml:"music_basedir"`
-	BaseUrl    string `yaml:"url"`
-	Downloader string `yaml:"downloader"`
-	SeenFile   string `yaml:"seen_file"`
-}
-
-type MpdConfig struct {
-	Address  string `yaml:"address"`
-	Port     int    `yaml:"port"`
-	Password string `yaml:"password"`
-}
-
-type MusicBotConfig struct {
-	IRC     IrcConfig     `yaml:"irc"`
-	Bot     BotConfig     `yaml:"bot"`
-	Youtube YoutubeConfig `yaml:"youtube"`
-	MPD     MpdConfig     `yaml:"mpd"`
-}
-
-type MPD struct {
-	address string
-	conn    *mpd.Client
-}
-
-var irccon *irc.Connection
-var Config *MusicBotConfig
-var MpdClient *MPD
-
-var RE_CMD = regexp.MustCompile("^(\\![a-z\\+\\-]{2,6})")
-var RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 
 var seenFileMutex sync.RWMutex
 
@@ -82,157 +26,6 @@ var (
 	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
 	musicDir string
 )
-
-func NewMPD() (*MPD, error) {
-	client := &MPD{
-		address: fmt.Sprintf("%s:%d", Config.MPD.Address, Config.MPD.Port),
-	}
-
-	client.Connect()
-	go client.KeepAlive()
-
-	return client, nil
-}
-
-func (m *MPD) Connect() error {
-	var err error
-
-	if Config.MPD.Password != "" {
-		m.conn, err = mpd.DialAuthenticated("tcp", m.address, Config.MPD.Password)
-		if err != nil {
-			return fmt.Errorf("MPD.Connect failed: %v", err)
-		}
-	} else {
-		m.conn, err = mpd.Dial("tcp", m.address)
-		if err != nil {
-			return fmt.Errorf("MPD.Connect failed: %v", err)
-		}
-	}
-
-	return nil
-}
-
-func (m *MPD) KeepAlive() {
-	var err error
-
-	for {
-		if err = m.conn.Ping(); err != nil {
-			m.Close()
-			if err = m.Connect(); err != nil {
-				time.Sleep(time.Second * 10)
-				continue
-			}
-		}
-		time.Sleep(time.Second * 3)
-	}
-}
-
-func (m *MPD) UpdateDB() error {
-	_, err := m.conn.Update("")
-	return err
-}
-
-func (m *MPD) Close() error {
-	var err error
-
-	if err = m.conn.Close(); err != nil {
-		return fmt.Errorf("MPD.Close failed: %v\n", err)
-	}
-
-	return nil
-}
-
-func (m *MPD) NowPlaying() string {
-	attrs, err := m.conn.CurrentSong()
-	if err != nil {
-		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
-	}
-	return attrs["file"]
-}
-
-func (m *MPD) Next() string {
-	m.conn.Next()
-	return m.NowPlaying()
-}
-
-func LoadConfig(filename string) (config *MusicBotConfig, err error) {
-	config = &MusicBotConfig{}
-
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("LoadConfig failed: %v", err)
-	}
-
-	if err = yaml.Unmarshal(data, config); err != nil {
-		return nil, fmt.Errorf("LoadConfig failed: %v", err)
-	}
-
-	return config, nil
-}
-
-func randomRadioMessage() string {
-	n := rand.Int() % len(Config.Bot.RadioMsgs)
-	return Config.Bot.RadioMsgs[n]
-}
-
-func isValidCommand(cmd string) (string, bool) {
-	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,6})", Config.Bot.CommandChar)
-	reValidCmd := regexp.MustCompile(cmdReString)
-
-	result := reValidCmd.FindAllStringSubmatch(cmd, -1)
-
-	if len(result) == 0 {
-		fmt.Printf("isValidCommand: %s does not match the valid command regexp\n", cmd)
-		return "", false
-	}
-
-	wantedCommand := result[0][1]
-	for _, validCommand := range Config.Bot.ValidCommands {
-		if wantedCommand == validCommand {
-			return wantedCommand, true
-		}
-	}
-
-	fmt.Printf("isValidCommand: Unknown command: %s\n", cmd)
-	return "", false
-}
-
-func hasYID(yid string) bool {
-	seenFileMutex.RLock()
-	defer seenFileMutex.RUnlock()
-
-	fd, err := os.Open(Config.Youtube.SeenFile)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
-		return false
-	}
-
-	scanner := bufio.NewScanner(fd)
-	for scanner.Scan() {
-		if scanner.Text() == yid {
-			return true
-		}
-	}
-
-	return false
-}
-
-func addYID(yid string) error {
-	seenFileMutex.Lock()
-	defer seenFileMutex.Unlock()
-
-	fd, err := os.OpenFile(Config.Youtube.SeenFile, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("addYID failed: %v", err)
-	}
-	defer fd.Close()
-
-	if _, err = fd.WriteString(yid); err != nil {
-		return fmt.Errorf("addYID failed to add yid to file: %v", err)
-	}
-
-	return nil
-}
 
 func stripChannel(channel string) string {
 	result := ""
@@ -246,130 +39,31 @@ func stripChannel(channel string) string {
 	return result
 }
 
-func DownloadYID(yid string) {
-	if hasYID(yid) {
-		fmt.Printf("YID %s has already been downloaded\n", yid)
-	}
-	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", musicDir)
-	url := fmt.Sprintf("%s%s", Config.Youtube.BaseUrl, yid)
-	cmd := exec.Command(Config.Youtube.Downloader, "-x", "--audio-format", "mp3", "-o", output, url)
-	fmt.Printf("Running command: %v\n", cmd)
-	if err := cmd.Start(); err != nil {
-		fmt.Printf("Failed to run %s: %v\n", Config.Youtube.Downloader, err)
-	}
-	cmd.Wait()
-
-	if err := addYID(yid); err != nil {
-		fmt.Printf("Failed to add yid to seen file: %v\n", err)
-	}
-
-	if err := MpdClient.UpdateDB(); err != nil {
-		fmt.Printf("Failed to update mpd database: %v\n", err)
-	}
-}
-
-func HandleYidDownload(channel, line string) {
-	result := RE_DJHANDLER.FindAllStringSubmatch(line, -1)
-
-	if len(result) == 1 {
-		yid := result[0][2]
-		go DownloadYID(yid)
-		response := fmt.Sprintf("%s added to download queue", yid)
-		irccon.Privmsg(channel, response)
-	} else {
-		fmt.Printf("no results found\n")
-	}
-}
-
-func HandleNext(channel, line string) {
-	fileName := MpdClient.Next()
-	response := fmt.Sprintf("Now playing: %s", fileName)
-	irccon.Privmsg(channel, response)
-}
-
-func HandleNowPlaying(channel, line string) {
-	fileName := MpdClient.NowPlaying()
-	response := fmt.Sprintf("Now playing: %s", fileName)
-	irccon.Privmsg(channel, response)
-}
-
-func HandleRadioUrl(channel, line string) {
-	response := fmt.Sprintf("%s Listen to %s", randomRadioMessage(), Config.Bot.StreamURL)
-	irccon.Privmsg(channel, response)
-}
-
-func ParsePrivmsg(e *irc.Event) {
-	if len(e.Arguments) != 2 {
-		return
-	}
-
-	channel := e.Arguments[0]
-	line := e.Arguments[1]
-
-	cmdResult := RE_CMD.FindAllStringSubmatch(line, -1)
-	if len(cmdResult) != 1 {
-		return
-	}
-
-	cmd := cmdResult[0][1]
-
-	command, ok := isValidCommand(cmd)
-	if !ok {
-		return
-	}
-
-	switch command {
-	case CMD_DJPLUS:
-		HandleYidDownload(channel, line)
-	case CMD_NEXT:
-		HandleNext(channel, line)
-	case CMD_PLAYING:
-		HandleNowPlaying(channel, line)
-	case CMD_RADIO:
-		HandleRadioUrl(channel, line)
-	}
-}
-
-func RunIrcBot() {
-	server := fmt.Sprintf("%s:%d", Config.IRC.Server, Config.IRC.Port)
-
-	irccon = irc.IRC(Config.IRC.Nickname, Config.IRC.Nickname)
-	irccon.VerboseCallbackHandler = true
-	irccon.Debug = false
-	irccon.UseTLS = Config.IRC.UseTLS
-	irccon.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	irccon.AddCallback("001", func(e *irc.Event) { irccon.Join(Config.IRC.Channel) })
-	irccon.AddCallback("366", func(e *irc.Event) {})
-	irccon.AddCallback("PRIVMSG", ParsePrivmsg)
-	err := irccon.Connect(server)
-	if err != nil {
-		fmt.Printf("Err %s", err)
-		return
-	}
-	irccon.Loop()
-}
-
 func main() {
 	var err error
 
 	flag.Parse()
 
-	Config, err = LoadConfig(*cfgFile)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
-	}
-
-	MpdClient, err = NewMPD()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
-	}
-
 	rand.Seed(time.Now().Unix())
+
+	Config, err := config.LoadConfig(*cfgFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
+		os.Exit(1)
+	}
 
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
+
+	MPDClient, err := mpdclient.NewMPDClient(Config)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "MPDClient: %v", err)
+		os.Exit(1)
+	}
+
+	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, musicDir)
+
+	IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient)
 
 	if Config.IRC.Daemonize {
 		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
@@ -396,5 +90,8 @@ func main() {
 		defer ctx.Release()
 	}
 
-	RunIrcBot()
+	if err = IRCClient.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to run IRC bot: %v", err)
+		os.Exit(1)
+	}
 }
