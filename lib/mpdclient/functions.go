@@ -35,8 +35,8 @@ func (m *MPDClient) KeepAlive() {
 				continue
 			}
 		}
+		time.Sleep(time.Second * 3)
 	}
-	time.Sleep(time.Second * 3)
 }
 
 func (m *MPDClient) UpdateDB() error {
