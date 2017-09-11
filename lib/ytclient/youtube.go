@@ -7,14 +7,17 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 )
 
 func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDClient, musicDir string) *YoutubeClient {
 	yt := &YoutubeClient{
-		config:    config,
-		mpdClient: mpdclient,
-		musicDir:  musicDir,
+		seenFileMutex: sync.RWMutex{},
+		downloadMutex: sync.RWMutex{},
+		config:        config,
+		mpdClient:     mpdclient,
+		musicDir:      musicDir,
 	}
 
 	return yt
