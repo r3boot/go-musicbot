@@ -80,8 +80,10 @@ func (yt *YoutubeClient) DownloadYID(yid string) {
 		fmt.Printf("Failed to add yid to seen file: %v\n", err)
 	}
 
-	if err := yt.mpdClient.UpdateDB(); err != nil {
-		fmt.Printf("Failed to update mpd database: %v\n", err)
-	}
-	time.Sleep(1 * time.Second)
+	/*
+		if err := yt.mpdClient.UpdateDB(); err != nil {
+			fmt.Printf("Failed to update mpd database: %v\n", err)
+		}
+		time.Sleep(1 * time.Second)
+	*/
 }
