@@ -57,6 +57,9 @@ func (yt *YoutubeClient) addYID(yid string) error {
 }
 
 func (yt *YoutubeClient) DownloadYID(yid string) {
+	yt.downloadMutex.Lock()
+	defer yt.downloadMutex.Unlock()
+
 	if yt.hasYID(yid) {
 		fmt.Printf("YID %s has already been downloaded\n", yid)
 	}
