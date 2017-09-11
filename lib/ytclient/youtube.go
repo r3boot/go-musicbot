@@ -7,6 +7,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDClient, musicDir string) *YoutubeClient {
@@ -79,4 +80,5 @@ func (yt *YoutubeClient) DownloadYID(yid string) {
 	if err := yt.mpdClient.UpdateDB(); err != nil {
 		fmt.Printf("Failed to update mpd database: %v\n", err)
 	}
+	time.Sleep(1 * time.Second)
 }
