@@ -3,12 +3,12 @@ package youtubeclient
 import (
 	"bufio"
 	"fmt"
-	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"os"
 	"os/exec"
 	"sync"
-	"time"
+
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/mpdclient"
 )
 
 func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDClient, musicDir string) *YoutubeClient {
