@@ -5,3 +5,6 @@
 - Add !help function
 - Add possibility to send reply via /q
 - Add ratelimiting to !next
+- Add length of song to !np
+- Add possibility to return complete playlist
+- Add possibility to download a playlist
