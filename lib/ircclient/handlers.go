@@ -49,8 +49,6 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 	if len(result) == 1 {
 		yid := result[0][2]
 		go c.ytClient.DownloadYID(yid)
-		response := fmt.Sprintf("%s added to download queue", yid)
-		c.conn.Privmsg(channel, response)
 	} else {
 		fmt.Printf("no results found\n")
 	}
