@@ -8,3 +8,4 @@
 - Add length of song to !np
 - Add possibility to return complete playlist
 - Add possibility to download a playlist
+- Make sure that checking of existing youtube id's works
