@@ -79,7 +79,7 @@ func (c *IrcClient) HandleRadioUrl(channel, line string) {
 func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.DecreaseRating(fileName)
-	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d", fileName, newRating)
+	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
 	if newRating == mp3lib.RATING_ZERO {
 		c.mpdClient.Next()
 		c.mp3Library.RemoveFile(fileName)
@@ -89,5 +89,5 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.IncreaseRating(fileName)
-	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d", fileName, newRating)
+	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
 }
