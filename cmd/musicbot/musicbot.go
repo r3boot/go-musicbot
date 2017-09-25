@@ -62,7 +62,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	MP3Library := mp3lib.NewMP3Library(Config.Youtube.BaseDir)
+	MP3Library := mp3lib.NewMP3Library(musicDir)
 
 	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, MP3Library, musicDir)
 
