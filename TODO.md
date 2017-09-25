@@ -1,11 +1,9 @@
-- Add !dj- support
-- Update mpd db after adding/removing mp3
 - Add !play command (use fuzzy search to push item to front of queue)
-- Add !vote command
 - Add !help function
 - Add possibility to send reply via /q
 - Add ratelimiting to !next
 - Add length of song to !np
+- Add rating of song to !np
 - Add possibility to return complete playlist
 - Add possibility to download a playlist
-- Make sure that checking of existing youtube id's works
+- Add feature to create a favourites list based on rating
