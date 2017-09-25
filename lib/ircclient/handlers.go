@@ -92,5 +92,5 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.IncreaseRating(fileName)
-	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
+	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
 }
