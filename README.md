@@ -20,13 +20,13 @@ Downloading a new link:
 Displaying current song:
 ~~~~
 <@r3boot> !np
-< IrcBot> Now playing: Funana So Cu Pe-yjfVuVvz6aA.mp3
+< IrcBot> Now playing: Fear Factory - T-1000 (H-K) (duration: 4m34s; rating: 5/10)
 ~~~~
 
 Switching to next song:
 ~~~~
 <@r3boot> !next
-< IrcBot> Now playing: Wale Ft. Tiara Thomas -Bad (Official Video)-0TIIu9CERgI.mp3
+< IrcBot> Now playing: Massive Attack - Special Cases (duration: 5m16s; rating: 5/10)
 ~~~~
 
 Displaying the URL for the radio:
