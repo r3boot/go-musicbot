@@ -1,9 +1,10 @@
 package youtubeclient
 
 import (
+	"sync"
+
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
-	"sync"
 )
 
 const (

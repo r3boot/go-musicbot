@@ -2,6 +2,7 @@ package ircclient
 
 import (
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"github.com/thoj/go-ircevent"
@@ -13,6 +14,8 @@ const (
 	CMD_NEXT    string = "next"
 	CMD_PLAYING string = "np"
 	CMD_RADIO   string = "radio"
+	CMD_BOO     string = "boo"
+	CMD_LIKE    string = "like"
 )
 
 var (
@@ -21,8 +24,9 @@ var (
 )
 
 type IrcClient struct {
-	config    *config.MusicBotConfig
-	conn      *irc.Connection
-	mpdClient *mpdclient.MPDClient
-	ytClient  *youtubeclient.YoutubeClient
+	config     *config.MusicBotConfig
+	conn       *irc.Connection
+	mpdClient  *mpdclient.MPDClient
+	ytClient   *youtubeclient.YoutubeClient
+	mp3Library *mp3lib.MP3Library
 }

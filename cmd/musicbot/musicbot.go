@@ -12,6 +12,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 
 	"github.com/r3boot/go-musicbot/lib/ircclient"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"gopkg.in/sevlyar/go-daemon.v0"
 )
@@ -63,7 +64,9 @@ func main() {
 
 	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, musicDir)
 
-	IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient)
+	MP3Library := mp3lib.NewMP3Library(Config.Youtube.BaseDir)
+
+	IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient, MP3Library)
 
 	if Config.IRC.Daemonize {
 		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)

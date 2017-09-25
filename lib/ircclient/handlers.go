@@ -2,6 +2,7 @@ package ircclient
 
 import (
 	"fmt"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/thoj/go-ircevent"
 )
 
@@ -40,6 +41,10 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleNowPlaying(channel, line)
 	case CMD_RADIO:
 		c.HandleRadioUrl(channel, line)
+	case CMD_BOO:
+		c.HandleDecreaseRating(channel, line)
+	case CMD_LIKE:
+		c.HandleIncreaseRating(channel, line)
 	}
 }
 
@@ -69,4 +74,18 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 func (c *IrcClient) HandleRadioUrl(channel, line string) {
 	response := fmt.Sprintf("%s Listen to %s", c.randomRadioMessage(), c.config.Bot.StreamURL)
 	c.conn.Privmsg(channel, response)
+}
+
+func (c *IrcClient) HandleDecreaseRating(channel, line string) {
+	fileName := c.mpdClient.NowPlaying()
+	newRating := c.mp3Library.DecreaseRating(fileName)
+	if newRating == mp3lib.RATING_ZERO {
+		c.mpdClient.Next()
+		c.mp3Library.RemoveFile(fileName)
+	}
+}
+
+func (c *IrcClient) HandleIncreaseRating(channel, line string) {
+	fileName := c.mpdClient.NowPlaying()
+	c.mp3Library.IncreaseRating(fileName)
 }

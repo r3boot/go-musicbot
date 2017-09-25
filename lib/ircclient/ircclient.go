@@ -4,16 +4,18 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"github.com/thoj/go-ircevent"
 )
 
-func NewIrcClient(config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient) *IrcClient {
+func NewIrcClient(config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient, mp3Library *mp3lib.MP3Library) *IrcClient {
 	client := &IrcClient{
-		config:    config,
-		mpdClient: mpdClient,
-		ytClient:  ytClient,
+		config:     config,
+		mpdClient:  mpdClient,
+		ytClient:   ytClient,
+		mp3Library: mp3Library,
 	}
 
 	client.conn = irc.IRC(config.IRC.Nickname, config.IRC.Nickname)
