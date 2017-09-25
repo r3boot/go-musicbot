@@ -8,6 +8,7 @@ basic functionality for MPD.
 * Download youtube videos. A log is kept of all already downloaded files
 * Control Next, NowPlaying and UpdateDB functionality for MPD
 * Display a link to the associated radio stream
+* Maintain a rating for a song.
 
 # Commands
 Downloading a new link:
@@ -34,6 +35,16 @@ Displaying the URL for the radio:
 < IrcBot> Fed up with the youtube links of berm? Listen to http://radio.as65342.net:8000/2600nl.ogg.m3u
 ~~~~
 
+Increase the rating for the currently playing song
+~~~~
+<@r3boot> !like
+~~~~
+
+Decrease the rating for the currently playing song
+~~~~
+<@r3boot> !boo
+~~~~
+
 # Installation
 First, fetch the code
 ~~~~
@@ -58,3 +69,8 @@ Run the following command (as a non-root user):
 ~~~~
 /usr/local/bin/musicbot -f /etc/musicbot.yaml
 ~~~~
+
+# Ratings
+Every song can have a rating of 1..10. The default rating is 5. As soon
+as the rating of a song drops below 1, it will be removed from the
+download directory.
