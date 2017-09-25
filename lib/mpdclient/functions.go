@@ -60,6 +60,7 @@ func (m *MPDClient) NowPlaying() string {
 	if err != nil {
 		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
 	}
+	fmt.Printf("attrs: %v", attrs)
 	return attrs["file"]
 }
 
