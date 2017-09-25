@@ -3,6 +3,7 @@ package mpdclient
 import (
 	"fmt"
 	"github.com/fhs/gompd/mpd"
+	"strings"
 	"time"
 )
 
@@ -62,6 +63,20 @@ func (m *MPDClient) NowPlaying() string {
 	}
 	fmt.Printf("attrs: %v", attrs)
 	return attrs["file"]
+}
+
+func (m *MPDClient) Duration() string {
+	attrs, err := m.conn.CurrentSong()
+	if err != nil {
+		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
+	}
+
+	rawDuration := strings.Split(attrs["duration"], ".")[0]
+	duration, err := time.ParseDuration(rawDuration)
+	if err != nil {
+		return fmt.Sprintf("Error: Failed to parse duration: %v", err)
+	}
+	return duration.String()
 }
 
 func (m *MPDClient) Next() string {
