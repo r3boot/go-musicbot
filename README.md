@@ -9,6 +9,7 @@ basic functionality for MPD.
 * Control Next, NowPlaying and UpdateDB functionality for MPD
 * Display a link to the associated radio stream
 * Maintain a rating for a song.
+* Remove song when rating drops to 0
 
 # Commands
 Downloading a new link:
