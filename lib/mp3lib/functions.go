@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	id3 "github.com/mikkyang/id3-go"
-	id3v2 "github.com/mikkyang/id3-go/v2"
 )
 
 func (i *MP3Library) SetRating(name string, rating int) int {
@@ -22,14 +21,8 @@ func (i *MP3Library) SetRating(name string, rating int) int {
 	}
 	defer fd.Close()
 
-	frame, ok := fd.Frame(RATING_FRAME).(*id3v2.TextFrame)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "MP3Library.GetRating failed to cast frame to TextFrame\n")
-		return RATING_UNKNOWN
-	}
-
 	newRating := strconv.Itoa(rating)
-	frame.SetText(newRating)
+	fd.SetYear(newRating)
 
 	return rating
 }
@@ -54,7 +47,7 @@ func (i *MP3Library) GetRating(name string) int {
 	}
 	defer fd.Close()
 
-	curRating_s := fd.Frame(RATING_FRAME).(id3v2.TextFramer).String()
+	curRating_s := fd.Year()
 
 	curRating, err := strconv.Atoi(curRating_s)
 	if err != nil {
@@ -71,10 +64,8 @@ func (i *MP3Library) DecreaseRating(name string) int {
 	switch curRating {
 	case RATING_UNKNOWN:
 		return RATING_UNKNOWN
-	case RATING_TO_REMOVE:
-		{
-			// TODO: remove mp3 file
-		}
+	case RATING_ZERO:
+		return RATING_ZERO
 	default:
 		{
 			curRating -= 1
