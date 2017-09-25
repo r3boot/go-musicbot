@@ -69,7 +69,7 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	duration := c.mpdClient.Duration()
 	rating := c.mp3Library.GetRating(fileName)
-	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %s/10)", fileName, duration, rating)
+	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fileName, duration, rating)
 	c.conn.Privmsg(channel, response)
 }
 

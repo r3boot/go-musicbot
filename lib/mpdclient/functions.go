@@ -72,6 +72,7 @@ func (m *MPDClient) Duration() string {
 	}
 
 	rawDuration := strings.Split(attrs["duration"], ".")[0]
+	rawDuration += "s"
 	duration, err := time.ParseDuration(rawDuration)
 	if err != nil {
 		return fmt.Sprintf("Error: Failed to parse duration: %v", err)
