@@ -5,3 +5,4 @@
 - Add possibility to return complete playlist
 - Add possibility to download a playlist
 - Add feature to create a favourites list based on rating
+- Make control-char actually configurable
