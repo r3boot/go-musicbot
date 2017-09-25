@@ -74,4 +74,4 @@ Run the following command (as a non-root user):
 # Ratings
 Every song can have a rating of 1..10. The default rating is 5. As soon
 as the rating of a song drops below 1, it will be removed from the
-download directory.
+playlist.
