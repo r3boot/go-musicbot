@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/r3boot/go-musicbot/lib/config"
@@ -20,8 +19,6 @@ import (
 const (
 	D_CFGFILE string = "musicbot.yaml"
 )
-
-var seenFileMutex sync.RWMutex
 
 var (
 	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
