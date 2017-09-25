@@ -41,6 +41,7 @@ func (m *MPDClient) KeepAlive() {
 
 func (m *MPDClient) UpdateDB() error {
 	_, err := m.conn.Update("")
+	time.Sleep(1 * time.Second)
 	return err
 }
 

@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
+	"path/filepath"
+
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
 func (yt *YoutubeClient) DownloadSerializer() {
 	for {
 		newYid := <-yt.DownloadChan
-		yt.DownloadYID(newYid)
-		time.Sleep(2 * time.Second) // Wait for MPD to update the database
+		fileName := yt.DownloadYID(newYid)
+		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
 	}
 }
 
@@ -53,19 +55,22 @@ func (yt *YoutubeClient) addYID(yid string) error {
 	return nil
 }
 
-func (yt *YoutubeClient) DownloadYID(yid string) {
+func (yt *YoutubeClient) DownloadYID(yid string) string {
 	yt.downloadMutex.Lock()
 	defer yt.downloadMutex.Unlock()
 
 	if yt.hasYID(yid) {
 		fmt.Printf("YID %s has already been downloaded\n", yid)
+		return ""
 	}
+
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
 	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, yid)
 	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "--audio-format", "mp3", "-o", output, url)
 	fmt.Printf("Running command: %v\n", cmd)
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
+		return ""
 	}
 	cmd.Wait()
 
@@ -76,5 +81,18 @@ func (yt *YoutubeClient) DownloadYID(yid string) {
 	if err := yt.mpdClient.UpdateDB(); err != nil {
 		fmt.Printf("Failed to update mpd database: %v\n", err)
 	}
-	time.Sleep(1 * time.Second)
+
+	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.config.Youtube.BaseDir, yid)
+	results, err := filepath.Glob(globPattern)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: %v", err)
+		return ""
+	}
+
+	if results == nil {
+		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: filepath.Glob did not return any results")
+		return ""
+	}
+
+	return results[0]
 }

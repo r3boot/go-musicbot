@@ -62,9 +62,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, musicDir)
-
 	MP3Library := mp3lib.NewMP3Library(Config.Youtube.BaseDir)
+
+	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, MP3Library, musicDir)
 
 	IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient, MP3Library)
 
