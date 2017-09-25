@@ -54,7 +54,7 @@ func (i *MP3Library) GetRating(name string) int {
 	}
 	defer fd.Close()
 
-	curRating_s := fd.Frame(RATING_FRAME).(*id3v2.TextFrame).String()
+	curRating_s := fd.Frame(RATING_FRAME).String()
 
 	curRating, err := strconv.Atoi(string(curRating_s))
 	if err != nil {
