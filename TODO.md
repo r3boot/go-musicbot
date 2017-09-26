@@ -7,3 +7,4 @@
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable
 - Add a negative rating to the person who submitted a yid when rating == 0
+- Decrease the rating of numbers which are skipped with !next
