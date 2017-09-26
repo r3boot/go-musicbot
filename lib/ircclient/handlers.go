@@ -98,6 +98,6 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.IncreaseRating(fileName)
 	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
-	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!")
+	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fileName, newRating)
 	c.conn.Privmsg(channel, response)
 }
