@@ -38,7 +38,7 @@ Displaying the URL for the radio:
 
 Increase the rating for the currently playing song
 ~~~~
-<@r3boot> !like
+<@r3boot> !tune
 ~~~~
 
 Decrease the rating for the currently playing song
