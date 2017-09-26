@@ -86,6 +86,11 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 	if newRating == mp3lib.RATING_ZERO {
 		c.mpdClient.Next()
 		c.mp3Library.RemoveFile(fileName)
+		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName)
+		c.conn.Privmsg(channel, response)
+	} else {
+		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fileName, newRating)
+		c.conn.Privmsg(channel, response)
 	}
 }
 
@@ -93,4 +98,6 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.IncreaseRating(fileName)
 	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
+	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!")
+	c.conn.Privmsg(channel, response)
 }
