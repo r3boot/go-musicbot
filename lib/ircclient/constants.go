@@ -15,7 +15,7 @@ const (
 	CMD_PLAYING string = "np"
 	CMD_RADIO   string = "radio"
 	CMD_BOO     string = "boo"
-	CMD_LIKE    string = "like"
+	CMD_TUNE    string = "tune"
 )
 
 var (

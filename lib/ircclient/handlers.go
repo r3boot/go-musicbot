@@ -43,7 +43,7 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleRadioUrl(channel, line)
 	case CMD_BOO:
 		c.HandleDecreaseRating(channel, line)
-	case CMD_LIKE:
+	case CMD_TUNE:
 		c.HandleIncreaseRating(channel, line)
 	}
 }
