@@ -13,8 +13,10 @@ import (
 func (yt *YoutubeClient) DownloadSerializer() {
 	for {
 		newYid := <-yt.DownloadChan
+		fmt.Printf("Downloading new YID: %s\n", newYid)
 		fileName := yt.DownloadYID(newYid)
 		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+		fmt.Printf("Set rating for %s to %d\n", fileName, mp3lib.RATING_DEFAULT)
 	}
 }
 
