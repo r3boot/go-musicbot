@@ -80,9 +80,11 @@ func (yt *YoutubeClient) DownloadYID(yid string) string {
 		fmt.Printf("Failed to add yid to seen file: %v\n", err)
 	}
 
+	/*
 	if err := yt.mpdClient.UpdateDB(); err != nil {
 		fmt.Printf("Failed to update mpd database: %v\n", err)
 	}
+	*/
 
 	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.config.Youtube.BaseDir, yid)
 	results, err := filepath.Glob(globPattern)
