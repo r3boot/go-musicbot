@@ -19,5 +19,7 @@ func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDCli
 		DownloadChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
 	}
 
+	go yt.DownloadSerializer()
+
 	return yt
 }
