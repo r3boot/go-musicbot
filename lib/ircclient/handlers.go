@@ -54,6 +54,7 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 	if len(result) == 1 {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
+		fmt.Printf("Added %s to download queue\n", yid)
 	} else {
 		fmt.Printf("no results found\n")
 	}
