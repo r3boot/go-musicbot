@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"bytes"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
@@ -58,6 +59,8 @@ func (yt *YoutubeClient) addYID(yid string) error {
 }
 
 func (yt *YoutubeClient) DownloadYID(yid string) string {
+	var stdout, stderr bytes.Buffer
+
 	yt.downloadMutex.Lock()
 	defer yt.downloadMutex.Unlock()
 
@@ -69,15 +72,25 @@ func (yt *YoutubeClient) DownloadYID(yid string) string {
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
 	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, yid)
 	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "--audio-format", "mp3", "-o", output, url)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
 	fmt.Printf("Running command: %v\n", cmd)
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
 		return ""
 	}
-	cmd.Wait()
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Fprintf(os.Stderr, "youtube-dl returned non-zero exit code\n")
+		fmt.Fprintf(os.Stderr, "stdout: %s\n", stdout.String())
+		fmt.Fprintf(os.Stderr, "stderr: %s\n", stderr.String())
+		return ""
+	}
 
 	if err := yt.addYID(yid); err != nil {
 		fmt.Printf("Failed to add yid to seen file: %v\n", err)
+		return ""
 	}
 
 	/*
