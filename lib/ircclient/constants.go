@@ -10,17 +10,19 @@ import (
 )
 
 const (
-	CMD_DJPLUS  string = "dj+"
-	CMD_NEXT    string = "next"
-	CMD_PLAYING string = "np"
-	CMD_RADIO   string = "radio"
-	CMD_BOO     string = "boo"
-	CMD_TUNE    string = "tune"
+	CMD_DJPLUS   string = "dj+"
+	CMD_NEXT     string = "next"
+	CMD_PLAYING  string = "np"
+	CMD_RADIO    string = "radio"
+	CMD_BOO      string = "boo"
+	CMD_TUNE     string = "tune"
+	CMD_PLAYLIST string = "djlist"
 )
 
 var (
 	RE_CMD       = regexp.MustCompile("^(\\![a-z\\+\\-]{2,6})")
 	RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
+	RE_DJLIST    = regexp.MustCompile("(\\!djlist) (https://www.youtube.com/watch.*list=.*)")
 )
 
 type IrcClient struct {

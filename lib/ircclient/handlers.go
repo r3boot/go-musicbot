@@ -35,6 +35,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	switch command {
 	case CMD_DJPLUS:
 		c.HandleYidDownload(channel, line)
+	case CMD_PLAYLIST:
+		c.HandlePlaylistDownload(channel, line)
 	case CMD_NEXT:
 		c.HandleNext(channel, line)
 	case CMD_PLAYING:
@@ -57,6 +59,22 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 		fmt.Printf("Added %s to download queue\n", yid)
 	} else {
 		fmt.Printf("no results found\n")
+	}
+}
+
+func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
+	result := RE_DJLIST.FindAllStringSubmatch(line, -1)
+
+	if len(result) == 1 {
+		playlistUrl := result[0][2]
+		c.ytClient.PlaylistChan <- playlistUrl
+		fmt.Printf("Added playlist %s to download queue\n", playlistUrl)
+		response := fmt.Sprintf("Added playlist to download queue")
+		c.conn.Privmsg(channel, response)
+	} else {
+		fmt.Printf("no playlist found\n")
+		response := fmt.Sprintf("Did not find any playlist")
+		c.conn.Privmsg(channel, response)
 	}
 }
 

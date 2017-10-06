@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 
 	"bytes"
+	"strings"
+
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
@@ -21,6 +23,14 @@ func (yt *YoutubeClient) DownloadSerializer() {
 			continue
 		}
 		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+	}
+}
+
+func (yt *YoutubeClient) PlaylistSerializer() {
+	for {
+		newPlaylistUrl := <-yt.PlaylistChan
+		fmt.Printf("Downloading playlist: %s\n", newPlaylistUrl)
+		yt.DownloadPlaylist(newPlaylistUrl)
 	}
 }
 
@@ -107,4 +117,54 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	}
 
 	return results[0], nil
+}
+
+func (yt *YoutubeClient) DownloadPlaylist(url string) error {
+	var stdout, stderr bytes.Buffer
+
+	yt.downloadMutex.Lock()
+	defer yt.downloadMutex.Unlock()
+
+	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
+	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "-i", "--audio-format", "mp3", "-o", output, url)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	fmt.Printf("Running command: %v\n", cmd)
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
+	}
+
+	if err := cmd.Wait(); err != nil {
+		msg := fmt.Sprintf("youtube-dl returned non-zero exit code\nStdout: %s\nStderr: %s\n", stdout.String(), stderr.String())
+		return fmt.Errorf(msg)
+	}
+
+	for _, line := range strings.Split(stdout.String(), "\n") {
+
+		if !strings.Contains(line, "Destination:") {
+			continue
+		}
+
+		result := RE_DESTINATION.FindAllStringSubmatch(line, -1)
+
+		if len(result) != 1 {
+			continue
+		}
+
+		yid := result[0][2]
+		fileName := result[0][1] + "-" + yid + ".mp3"
+
+		if err := yt.addYID(yid); err != nil {
+			return fmt.Errorf("Failed to add yid to seen file: %v\n", err)
+		}
+
+		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+
+		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
+			return fmt.Errorf("Failed to update mpd database: %v\n", err)
+		}
+	}
+
+	return nil
 }

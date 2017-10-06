@@ -18,6 +18,12 @@ Downloading a new link:
 < IrcBot> DBHipNYuAZk added to download queue
 ~~~~
 
+Downloading a playlist:
+~~~~
+<@r3boot> !djlist https://www.youtube.com/watch?v=RkENy3t_fgQ&index=15&list=RDGMEMYH9CUrFO7CfLJpaD7UR85wVMhJpxwMtWy_A
+< IrcBot> Added playlist to download queue
+~~~~
+
 Displaying current song:
 ~~~~
 <@r3boot> !np

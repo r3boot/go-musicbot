@@ -17,9 +17,11 @@ func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDCli
 		mp3Library:    mp3Library,
 		musicDir:      musicDir,
 		DownloadChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
+		PlaylistChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
 	}
 
 	go yt.DownloadSerializer()
+	go yt.PlaylistSerializer()
 
 	return yt
 }
