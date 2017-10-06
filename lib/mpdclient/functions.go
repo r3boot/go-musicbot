@@ -29,19 +29,27 @@ func (m *MPDClient) KeepAlive() {
 	var err error
 
 	for {
-		if err = m.conn.Ping(); err != nil {
+		if m.conn == nil { // Socket is closed, connect to mpd again
+			if err = m.Connect(); err != nil {
+				time.Sleep(time.Second * 10)
+				continue
+			}
+		}
+
+		if err = m.conn.Ping(); err != nil { // Ping command failed, reconnect to mpd
 			m.Close()
 			if err = m.Connect(); err != nil {
 				time.Sleep(time.Second * 10)
 				continue
 			}
 		}
+
 		time.Sleep(time.Second * 3)
 	}
 }
 
-func (m *MPDClient) UpdateDB() error {
-	_, err := m.conn.Update("")
+func (m *MPDClient) UpdateDB(fname string) error {
+	_, err := m.conn.Update(fname)
 	time.Sleep(1 * time.Second)
 	return err
 }

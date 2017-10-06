@@ -15,9 +15,12 @@ func (yt *YoutubeClient) DownloadSerializer() {
 	for {
 		newYid := <-yt.DownloadChan
 		fmt.Printf("Downloading new YID: %s\n", newYid)
-		fileName := yt.DownloadYID(newYid)
+		fileName, err := yt.DownloadYID(newYid)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v", err)
+			continue
+		}
 		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
-		fmt.Printf("Set rating for %s to %d\n", fileName, mp3lib.RATING_DEFAULT)
 	}
 }
 
@@ -58,15 +61,14 @@ func (yt *YoutubeClient) addYID(yid string) error {
 	return nil
 }
 
-func (yt *YoutubeClient) DownloadYID(yid string) string {
+func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	var stdout, stderr bytes.Buffer
 
 	yt.downloadMutex.Lock()
 	defer yt.downloadMutex.Unlock()
 
 	if yt.hasYID(yid) {
-		fmt.Printf("YID %s has already been downloaded\n", yid)
-		return ""
+		return "", fmt.Errorf("YID %s has already been downloaded\n", yid)
 	}
 
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
@@ -77,40 +79,32 @@ func (yt *YoutubeClient) DownloadYID(yid string) string {
 
 	fmt.Printf("Running command: %v\n", cmd)
 	if err := cmd.Start(); err != nil {
-		fmt.Printf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
-		return ""
+		return "", fmt.Errorf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
 	}
 
 	if err := cmd.Wait(); err != nil {
-		fmt.Fprintf(os.Stderr, "youtube-dl returned non-zero exit code\n")
-		fmt.Fprintf(os.Stderr, "stdout: %s\n", stdout.String())
-		fmt.Fprintf(os.Stderr, "stderr: %s\n", stderr.String())
-		return ""
+		msg := fmt.Sprintf("youtube-dl returned non-zero exit code\nStdout: %s\nStderr: %s\n", stdout.String(), stderr.String())
+		return "", fmt.Errorf(msg)
 	}
 
 	if err := yt.addYID(yid); err != nil {
-		fmt.Printf("Failed to add yid to seen file: %v\n", err)
-		return ""
+		return "", fmt.Errorf("Failed to add yid to seen file: %v\n", err)
 	}
-
-	/*
-		if err := yt.mpdClient.UpdateDB(); err != nil {
-			fmt.Printf("Failed to update mpd database: %v\n", err)
-		}
-	*/
 
 	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.musicDir, yid)
 	fmt.Printf("globPattern: %v\n", globPattern)
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: %v\n", err)
-		return ""
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: %v\n", err)
 	}
 
 	if results == nil {
-		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
-		return ""
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
 	}
 
-	return results[0]
+	if err := yt.mpdClient.UpdateDB(results[0]); err != nil {
+		fmt.Printf("Failed to update mpd database: %v\n", err)
+	}
+
+	return results[0], nil
 }

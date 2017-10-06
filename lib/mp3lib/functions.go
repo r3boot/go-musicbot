@@ -22,6 +22,8 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 	newRating := strconv.Itoa(rating)
 	fd.SetYear(newRating)
 
+	fmt.Printf("Set rating for %s to %d\n", fname, RATING_DEFAULT)
+
 	return rating
 }
 
