@@ -81,20 +81,21 @@ func (yt *YoutubeClient) DownloadYID(yid string) string {
 	}
 
 	/*
-	if err := yt.mpdClient.UpdateDB(); err != nil {
-		fmt.Printf("Failed to update mpd database: %v\n", err)
-	}
+		if err := yt.mpdClient.UpdateDB(); err != nil {
+			fmt.Printf("Failed to update mpd database: %v\n", err)
+		}
 	*/
 
-	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.config.Youtube.BaseDir, yid)
+	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.musicDir, yid)
+	fmt.Printf("globPattern: %v\n", globPattern)
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: %v", err)
+		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: %v\n", err)
 		return ""
 	}
 
 	if results == nil {
-		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: filepath.Glob did not return any results")
+		fmt.Fprintf(os.Stderr, "YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
 		return ""
 	}
 

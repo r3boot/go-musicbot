@@ -8,11 +8,9 @@ import (
 	id3 "github.com/mikkyang/id3-go"
 )
 
-func (i *MP3Library) SetRating(name string, rating int) int {
+func (i *MP3Library) SetRating(fname string, rating int) int {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
-
-	fname := i.baseDir + "/" + name
 
 	fd, err := id3.Open(fname)
 	if err != nil {
@@ -27,10 +25,8 @@ func (i *MP3Library) SetRating(name string, rating int) int {
 	return rating
 }
 
-func (i *MP3Library) GetRating(name string) int {
+func (i *MP3Library) GetRating(fname string) int {
 	var err error
-
-	fname := i.baseDir + "/" + name
 
 	if _, err := os.Stat(fname); err != nil {
 		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
