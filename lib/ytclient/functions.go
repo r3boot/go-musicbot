@@ -102,7 +102,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf("YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
 	}
 
-	if err := yt.mpdClient.UpdateDB(results[0]); err != nil {
+	if err := yt.mpdClient.UpdateDB(filepath.Base(results[0])); err != nil {
 		fmt.Printf("Failed to update mpd database: %v\n", err)
 	}
 
