@@ -86,6 +86,10 @@ func (c *IrcClient) HandleNext(channel, line string) {
 
 func (c *IrcClient) HandleNowPlaying(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
+	if fileName == "" {
+		fileName = c.mpdClient.Play()
+	}
+
 	duration := c.mpdClient.Duration()
 	rating := c.mp3Library.GetRating(fileName)
 
