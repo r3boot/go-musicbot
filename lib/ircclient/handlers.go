@@ -38,6 +38,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleYidDownload(channel, line)
 	case CMD_PLAYLIST:
 		c.HandlePlaylistDownload(channel, line)
+	case CMD_PLAY:
+		c.HandlePlay(channel, line)
 	case CMD_NEXT:
 		c.HandleNext(channel, line)
 	case CMD_PLAYING:
@@ -77,6 +79,13 @@ func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
 		response := fmt.Sprintf("Did not find any playlist")
 		c.conn.Privmsg(channel, response)
 	}
+}
+
+func (c *IrcClient) HandlePlay(channel, line string) {
+	c.mpdClient.Shuffle()
+	fileName := c.mpdClient.Play()
+	response := fmt.Sprintf("Now playing: %s", fileName)
+	c.conn.Privmsg(channel, response)
 }
 
 func (c *IrcClient) HandleNext(channel, line string) {
