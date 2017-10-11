@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/thoj/go-ircevent"
+	"strings"
 )
 
 func (c *IrcClient) initCallbacks() {
@@ -86,7 +87,7 @@ func (c *IrcClient) HandleNext(channel, line string) {
 
 func (c *IrcClient) HandleNowPlaying(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
-	if fileName == "" {
+	if strings.HasPrefix(fileName, "Error: ") {
 		fileName = c.mpdClient.Play()
 	}
 
