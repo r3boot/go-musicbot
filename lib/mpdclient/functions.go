@@ -91,3 +91,8 @@ func (m *MPDClient) Next() string {
 	m.conn.Next()
 	return m.NowPlaying()
 }
+
+func (m *MPDClient) Play() string {
+	m.conn.Play(-1)
+	return m.NowPlaying()
+}

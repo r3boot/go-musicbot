@@ -8,3 +8,4 @@
 - Make control-char actually configurable
 - Add a negative rating to the person who submitted a yid when rating == 0
 - Decrease the rating of numbers which are skipped with !next
+- Check if mpd is playing before returning !np
