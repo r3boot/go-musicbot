@@ -93,6 +93,11 @@ func (m *MPDClient) Next() string {
 }
 
 func (m *MPDClient) Play() string {
-	m.conn.Play(-1)
+	m.Shuffle()
+	m.conn.Play(1)
 	return m.NowPlaying()
+}
+
+func (m *MPDClient) Shuffle() {
+	m.conn.Shuffle(-1, -1)
 }
