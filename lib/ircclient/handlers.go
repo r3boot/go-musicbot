@@ -62,12 +62,12 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
 		fmt.Printf("Added %s to download queue\n", yid)
-		response = fmt.Sprintf("Added %s to the download queue", yid)
+		response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
 		fmt.Printf("no results found\n")
 	}
-	
+
 	c.conn.Privmsg(channel, response)
 }
 
