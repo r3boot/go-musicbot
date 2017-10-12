@@ -56,13 +56,19 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 func (c *IrcClient) HandleYidDownload(channel, line string) {
 	result := RE_DJHANDLER.FindAllStringSubmatch(line, -1)
 
+	response := "Undefined"
+
 	if len(result) == 1 {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
 		fmt.Printf("Added %s to download queue\n", yid)
+		response = fmt.Sprintf("Added %s to the download queue", yid)
 	} else {
+		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
 		fmt.Printf("no results found\n")
 	}
+	
+	c.conn.Privmsg(channel, response)
 }
 
 func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
