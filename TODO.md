@@ -8,3 +8,4 @@
 - Check if mpd is playing before returning !np
 - Make sure rating isnt overwritten when downloading double item
 - Rename !search to !play and find a new name for current !play
+- Make playlist download possible using ID instead of URL
