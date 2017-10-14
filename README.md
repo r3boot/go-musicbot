@@ -28,7 +28,6 @@ Press play on mpd
 ~~~~
 <@r3boot> !play
 < IrcBot> Now playing: Mark Instinct - Bad Seed [HQ] [DOWNLOAD]-SYbGij3o0ec.mp3
-
 ~~~~
 
 Displaying current song:
@@ -53,7 +52,6 @@ Increase the rating for the currently playing song
 ~~~~
 <@r3boot> !tune
 < IrcBot> Rating for Dioxyde - Torschlüsspanik-_DhqHr6IY78.mp3 is 7/10 .. Party on!!!!
-
 ~~~~
 
 Decrease the rating for the currently playing song
