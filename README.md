@@ -24,6 +24,13 @@ Downloading a playlist:
 < IrcBot> Added playlist to download queue
 ~~~~
 
+Press play on mpd
+~~~~
+<@r3boot> !play
+< IrcBot> Now playing: Mark Instinct - Bad Seed [HQ] [DOWNLOAD]-SYbGij3o0ec.mp3
+
+~~~~
+
 Displaying current song:
 ~~~~
 <@r3boot> !np
