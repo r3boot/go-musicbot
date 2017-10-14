@@ -52,11 +52,14 @@ Displaying the URL for the radio:
 Increase the rating for the currently playing song
 ~~~~
 <@r3boot> !tune
+< IrcBot> Rating for Dioxyde - Torschlüsspanik-_DhqHr6IY78.mp3 is 7/10 .. Party on!!!!
+
 ~~~~
 
 Decrease the rating for the currently playing song
 ~~~~
 <@r3boot> !boo
+< IrcBot> Rating for Nirvana - Rape Me (Legendado)-n8aJG1f815Q.mp3 is 4/10 .. BOOO!!!!
 ~~~~
 
 # Installation
