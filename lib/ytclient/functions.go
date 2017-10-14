@@ -22,7 +22,7 @@ func (yt *YoutubeClient) DownloadSerializer() {
 			fmt.Fprintf(os.Stderr, "%v", err)
 			continue
 		}
-		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+		yt.SetMetadataForNewSong(newYid, fileName)
 	}
 }
 
@@ -32,6 +32,20 @@ func (yt *YoutubeClient) PlaylistSerializer() {
 		fmt.Printf("Downloading playlist: %s\n", newPlaylistUrl)
 		yt.DownloadPlaylist(newPlaylistUrl)
 	}
+}
+
+func (yt *YoutubeClient) SetMetadataForNewSong(yid, fileName string) error {
+	if err := yt.addYID(yid); err != nil {
+		return fmt.Errorf("SetMetadataForNewSong: Failed to add yid to seen file: %v", err)
+	}
+
+	curRating := yt.mp3Library.GetRating(fileName)
+	if curRating != mp3lib.RATING_UNKNOWN {
+		return fmt.Errorf("SetMetadataForNewSong: Rating already set for %s", curRating)
+	}
+	yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+
+	return nil
 }
 
 func (yt *YoutubeClient) hasYID(yid string) bool {
@@ -97,10 +111,6 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf(msg)
 	}
 
-	if err := yt.addYID(yid); err != nil {
-		return "", fmt.Errorf("Failed to add yid to seen file: %v\n", err)
-	}
-
 	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.musicDir, yid)
 	fmt.Printf("globPattern: %v\n", globPattern)
 	results, err := filepath.Glob(globPattern)
@@ -112,7 +122,11 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf("YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
 	}
 
-	if err := yt.mpdClient.UpdateDB(filepath.Base(results[0])); err != nil {
+	fileName := results[0]
+
+	yt.SetMetadataForNewSong(yid, fileName)
+
+	if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
 		fmt.Printf("Failed to update mpd database: %v\n", err)
 	}
 
@@ -155,11 +169,7 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 		yid := result[0][2]
 		fileName := result[0][1] + "-" + yid + ".mp3"
 
-		if err := yt.addYID(yid); err != nil {
-			return fmt.Errorf("Failed to add yid to seen file: %v\n", err)
-		}
-
-		yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+		yt.SetMetadataForNewSong(yid, fileName)
 
 		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
 			return fmt.Errorf("Failed to update mpd database: %v\n", err)
