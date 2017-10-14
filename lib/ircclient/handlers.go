@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/thoj/go-ircevent"
+	"os"
 	"strings"
 )
 
@@ -50,6 +51,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleDecreaseRating(channel, line)
 	case CMD_TUNE:
 		c.HandleIncreaseRating(channel, line)
+	case CMD_SEARCH:
+		c.HandleSearch(channel, line)
 	}
 }
 
@@ -139,5 +142,29 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	newRating := c.mp3Library.IncreaseRating(fileName)
 	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fileName[:len(fileName)-16], newRating)
+	c.conn.Privmsg(channel, response)
+}
+
+func (c *IrcClient) HandleSearch(channel, line string) {
+	result := RE_SEARCH.FindAllStringSubmatch(line, -1)
+	response := "Undefined"
+
+	if len(result) == 1 {
+		if len(result[0][2]) > 256 {
+			response = fmt.Sprintf("Size of query too large")
+			c.conn.Privmsg(channel, response)
+		}
+
+		query := result[0][2]
+		pos, err := c.mpdClient.Search(query)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "IrcClient.HandleSearch: %v\n", err)
+			response = fmt.Sprintf("No results found for %s", query)
+		}
+		fileName := c.mpdClient.PlayPos(pos)
+		response = fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
+	} else {
+		response = fmt.Sprintf("Need a query to search .. stupid!")
+	}
 	c.conn.Privmsg(channel, response)
 }

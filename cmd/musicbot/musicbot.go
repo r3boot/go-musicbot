@@ -55,7 +55,7 @@ func main() {
 
 	MPDClient, err := mpdclient.NewMPDClient(Config)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MPDClient: %v", err)
+		fmt.Fprintf(os.Stderr, "MPDClient: %v\n", err)
 		os.Exit(1)
 	}
 

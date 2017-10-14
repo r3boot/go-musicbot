@@ -3,10 +3,11 @@ package youtubeclient
 import (
 	"sync"
 
+	"regexp"
+
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
-	"regexp"
 )
 
 const (

@@ -2,9 +2,11 @@ package mpdclient
 
 import (
 	"fmt"
-	"github.com/fhs/gompd/mpd"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fhs/gompd/mpd"
 )
 
 func (m *MPDClient) Connect() error {
@@ -98,6 +100,39 @@ func (m *MPDClient) Play() string {
 	return m.NowPlaying()
 }
 
+func (m *MPDClient) PlayPos(pos int) string {
+	m.conn.Play(pos)
+	return m.NowPlaying()
+}
+
 func (m *MPDClient) Shuffle() {
 	m.conn.Shuffle(-1, -1)
+}
+
+func (m *MPDClient) Search(q string) (int, error) {
+	result, err := m.conn.Search("filename", q)
+	if err != nil {
+		return -1, fmt.Errorf("MPDClient.Search: %v", err)
+	}
+
+	if len(result) == 0 {
+		return -1, fmt.Errorf("MPDClient.Search: no songs found")
+	}
+
+	curPlaylist, err := m.conn.PlaylistInfo(-1, -1)
+	if err != nil {
+		return -1, fmt.Errorf("MPDClient.Search: failed to retrieve playlist")
+	}
+
+	for _, song := range curPlaylist {
+		if song["file"] == result[0]["file"] {
+			pos, err := strconv.Atoi(song["Pos"])
+			if err != nil {
+				return -1, fmt.Errorf("MPDClient.Search: failed to convert pos to int")
+			}
+			return pos, nil
+		}
+	}
+
+	return -1, fmt.Errorf("MPDClient.Search: failed to search mpd")
 }
