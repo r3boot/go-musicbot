@@ -160,9 +160,10 @@ func (c *IrcClient) HandleSearch(channel, line string) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "IrcClient.HandleSearch: %v\n", err)
 			response = fmt.Sprintf("No results found for %s", query)
+		} else {
+			fileName := c.mpdClient.PlayPos(pos)
+			response = fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
 		}
-		fileName := c.mpdClient.PlayPos(pos)
-		response = fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
 	} else {
 		response = fmt.Sprintf("Need a query to search .. stupid!")
 	}

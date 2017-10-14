@@ -62,6 +62,12 @@ Decrease the rating for the currently playing song
 < IrcBot> Rating for Nirvana - Rape Me (Legendado)-n8aJG1f815Q.mp3 is 4/10 .. BOOO!!!!
 ~~~~
 
+Search for a song and play it if found
+~~~~
+<@r3boot> !search hardcore vibes
+< IrcBot> Skipping to Dune - Hardcore Vibes
+~~~~
+
 # Installation
 First, fetch the code
 ~~~~
