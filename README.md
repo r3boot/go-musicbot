@@ -20,7 +20,7 @@ Downloading a new link:
 
 Downloading a playlist:
 ~~~~
-<@r3boot> !djlist https://www.youtube.com/watch?v=RkENy3t_fgQ&index=15&list=RDGMEMYH9CUrFO7CfLJpaD7UR85wVMhJpxwMtWy_A
+<@r3boot> !djlist https://www.youtube.com/watch?v=RkENy3t_fgQ&list=RDGMEMYH9CUrFO7CfLJpaD7U
 < IrcBot> Added playlist to download queue
 ~~~~
 
