@@ -1,4 +1,3 @@
-- Add !play command (use fuzzy search to push item to front of queue)
 - Add !help function
 - Add possibility to send reply via /q
 - Add ratelimiting to !next
@@ -8,3 +7,4 @@
 - Add a negative rating to the person who submitted a yid when rating == 0
 - Check if mpd is playing before returning !np
 - Make sure rating isnt overwritten when downloading double item
+- Rename !search to !play and find a new name for current !play
