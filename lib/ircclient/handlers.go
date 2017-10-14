@@ -95,6 +95,7 @@ func (c *IrcClient) HandlePlay(channel, line string) {
 }
 
 func (c *IrcClient) HandleNext(channel, line string) {
+	c.HandleDecreaseRating(channel, line)
 	fileName := c.mpdClient.Next()
 	response := fmt.Sprintf("Now playing: %s", fileName)
 	c.conn.Privmsg(channel, response)

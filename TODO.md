@@ -3,9 +3,8 @@
 - Add possibility to send reply via /q
 - Add ratelimiting to !next
 - Add possibility to return complete playlist
-- Add possibility to download a playlist
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable
 - Add a negative rating to the person who submitted a yid when rating == 0
-- Decrease the rating of numbers which are skipped with !next
 - Check if mpd is playing before returning !np
+- Make sure rating isnt overwritten when downloading double item
