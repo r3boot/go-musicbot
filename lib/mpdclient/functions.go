@@ -127,7 +127,7 @@ func (m *MPDClient) Search(q string) (int, error) {
 	}
 
 	for _, song := range curPlaylist {
-		if song["file"] == string(fileName) {
+		if song["file"] == fileName {
 			pos, err := strconv.Atoi(song["Pos"])
 			if err != nil {
 				return -1, fmt.Errorf("MPDClient.Search: failed to convert pos to int")
