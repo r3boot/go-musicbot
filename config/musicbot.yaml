@@ -20,6 +20,7 @@ bot:
     - "radio"
     - "boo"
     - "like"
+    - "play"
   stream_url: "http://radio.as65342.net:8000/2600nl.ogg.m3u"
   radio_messages:
     - "Tired of waiting for DJShuffle?"
