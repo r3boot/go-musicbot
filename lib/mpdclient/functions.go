@@ -111,7 +111,8 @@ func (m *MPDClient) Shuffle() {
 }
 
 func (m *MPDClient) Add(fileName string) {
-	m.conn.Insert(fileName)
+	fmt.Printf("Adding %s to playlist\n", fileName)
+	m.conn.Add(fileName)
 }
 
 func (m *MPDClient) Search(q string) (int, error) {
