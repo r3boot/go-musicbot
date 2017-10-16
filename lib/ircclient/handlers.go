@@ -39,8 +39,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleYidDownload(channel, line)
 	case CMD_PLAYLIST:
 		c.HandlePlaylistDownload(channel, line)
-	case CMD_PLAY:
-		c.HandlePlay(channel, line)
+	case CMD_START:
+		c.HandleStart(channel, line)
 	case CMD_NEXT:
 		c.HandleNext(channel, line)
 	case CMD_PLAYING:
@@ -90,7 +90,7 @@ func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
 	}
 }
 
-func (c *IrcClient) HandlePlay(channel, line string) {
+func (c *IrcClient) HandleStart(channel, line string) {
 	c.mpdClient.Shuffle()
 	fileName := c.mpdClient.Play()
 	response := fmt.Sprintf("Now playing: %s", fileName)

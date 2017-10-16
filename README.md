@@ -26,7 +26,7 @@ Downloading a playlist:
 
 Press play on mpd
 ~~~~
-<@r3boot> !play
+<@r3boot> !start
 < IrcBot> Now playing: Mark Instinct - Bad Seed [HQ] [DOWNLOAD]-SYbGij3o0ec.mp3
 ~~~~
 

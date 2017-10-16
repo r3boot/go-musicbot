@@ -12,7 +12,7 @@ import (
 
 const (
 	CMD_DJPLUS   string = "dj+"
-	CMD_PLAY     string = "play"
+	CMD_START     string = "start"
 	CMD_NEXT     string = "next"
 	CMD_PLAYING  string = "np"
 	CMD_RADIO    string = "radio"

@@ -13,7 +13,8 @@ bot:
   command_character: "!"
   valid_commands:
     - "dj+"
-    - "play"
+    - "djlist"
+    - "start"
     - "next"
     - "np"
     - "radio"
