@@ -47,6 +47,10 @@ func (i *MP3Library) GetRating(fname string) int {
 
 	curRating_s := fd.Year()
 
+	if curRating_s == "" {
+		return RATING_UNKNOWN
+	}
+
 	curRating, err := strconv.Atoi(curRating_s)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
