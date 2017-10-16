@@ -53,6 +53,7 @@ func (m *MPDClient) KeepAlive() {
 func (m *MPDClient) UpdateDB(fname string) error {
 	_, err := m.conn.Update(fname)
 	time.Sleep(1 * time.Second)
+	m.Add(fname)
 	return err
 }
 
@@ -107,6 +108,10 @@ func (m *MPDClient) PlayPos(pos int) string {
 
 func (m *MPDClient) Shuffle() {
 	m.conn.Shuffle(-1, -1)
+}
+
+func (m *MPDClient) Add(fileName string) {
+	m.conn.Insert(fileName)
 }
 
 func (m *MPDClient) Search(q string) (int, error) {
