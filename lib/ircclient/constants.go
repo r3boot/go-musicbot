@@ -12,14 +12,14 @@ import (
 
 const (
 	CMD_DJPLUS   string = "dj+"
-	CMD_START     string = "start"
+	CMD_START    string = "start"
 	CMD_NEXT     string = "next"
 	CMD_PLAYING  string = "np"
 	CMD_RADIO    string = "radio"
 	CMD_BOO      string = "boo"
 	CMD_TUNE     string = "tune"
 	CMD_PLAYLIST string = "djlist"
-	CMD_SEARCH   string = "search"
+	CMD_PLAY     string = "play"
 )
 
 var (

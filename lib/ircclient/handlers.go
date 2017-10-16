@@ -51,8 +51,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleDecreaseRating(channel, line)
 	case CMD_TUNE:
 		c.HandleIncreaseRating(channel, line)
-	case CMD_SEARCH:
-		c.HandleSearch(channel, line)
+	case CMD_PLAY:
+		c.HandleSearchAndPlay(channel, line)
 	}
 }
 
@@ -65,13 +65,12 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
 		fmt.Printf("Added %s to download queue\n", yid)
-		response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
+		// response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
 		fmt.Printf("no results found\n")
+		c.conn.Privmsg(channel, response)
 	}
-
-	c.conn.Privmsg(channel, response)
 }
 
 func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
@@ -145,7 +144,7 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	c.conn.Privmsg(channel, response)
 }
 
-func (c *IrcClient) HandleSearch(channel, line string) {
+func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 	result := RE_SEARCH.FindAllStringSubmatch(line, -1)
 	response := "Undefined"
 
@@ -158,7 +157,7 @@ func (c *IrcClient) HandleSearch(channel, line string) {
 		query := result[0][2]
 		pos, err := c.mpdClient.Search(query)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "IrcClient.HandleSearch: %v\n", err)
+			fmt.Fprintf(os.Stderr, "IrcClient.HandleSearchAndPlay: %v\n", err)
 			response = fmt.Sprintf("No results found for %s", query)
 		} else {
 			fileName := c.mpdClient.PlayPos(pos)
