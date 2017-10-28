@@ -5,7 +5,8 @@
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable
 - Add a negative rating to the person who submitted a yid when rating == 0
-- Check if mpd is playing before returning !np
 - Make sure rating isnt overwritten when downloading double item
 - Rename !search to !play and find a new name for current !play
 - Make playlist download possible using ID instead of URL
+- Add possibility for an ACL on various commands
+- Add web api for remote control
