@@ -25,17 +25,7 @@ var (
 	musicDir string
 )
 
-func stripChannel(channel string) string {
-	result := ""
-	for i := 0; i < len(channel); i++ {
-		if channel[i] == '#' {
-			continue
-		}
-		result += string(channel[i])
-	}
 
-	return result
-}
 
 func main() {
 	var err error

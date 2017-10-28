@@ -12,7 +12,7 @@ validate_api:
 
 generate_api:
 	swagger generate server -f musicapi.yaml
-	go get -u -f ./...
+	#go get -u -f ./...
 
 ${TARGET}:
 	[[ -d "${BUILD_DIR}" ]] || mkdir -p "${BUILD_DIR}"
@@ -30,3 +30,7 @@ clean:
 	[[ -d "${BUILD_DIR}" ]] && rm -rf "${BUILD_DIR}"
 	[[ -d "cmd/go-${TARGET}-server" ]] && rm -rf "cmd/go-${TARGET}-server"
 	[[ -d "models" ]] && rm -rf "models"
+	[[ -d "restapi/operations" ]] && rm -rf "restapi/operations"
+	[[ -f "restapi/server.go" ]] && rm -f "restapi/server.go"
+	[[ -f "restapi/doc.go" ]] && rm -f "restapi/doc.go"
+	[[ -f "restapi/embedded_spec.go" ]] && rm -f "restapi/embedded_spec.go"

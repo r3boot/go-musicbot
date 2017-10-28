@@ -16,7 +16,6 @@ consumes:
   - application/x-www-form-urlencoded
 
 produces:
-  - application/json
   - application/json; charset=utf-8
   - application/vnd.api+json
 
@@ -77,3 +76,12 @@ parameters:
     pattern: "[a-zA-Z0-9_-]{11}"
     minLength: 11
     maxLength: 11
+
+securityDefinitions:
+  UserSecurity:
+    type: apiKey
+    in: header
+    name: X-User-Token
+
+security:
+  - UserSecurity: []
