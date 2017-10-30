@@ -6,7 +6,7 @@ type IrcConfig struct {
 	Port      int    `yaml:"port"`
 	Channel   string `yaml:"channel"`
 	UseTLS    bool   `yaml:"tls"`
-	VerifyTLS bool   `yaml"tls_verify"`
+	VerifyTLS bool   `yaml:"tls_verify"`
 	Daemonize bool   `yaml:"daemonize"`
 	Debug     bool   `yaml:"debug"`
 }
@@ -31,9 +31,16 @@ type MpdConfig struct {
 	Password string `yaml:"password"`
 }
 
+type ApiConfig struct {
+	Address string `yaml:"address"`
+	Port    string `yaml:"port"`
+	Assets  string `yaml:"assets"`
+}
+
 type MusicBotConfig struct {
 	IRC     IrcConfig     `yaml:"irc"`
 	Bot     BotConfig     `yaml:"bot"`
 	Youtube YoutubeConfig `yaml:"youtube"`
 	MPD     MpdConfig     `yaml:"mpd"`
+	Api     ApiConfig     `yaml:"api"`
 }

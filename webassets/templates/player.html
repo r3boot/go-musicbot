@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/css/2600nl.css">
+    <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/js/player.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+    <div id="leftSpace">&nbsp;</div>
+    <div id="contentDiv">
+        <div id="logo"><img src="/img/logo.png" alt="{{.Title}}"/></div>
+        <div id="nowPlaying">Waiting for data..</div>
+        <div id="controls">
+            <div id="streamcontrols">
+                <audio controls autoplay>
+                    <source src="{{.Stream}}" type="audio/ogg" />
+                    Your browser does not support the audio element for ogg.
+                </audio>
+            </div>
+            <div id="buttons">
+                <input class="button" id="idNext" type="button" value="Next"/>
+                <input class="button" id="idBoo" type="button" value="Boo!!"/>
+                <input class="button" id="idTune" type="button" value="Tune!!"/>
+            </div>
+
+        </div>
+    </div>
+    <div id="rightSpace">&nbsp;</div>
+</div>
+<div style="clear:both;"></div>
+</body>
+</html>

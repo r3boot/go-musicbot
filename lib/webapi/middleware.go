@@ -1,0 +1,67 @@
+package webapi
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"os"
+	"strings"
+)
+
+func (api *WebApi) newNowPlayingMsg() []byte {
+	fileName := api.mpd.NowPlaying()
+	if strings.HasPrefix(fileName, "Error: ") {
+		fileName = api.mpd.Play()
+
+	}
+
+	duration := api.mpd.Duration()
+	rating := api.mp3.GetRating(fileName)
+
+	response := &NowPlayingResp{
+		Title:    fileName[:len(fileName)-16],
+		Duration: duration,
+		Rating:   rating,
+		Pkt:      "np_r",
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to marshal response: %v\n", err)
+		return nil
+	}
+
+	return data
+}
+
+func (api *WebApi) NowPlayingResponse() []byte {
+	return api.newNowPlayingMsg()
+}
+
+func (api *WebApi) NextResponse() []byte {
+	api.mpd.Next()
+	return api.newNowPlayingMsg()
+}
+
+func (api *WebApi) BooResponse() []byte {
+	fileName := api.mpd.NowPlaying()
+	newRating := api.mp3.DecreaseRating(fileName)
+	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
+	if newRating == mp3lib.RATING_ZERO {
+		api.mpd.Next()
+		api.mp3.RemoveFile(fileName)
+		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName[:len(fileName)-16])
+		fmt.Printf("%s\n", response)
+	} else {
+		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fileName[:len(fileName)-16], newRating)
+		fmt.Printf("%s\n", response)
+	}
+	return api.newNowPlayingMsg()
+}
+
+func (api *WebApi) TuneResponse() []byte {
+	fileName := api.mpd.NowPlaying()
+	newRating := api.mp3.IncreaseRating(fileName)
+	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
+	return api.newNowPlayingMsg()
+}

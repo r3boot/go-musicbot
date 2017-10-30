@@ -41,3 +41,8 @@ mpd:
   address: "127.0.0.1"
   port: 6600
   password: ""
+
+api:
+  address: "127.0.0.1"
+  port: 8666
+  assets: "./webassets"
