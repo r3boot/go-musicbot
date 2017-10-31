@@ -15,3 +15,5 @@
 - Auto reload when websocket is closed
 - Make api process dedicated per stream
 - Add autocomplete to search
+- Re-encode everything with --audio-quality 0
+- Download all videos
