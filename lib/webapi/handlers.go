@@ -155,6 +155,9 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 
 func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
 	for _, file := range  api.mp3.GetAllFiles() {
+		if file == "" {
+			continue
+		}
 		line := fmt.Sprintf("%s\n", file)
 		w.Write([]byte(line))
 	}
