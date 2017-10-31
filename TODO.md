@@ -9,4 +9,5 @@
 - Rename !search to !play and find a new name for current !play
 - Make playlist download possible using ID instead of URL
 - Add possibility for an ACL on various commands
-- Add web api for remote control
+- Fix media type for ogg stream
+- Add attribution for next function in webapi
