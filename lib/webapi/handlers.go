@@ -91,6 +91,8 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		fmt.Printf("msg: %s\n", msg)
+
 		switch request.Operation {
 		case "np":
 			{
@@ -123,6 +125,24 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
 				}
 			}
+		case "play":
+			{
+				query := &SearchRequest{}
+				if err := json.Unmarshal(msg, query); err != nil {
+					fmt.Fprintf(os.Stderr, "Unmarshal failed: %v\n", err)
+					return
+				}
+
+
+				pos, err := api.mpd.Search(query.Query)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "search failed: %v\n", err)
+					return
+				} else {
+					fileName := api.mpd.PlayPos(pos)
+					fmt.Printf("Skipping to %s", fileName[:len(fileName)-16])
+				}
+			}
 		default:
 			{
 				conn.Close()
@@ -130,6 +150,13 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
+	}
+}
+
+func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	for _, file := range  api.mp3.GetAllFiles() {
+		line := fmt.Sprintf("%s\n", file)
+		w.Write([]byte(line))
 	}
 }
 

@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	id3 "github.com/mikkyang/id3-go"
+	"io/ioutil"
+	"sort"
 )
 
 func (i *MP3Library) SetRating(fname string, rating int) int {
@@ -121,4 +123,22 @@ func (i *MP3Library) RemoveFile(name string) bool {
 	}
 
 	return true
+}
+
+func (i *MP3Library) GetAllFiles() []string {
+
+	files, err := ioutil.ReadDir(i.baseDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
+	}
+
+	response := make([]string, len(files))
+
+	for _, fs := range files {
+		response = append(response, fs.Name())
+	}
+
+	sort.Strings(response)
+
+	return response
 }

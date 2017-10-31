@@ -3,10 +3,7 @@ var npMsg = {"Operation":"np"};
 var nextMsg = {"Operation":"next"};
 var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
-
-function NewNpMsg() {
-    return JSON.stringify(npMsg);
-}
+var playlistMsg = {"Operation":"playlist"};
 
 function StartWebSocket() {
     var ws = new WebSocket("ws://localhost:8666/ws");
@@ -27,6 +24,17 @@ function StartWebSocket() {
         console.log("tune");
     };
 
+    document.getElementById("idSearch").onclick = function() {
+        var query = {"Operation":"play","Query":document.getElementById("idQuery").value};
+        ws.send(JSON.stringify(query));
+        console.log("play")
+    };
+
+    document.getElementById("idPlaylist").onclick = function() {
+        window.open("/playlist", "_blank");
+        console.log("playlist")
+    }
+
     ws.onopen = function() {
         var nps = document.getElementById("nowPlaying");
         nps.innerHTML = "Waiting for websocket data ...";
@@ -36,17 +44,20 @@ function StartWebSocket() {
         setInterval(function getNowPlaying() {
             ws.send(JSON.stringify(npMsg));
         }, 1000);
-
     };
 
     ws.onmessage = function(e) {
         var r = JSON.parse(e.data);
+        console.log(r);
 
         switch (r.Pkt) {
             case "np_r":
                 var update = "" + r.Data.Title + "(" + r.Data.Duration + ")  " + r.Data.Rating + "/10";
 
                 nps.innerHTML = update;
+                break;
+            case "play_r":
+                console.log(r);
                 break;
             default:
                 console.log("Unknown message received: " + r.Pkt)

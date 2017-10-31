@@ -2,6 +2,8 @@ package mp3lib
 
 import "sync"
 
+const MAX_PLAYLIST_LENGTH int = 8192
+
 const (
 	RATING_UNKNOWN   int = -1
 	RATING_ZERO      int = 0
