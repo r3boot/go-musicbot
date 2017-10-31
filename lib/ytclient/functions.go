@@ -95,7 +95,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf("YID %s has already been downloaded\n", yid)
 	}
 
-	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
+	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
 	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, yid)
 	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "--audio-format", "mp3", "-o", output, url)
 	cmd.Stdout = &stdout
@@ -111,7 +111,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf(msg)
 	}
 
-	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.musicDir, yid)
+	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.MusicDir, yid)
 	fmt.Printf("globPattern: %v\n", globPattern)
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
@@ -139,7 +139,7 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 	yt.downloadMutex.Lock()
 	defer yt.downloadMutex.Unlock()
 
-	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.musicDir)
+	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
 	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "-i", "--audio-format", "mp3", "-o", output, url)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

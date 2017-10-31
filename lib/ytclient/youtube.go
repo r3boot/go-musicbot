@@ -15,7 +15,7 @@ func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDCli
 		config:        config,
 		mpdClient:     mpdclient,
 		mp3Library:    mp3Library,
-		musicDir:      musicDir,
+		MusicDir:      musicDir,
 		DownloadChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
 		PlaylistChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
 	}

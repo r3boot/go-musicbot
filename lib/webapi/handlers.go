@@ -30,7 +30,7 @@ func (api *WebApi) updateNowPlayingData() {
 		if strings.HasPrefix(fileName, "Error: ") {
 			fileName = api.mpd.Play()
 		}
-		fullPath := api.config.Youtube.BaseDir + "/" + fileName
+		fullPath := api.yt.MusicDir + "/" + fileName
 
 		gTitle = fileName[:len(fileName)-16]
 		gDuration = api.mpd.Duration()

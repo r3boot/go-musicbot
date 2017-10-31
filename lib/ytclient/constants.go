@@ -24,7 +24,7 @@ type YoutubeClient struct {
 	config        *config.MusicBotConfig
 	mpdClient     *mpdclient.MPDClient
 	mp3Library    *mp3lib.MP3Library
-	musicDir      string
+	MusicDir      string
 	DownloadChan  chan string
 	PlaylistChan  chan string
 }
