@@ -57,7 +57,7 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := TemplateData{
 		Title:  "2600nl radio",
-		Stream: "http://radio.as65342.net:8000/2600nl.ogg",
+		Stream: "https://radio.as65342.net/2600nl-stream",
 	}
 
 	err = t.Execute(w, data)
