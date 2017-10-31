@@ -6,7 +6,7 @@ var tuneMsg = {"Operation":"tune"};
 var playlistMsg = {"Operation":"playlist"};
 
 function StartWebSocket() {
-    var ws = new WebSocket("ws://"+window.location+":8666/ws");
+    var ws = new WebSocket("wss://"+window.location+":8666/ws");
     var nps = document.getElementById("nowPlaying");
 
     document.getElementById("idNext").onclick = function() {
