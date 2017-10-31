@@ -1,15 +1,12 @@
 - Add !help function
 - Add possibility to send reply via /q
-- Add ratelimiting to !next
-- Add possibility to return complete playlist
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable
 - Add a negative rating to the person who submitted a yid when rating == 0
 - Make sure rating isnt overwritten when downloading double item
-- Rename !search to !play and find a new name for current !play
 - Make playlist download possible using ID instead of URL
 - Add possibility for an ACL on various commands
-- Fix media type for ogg stream
+- Fix media type for ogg stream (?)
 - Add attribution for next function in webapi
 - Add scroller for keeping track of webapi commands
 - Auto reload when websocket is closed
