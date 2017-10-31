@@ -36,8 +36,6 @@ func (api *WebApi) updateNowPlayingData() {
 		gDuration = api.mpd.Duration()
 		gRating = api.mp3.GetRating(fullPath)
 
-		fmt.Printf("np: %s (%s) %d/10\n", gTitle, gDuration, gRating)
-
 		time.Sleep(3 * time.Second)
 	}
 }

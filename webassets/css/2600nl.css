@@ -6,6 +6,12 @@ body {
     background-size: cover;
 }
 
+#links {
+    padding-top: 10px;
+    padding-left: 190px;
+    float: left;
+}
+
 #controls {
     margin-left: 190px;
     vertical-align: middle;
@@ -47,6 +53,10 @@ body {
     width: 1000px;
     text-align: center;
     margin-bottom: 20px;
+}
+
+#idQuery {
+    width: 329px;
 }
 
 #contentDiv {
