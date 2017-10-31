@@ -64,6 +64,20 @@ function main() {
     $(document).ready(function() {
         StartWebSocket();
     });
+
+    window.addEventListener('keydown', function (e) {
+        evt = e || window.event;
+        evt.preventDefault();
+        if (evt.keyCode == 32) {
+            var ac = document.getElementById("audiocontrols")
+            if (ac.paused) {
+                ac.play();
+            } else {
+                ac.pause();
+            }
+
+        }
+    });
 }
 
 main();
