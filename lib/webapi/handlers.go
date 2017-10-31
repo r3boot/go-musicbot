@@ -30,10 +30,11 @@ func (api *WebApi) updateNowPlayingData() {
 		if strings.HasPrefix(fileName, "Error: ") {
 			fileName = api.mpd.Play()
 		}
+		fullPath := api.config.Youtube.BaseDir + "/" + fileName
 
 		gTitle = fileName[:len(fileName)-16]
 		gDuration = api.mpd.Duration()
-		gRating = api.mp3.GetRating(fileName)
+		gRating = api.mp3.GetRating(fullPath)
 
 		fmt.Printf("np: %s (%s) %d/10\n", gTitle, gDuration, gRating)
 
@@ -42,7 +43,6 @@ func (api *WebApi) updateNowPlayingData() {
 }
 
 func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
-
 	content, err := ioutil.ReadFile(api.config.Api.Assets + "/templates/player.html")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to read template: %v\n", err)
