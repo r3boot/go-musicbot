@@ -91,8 +91,8 @@ To run the bot, enter the following command (as a non-root user):
 /usr/local/bin/musicbot -f /etc/musicbot.yaml
 ~~~~
 
-# Running the API
-The API + player is a separate process from the bot. To start this, run the following (as a non-root user):
+# Running the web player
+The web player is a separate process from the bot. To start this, run the following (as a non-root user):
 ~~~~
 /usr/local/bin/musicbot-api -f /etc/musicbot.yaml
 ~~~~

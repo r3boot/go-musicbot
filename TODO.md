@@ -13,3 +13,4 @@
 - Add attribution for next function in webapi
 - Add scroller for keeping track of webapi commands
 - Auto reload when websocket is closed
+- Make api process dedicated per stream
