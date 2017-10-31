@@ -11,3 +11,5 @@
 - Add possibility for an ACL on various commands
 - Fix media type for ogg stream
 - Add attribution for next function in webapi
+- Add scroller for keeping track of webapi commands
+- Auto reload when websocket is closed
