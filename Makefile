@@ -16,6 +16,8 @@ api:
 install:
 	install -o root -m 0644 config/musicbot.yaml /etc/musicbot.yaml
 	install -o root -m 0755 ${BUILD_DIR}/${TARGET} ${PREFIX}/bin/${TARGET}
+	install -o root -m 0755 ${BUILD_DIR}/${TARGET}-api ${PREFIX}/bin/${TARGET}-api
+	install -d -o root -g root -m 0755 webassets /usr/local/share/musicbot
 
 clean:
 	[[ -d "${BUILD_DIR}" ]] && rm -rf "${BUILD_DIR}"
