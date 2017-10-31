@@ -23,9 +23,13 @@ type ClientRequest struct {
 	Operation string
 }
 
-type NowPlayingResp struct {
+type NowPlaying struct {
 	Title    string
 	Duration string
 	Rating   int
-	Pkt      string
+}
+
+type NowPlayingResp struct {
+	Data NowPlaying
+	Pkt  string
 }

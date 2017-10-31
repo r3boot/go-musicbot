@@ -44,7 +44,7 @@ function StartWebSocket() {
 
         switch (r.Pkt) {
             case "np_r":
-                var update = "" + r.Title + "(" + r.Duration + ")";
+                var update = "" + r.Data.Title + "(" + r.Data.Duration + ")  " + r.Data.Rating + "/10";
 
                 nps.innerHTML = update;
                 break;

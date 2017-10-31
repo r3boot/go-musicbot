@@ -8,10 +8,14 @@ import (
 )
 
 func NewWebApi(cfg *config.MusicBotConfig, mpd *mpdclient.MPDClient, mp3 *mp3lib.MP3Library, yt *youtubeclient.YoutubeClient) *WebApi {
-	return &WebApi{
+	api := &WebApi{
 		config: cfg,
 		mpd:    mpd,
 		mp3:    mp3,
 		yt:     yt,
 	}
+
+	go api.updateNowPlayingData()
+
+	return api
 }

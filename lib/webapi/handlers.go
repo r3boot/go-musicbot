@@ -9,12 +9,36 @@ import (
 
 	"encoding/json"
 
+	"strings"
+	"time"
+
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+var gTitle string = "Loading"
+var gDuration string = "..."
+var gRating int = -1
+
+func (api *WebApi) updateNowPlayingData() {
+	for {
+		fileName := api.mpd.NowPlaying()
+		if strings.HasPrefix(fileName, "Error: ") {
+			fileName = api.mpd.Play()
+		}
+
+		gTitle = fileName[:len(fileName)-16]
+		gDuration = api.mpd.Duration()
+		gRating = api.mp3.GetRating(fileName)
+
+		fmt.Printf("np: %s (%s) %d/10\n", gTitle, gDuration, gRating)
+
+		time.Sleep(3 * time.Second)
+	}
 }
 
 func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {

@@ -3,26 +3,19 @@ package webapi
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"os"
-	"strings"
+
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
 func (api *WebApi) newNowPlayingMsg() []byte {
-	fileName := api.mpd.NowPlaying()
-	if strings.HasPrefix(fileName, "Error: ") {
-		fileName = api.mpd.Play()
-
-	}
-
-	duration := api.mpd.Duration()
-	rating := api.mp3.GetRating(fileName)
-
 	response := &NowPlayingResp{
-		Title:    fileName[:len(fileName)-16],
-		Duration: duration,
-		Rating:   rating,
-		Pkt:      "np_r",
+		Data: NowPlaying{
+			Title:    gTitle,
+			Duration: gDuration,
+			Rating:   gRating,
+		},
+		Pkt: "np_r",
 	}
 
 	data, err := json.Marshal(response)
