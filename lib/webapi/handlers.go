@@ -91,8 +91,6 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Printf("msg: %s\n", msg)
-
 		switch request.Operation {
 		case "np":
 			{
