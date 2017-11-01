@@ -38,7 +38,8 @@ func (api *WebApi) NextResponse() []byte {
 
 func (api *WebApi) BooResponse() []byte {
 	fileName := api.mpd.NowPlaying()
-	newRating := api.mp3.DecreaseRating(fileName)
+	fullPath := api.yt.MusicDir + "/" + fileName
+	newRating := api.mp3.DecreaseRating(fullPath)
 	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
 	if newRating == mp3lib.RATING_ZERO {
 		api.mpd.Next()
@@ -54,7 +55,8 @@ func (api *WebApi) BooResponse() []byte {
 
 func (api *WebApi) TuneResponse() []byte {
 	fileName := api.mpd.NowPlaying()
-	newRating := api.mp3.IncreaseRating(fileName)
+	fullPath := api.yt.MusicDir + "/" + fileName
+	newRating := api.mp3.IncreaseRating(fullPath)
 	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
 	return api.newNowPlayingMsg()
 }

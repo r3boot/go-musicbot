@@ -3,29 +3,32 @@ var npMsg = {"Operation":"np"};
 var nextMsg = {"Operation":"next"};
 var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
-
-function NewNpMsg() {
-    return JSON.stringify(npMsg);
-}
+var playlistMsg = {"Operation":"playlist"};
 
 function StartWebSocket() {
-    var ws = new WebSocket("ws://localhost:8666/ws");
+    var ws = new WebSocket("wss://"+window.location.host+"/ws");
     var nps = document.getElementById("nowPlaying");
 
     document.getElementById("idNext").onclick = function() {
         ws.send(JSON.stringify(nextMsg));
-        console.log("next: " + nextMsg)
     };
 
     document.getElementById("idBoo").onclick = function() {
         ws.send(JSON.stringify(booMsg));
-        console.log("boo");
     };
 
     document.getElementById("idTune").onclick = function () {
         ws.send(JSON.stringify(tuneMsg));
-        console.log("tune");
     };
+
+    document.getElementById("idSearch").onclick = function() {
+        var query = {"Operation":"play","Query":document.getElementById("idQuery").value};
+        ws.send(JSON.stringify(query));
+    };
+
+    document.getElementById("idPlaylist").onclick = function() {
+        window.open("/playlist", "_blank");
+    }
 
     ws.onopen = function() {
         var nps = document.getElementById("nowPlaying");
@@ -36,7 +39,6 @@ function StartWebSocket() {
         setInterval(function getNowPlaying() {
             ws.send(JSON.stringify(npMsg));
         }, 1000);
-
     };
 
     ws.onmessage = function(e) {
@@ -61,6 +63,20 @@ function StartWebSocket() {
 function main() {
     $(document).ready(function() {
         StartWebSocket();
+    });
+
+    window.addEventListener('keydown', function (e) {
+        evt = e || window.event;
+        evt.preventDefault();
+        if (evt.keyCode == 32) {
+            var ac = document.getElementById("audiocontrols")
+            if (ac.paused) {
+                ac.play();
+            } else {
+                ac.pause();
+            }
+
+        }
     });
 }
 

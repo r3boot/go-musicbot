@@ -30,13 +30,11 @@ func (api *WebApi) updateNowPlayingData() {
 		if strings.HasPrefix(fileName, "Error: ") {
 			fileName = api.mpd.Play()
 		}
-		fullPath := api.config.Youtube.BaseDir + "/" + fileName
+		fullPath := api.yt.MusicDir + "/" + fileName
 
 		gTitle = fileName[:len(fileName)-16]
 		gDuration = api.mpd.Duration()
 		gRating = api.mp3.GetRating(fullPath)
-
-		fmt.Printf("np: %s (%s) %d/10\n", gTitle, gDuration, gRating)
 
 		time.Sleep(3 * time.Second)
 	}
@@ -131,6 +129,23 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
 				}
 			}
+		case "play":
+			{
+				query := &SearchRequest{}
+				if err := json.Unmarshal(msg, query); err != nil {
+					fmt.Fprintf(os.Stderr, "Unmarshal failed: %v\n", err)
+					return
+				}
+
+				pos, err := api.mpd.Search(query.Query)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "search failed: %v\n", err)
+					return
+				} else {
+					fileName := api.mpd.PlayPos(pos)
+					fmt.Printf("Skipping to %s", fileName[:len(fileName)-16])
+				}
+			}
 		default:
 			{
 				conn.Close()
@@ -138,6 +153,16 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
+	}
+}
+
+func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	for _, file := range api.mp3.GetAllFiles() {
+		if file == "" {
+			continue
+		}
+		line := fmt.Sprintf("%s\n", file)
+		w.Write([]byte(line))
 	}
 }
 

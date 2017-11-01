@@ -7,6 +7,8 @@ import (
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
 
+const MAX_PLAYLIST_LENGTH int = 8192
+
 type TemplateData struct {
 	Title  string
 	Stream string
@@ -23,6 +25,11 @@ type ClientRequest struct {
 	Operation string
 }
 
+type SearchRequest struct {
+	Operation string
+	Query string
+}
+
 type NowPlaying struct {
 	Title    string
 	Duration string
@@ -32,4 +39,9 @@ type NowPlaying struct {
 type NowPlayingResp struct {
 	Data NowPlaying
 	Pkt  string
+}
+
+type GetFilesResp struct {
+	Data []string
+	Pkt string
 }

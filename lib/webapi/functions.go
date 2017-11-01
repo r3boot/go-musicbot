@@ -26,6 +26,7 @@ func (api *WebApi) Run() {
 	http.Handle("/img/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
 	http.Handle("/js/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
 
+	http.HandleFunc("/playlist", api.PlaylistHandler)
 	http.HandleFunc("/ws", api.SocketHandler)
 	http.HandleFunc("/", api.HomeHandler)
 
