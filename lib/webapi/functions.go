@@ -4,7 +4,44 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
+
+func httpLog(r *http.Request, code int, size int) {
+	var (
+		srcip   string
+		logline string
+	)
+
+	srcip = r.Header.Get("X-Forwarded-For")
+	if srcip == "" {
+		srcip = r.RemoteAddr
+	}
+
+	logline = srcip + " - - [" + time.Now().Format(TF_CLF) + "] "
+	logline += "\"" + r.Method + " " + r.URL.Path + " " + r.Proto + "\" "
+	logline += strconv.Itoa(code) + " " + strconv.Itoa(size)
+
+	fmt.Println(logline)
+}
+
+func wsLog(r *http.Request, code int, cmd, msg string) {
+	var (
+		srcip   string
+		logline string
+	)
+
+	srcip = r.Header.Get("X-Forwarded-For")
+	if srcip == "" {
+		srcip = r.RemoteAddr
+	}
+
+	logline = srcip + " [" + time.Now().Format(TF_CLF) + "] "
+	logline += strconv.Itoa(code) + " " + cmd + ": " + msg
+
+	fmt.Println(logline)
+}
 
 func (api *WebApi) Setup() error {
 	fs, err := os.Stat(api.config.Api.Assets)

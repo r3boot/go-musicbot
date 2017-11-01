@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"bytes"
 	"github.com/gorilla/websocket"
 	"sort"
 )
@@ -62,6 +63,9 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	content, err := ioutil.ReadFile(api.config.Api.Assets + "/templates/player.html")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to read template: %v\n", err)
+		errmsg := "Failed to read template"
+		http.Error(w, errmsg, http.StatusInternalServerError)
+		httpLog(r, http.StatusInternalServerError, len(errmsg))
 		return
 	}
 
@@ -70,6 +74,9 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = t.Parse(string(content))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to parse template: %v\n", err)
+		errmsg := "Failed to parse template"
+		http.Error(w, errmsg, http.StatusInternalServerError)
+		httpLog(r, http.StatusInternalServerError, len(errmsg))
 		return
 	}
 
@@ -84,20 +91,27 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Stream: stream_url,
 	}
 
-	err = t.Execute(w, data)
+	output := bytes.Buffer{}
+
+	err = t.Execute(&output, data)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to execute template: %v\n", err)
+		errmsg := "Failed to execute template"
+		http.Error(w, errmsg, http.StatusInternalServerError)
+		httpLog(r, http.StatusInternalServerError, len(errmsg))
 		return
 	}
 
-	fmt.Printf("%s %s\n", r.Method, r.URL.Path)
+	w.Write(output.Bytes())
+	httpLog(r, http.StatusOK, output.Len())
 }
 
 func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Upgrade to websocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to upgrade socket: %v\n", err)
+		errmsg := fmt.Sprintf("Failed to upgrade socket: %v\n", err)
+		wsLog(r, http.StatusInternalServerError, "upgrade", errmsg)
 		return
 	}
 	defer conn.Close()
@@ -105,68 +119,90 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ReadMessage failed: %v\n", err)
-			return
+			errmsg := fmt.Sprintf("ReadMessage failed: %v\n", err)
+			wsLog(r, http.StatusInternalServerError, "socket", errmsg)
+			continue
 		}
 
 		request := &ClientRequest{}
 		if err := json.Unmarshal(msg, request); err != nil {
-			fmt.Fprintf(os.Stderr, "Unmarshal failed: %v\n", err)
-			return
+			errmsg := fmt.Sprintf("Unmarshal failed: %v\n", err)
+			wsLog(r, http.StatusInternalServerError, "nil", errmsg)
+			continue
 		}
 
 		switch request.Operation {
 		case "np":
 			{
-				err = conn.WriteMessage(msgType, api.NowPlayingResponse())
+				var response = api.NowPlayingResponse()
+
+				err = conn.WriteMessage(msgType, response)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
+					errmsg := fmt.Sprintf("Failed to send message: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				}
+				// Note, ignored
+				// wsLog(r, http.StatusOK, request.Operation, "Now Playing response")
 			}
 		case "next":
 			{
-				fmt.Printf("Received next\n")
-				err = conn.WriteMessage(msgType, api.NextResponse())
+				var response = api.NowPlayingResponse()
+
+				err = conn.WriteMessage(msgType, response)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
+					errmsg := fmt.Sprintf("Failed to send message: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				}
+				wsLog(r, http.StatusOK, request.Operation, "got nowplaying response")
 			}
 		case "boo":
 			{
-				fmt.Printf("Received boo\n")
+
 				err = conn.WriteMessage(msgType, api.BooResponse())
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
+					errmsg := fmt.Sprintf("Failed to send message: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				}
+				wsLog(r, http.StatusOK, request.Operation, "got no response")
 			}
 		case "tune":
 			{
-				fmt.Printf("Received tune\n")
 				err = conn.WriteMessage(msgType, api.TuneResponse())
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to send message: %v\n", err)
+					errmsg := fmt.Sprintf("Failed to send message: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				}
+				wsLog(r, http.StatusOK, request.Operation, "got no response")
 			}
 		case "play":
 			{
 				query := &SearchRequest{}
 				if err := json.Unmarshal(msg, query); err != nil {
-					fmt.Fprintf(os.Stderr, "Unmarshal failed: %v\n", err)
-					return
+					errmsg := fmt.Sprintf("Unmarshal failed: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				}
 
 				pos, err := api.mpd.Search(query.Query)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "search failed: %v\n", err)
+					errmsg := fmt.Sprintf("search failed: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
 				} else {
 					fileName := api.mpd.PlayPos(pos)
-					fmt.Printf("Skipping to %s", fileName[:len(fileName)-16])
+					msg := fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
+					wsLog(r, http.StatusOK, request.Operation, msg)
 				}
 			}
 		default:
 			{
 				conn.Close()
-				fmt.Fprintf(os.Stderr, "Unknown message received: %s", string(msg))
+				errmsg := fmt.Sprintf("Unknown message received: %s", string(msg))
+				wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 				break
 			}
 		}
@@ -174,18 +210,27 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	totSize := 0
 	for _, title := range cache.Playlist {
 		if title == "" {
 			continue
 		}
 		line := fmt.Sprintf("%s\n", title)
-		w.Write([]byte(line))
+		nwritten, err := w.Write([]byte(line))
+		if err != nil {
+			errmsg := "Failed to write playlist"
+			http.Error(w, errmsg, http.StatusInternalServerError)
+			httpLog(r, http.StatusInternalServerError, len(errmsg))
+		}
+		totSize += nwritten
 	}
+
+	httpLog(r, http.StatusOK, totSize)
 }
 
 func logHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("%s %s\n", r.Method, r.URL.Path)
+		httpLog(r, http.StatusOK, 0)
 		h.ServeHTTP(w, r)
 	})
 }

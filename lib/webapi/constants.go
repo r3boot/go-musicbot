@@ -7,7 +7,10 @@ import (
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
 
-const MAX_PLAYLIST_LENGTH int = 8192
+const (
+	MAX_PLAYLIST_LENGTH int    = 8192
+	TF_CLF              string = "02/Jan/2006:15:04:05 -0700"
+)
 
 type TemplateData struct {
 	Title  string
