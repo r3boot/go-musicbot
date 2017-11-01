@@ -6,6 +6,22 @@ body {
     background-size: cover;
 }
 
+input::-webkit-input-placeholder {
+    color: black !important;
+}
+
+input:-moz-placeholder { /* Firefox 18- */
+    color: black !important;
+}
+
+input::-moz-placeholder {  /* Firefox 19+ */
+    color: black !important;
+}
+
+input:-ms-input-placeholder {
+    color: black !important;
+}
+
 #controls {
     margin-left: 190px;
     vertical-align: middle;
@@ -43,10 +59,21 @@ body {
     color: white;
 }
 
+#links {
+    margin-top: 10px;
+    margin-left: 380px;
+    vertical-align: middle;
+    color: #FF00BC;
+}
+
 #logo {
     width: 1000px;
     text-align: center;
     margin-bottom: 20px;
+}
+
+#idQuery {
+    width: 300px;
 }
 
 #contentDiv {
@@ -59,7 +86,7 @@ body {
     color: #FF00BC;
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 #leftSpace {
@@ -74,5 +101,5 @@ body {
 
 #contentDiv, #leftSpace, #rightSpace {
     margin-top: 200px;
-    height: 400px;
+    height: 220px;
 }

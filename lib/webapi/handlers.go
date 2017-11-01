@@ -57,9 +57,15 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	stream_url := api.config.Bot.StreamURL
+
+	if api.config.Api.StreamURL != "" {
+		stream_url = api.config.Api.StreamURL
+	}
+
 	data := TemplateData{
-		Title:  "2600nl radio",
-		Stream: "http://radio.as65342.net:8000/2600nl.ogg",
+		Title:  api.config.Api.Title,
+		Stream: stream_url,
 	}
 
 	err = t.Execute(w, data)

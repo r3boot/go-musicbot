@@ -45,4 +45,6 @@ mpd:
 api:
   address: "127.0.0.1"
   port: 8666
+  title: "2600nl radio"
+  stream_url: "http://localhost:8000/2600nl.ogg"
   assets: "./webassets"
