@@ -11,9 +11,9 @@ import (
 func (api *WebApi) newNowPlayingMsg() []byte {
 	response := &NowPlayingResp{
 		Data: NowPlaying{
-			Title:    gTitle,
-			Duration: gDuration,
-			Rating:   gRating,
+			Title:    cache.Title,
+			Duration: cache.Duration,
+			Rating:   cache.Rating,
 		},
 		Pkt: "np_r",
 	}
