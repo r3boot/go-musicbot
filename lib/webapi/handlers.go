@@ -158,7 +158,6 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				pos, err := api.mpd.Search(query.Query)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "search failed: %v\n", err)
-					return
 				} else {
 					fileName := api.mpd.PlayPos(pos)
 					fmt.Printf("Skipping to %s", fileName[:len(fileName)-16])

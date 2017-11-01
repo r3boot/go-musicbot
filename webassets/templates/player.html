@@ -16,15 +16,18 @@
         <div id="nowPlaying">Waiting for data..</div>
         <div id="controls">
             <div id="streamcontrols">
-                <audio id="audiocontrols" controls autoplay>
+                <audio id="audiocontrols">
                     <source src="{{.Stream}}" type="audio/ogg" />
                     Your browser does not support the audio element for ogg.
                 </audio>
             </div>
             <div id="buttons">
-                <input class="button" id="idNext" type="button" value="Next"/>
-                <input class="button" id="idBoo" type="button" value="Boo!!"/>
+                <input class="button" id="idPlay" type="button" value="Play"/>
+                <input class="button" id="idVolDown" type="button" value="Vol Down"/>
+                <input class="button" id="idVolUp" type="button" value="Vol Up"/>
                 <input class="button" id="idTune" type="button" value="Tune!!"/>
+                <input class="button" id="idBoo" type="button" value="Boo!!"/>
+                <input class="button" id="idNext" type="button" value="Next"/>
             </div>
         </div>
     </div>

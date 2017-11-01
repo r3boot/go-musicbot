@@ -7,22 +7,22 @@ body {
 }
 
 input::-webkit-input-placeholder {
-    color: #222222 !important;
+    color: #044A0B !important;
     font-style: italic;
 }
 
 input:-moz-placeholder { /* Firefox 18- */
-    color: #222222 !important;
+    color: #044A0B !important;
     font-style: italic;
 }
 
 input::-moz-placeholder {  /* Firefox 19+ */
-    color: #222222 !important;
+    color: #044A0B !important;
     font-style: italic;
 }
 
 input:-ms-input-placeholder {
-    color: #222222 !important;
+    color: #044A0B !important;
     font-style: italic;
 }
 
@@ -54,13 +54,13 @@ input:-ms-input-placeholder {
     -webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
     cursor: pointer;
-    color: black;
+    color: #044A0B;
     border: 2px solid #4CAF50;
 }
 
 .button:hover {
     background-color: #4CAF50;
-    color: white;
+    color: #FF00BC;
 }
 
 #links {
@@ -87,10 +87,13 @@ input:-ms-input-placeholder {
 }
 
 #nowPlaying {
-    color: #FF00BC;
+    color: #02E148;
+    background-color: #222222;
+    padding: 5px;
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 20px;
+    border: 2px solid red;
 }
 
 #leftSpace {

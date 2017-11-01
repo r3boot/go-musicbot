@@ -4,6 +4,7 @@ var nextMsg = {"Operation":"next"};
 var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
 var playlistMsg = {"Operation":"playlist"};
+var isPlaying = false;
 
 function StartWebSocket() {
     var wsProto = "ws:";
@@ -28,13 +29,11 @@ function StartWebSocket() {
     };
 
     document.getElementById("idSearch").onclick = function() {
-        var query = {"Operation":"play","Query":document.getElementById("idQuery").value};
+        var qInput = document.getElementById("idQuery");
+        var query = {"Operation":"play","Query":qInput.value};
         ws.send(JSON.stringify(query));
+        qInput.value = "";
     };
-
-    document.getElementById("idPlaylist").onclick = function() {
-        window.open("/playlist", "_blank");
-    }
 
     ws.onopen = function() {
         var nps = document.getElementById("nowPlaying");
@@ -52,7 +51,7 @@ function StartWebSocket() {
 
         switch (r.Pkt) {
             case "np_r":
-                var update = "" + r.Data.Title + "(" + r.Data.Duration + ")  " + r.Data.Rating + "/10";
+                var update = "" + r.Data.Title + " (" + r.Data.Duration + ",  " + r.Data.Rating + "/10)";
 
                 nps.innerHTML = update;
                 break;
@@ -66,23 +65,62 @@ function StartWebSocket() {
     };
 }
 
+function ToggleStream() {
+    var stream = document.getElementById("audiocontrols");
+    var label = document.getElementById("idPlay");
+
+    if (isPlaying) {
+        stream.pause();
+        label.value = "  Play ";
+        isPlaying = false;
+    } else {
+        stream.play();
+        label.value = "Pause";
+        isPlaying = true;
+    }
+}
+
 function main() {
     $(document).ready(function() {
         StartWebSocket();
-    });
+        ToggleStream();
 
-    window.addEventListener('keydown', function (e) {
-        evt = e || window.event;
-        evt.preventDefault();
-        if (evt.keyCode == 32) {
-            var ac = document.getElementById("audiocontrols")
-            if (ac.paused) {
-                ac.play();
-            } else {
-                ac.pause();
+        document.getElementById("idPlaylist").onclick = function() {
+            window.open("/playlist", "_blank");
+        };
+
+        document.getElementById("idPlay").onclick = function() {
+            ToggleStream();
+        };
+
+        document.getElementById("idVolUp").onclick = function() {
+            var ac = document.getElementById("audiocontrols");
+            if (ac.volume < 1) {
+                ac.volume += 0.1;
             }
+            console.log("up: " + ac.volume);
+        };
 
-        }
+        document.getElementById("idVolDown").onclick = function() {
+            var ac = document.getElementById("audiocontrols");
+            if (ac.volume > 0.1) {
+                ac.volume -= 0.1;
+            }
+            console.log("down: " + ac.volume);
+        };
+
+        window.addEventListener('keydown', function (e) {
+            var ac = document.getElementById("audiocontrols");
+            var qInput = document.getElementById("idQuery");
+
+            evt = e || window.event;
+            if (evt.keyCode == 32) {
+                if (document.activeElement.id != "idQuery") {
+                    evt.preventDefault();
+                    ToggleStream();
+                }
+            }
+        });
     });
 }
 
