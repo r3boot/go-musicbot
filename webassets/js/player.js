@@ -7,10 +7,10 @@ var playlistMsg = {"Operation":"playlist"};
 var isPlaying = false;
 
 function StartWebSocket() {
-    var wsProto = "ws:";
+    var wsProto = "wss:";
 
-    if (location.protocol == "https") {
-        wsProto = "wss:";
+    if (location.protocol == "http:") {
+        wsProto = "ws:";
     }
 
     var ws = new WebSocket(wsProto + "//"+window.location.host+"/ws");
