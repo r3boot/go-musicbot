@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"sort"
 )
 
 var upgrader = websocket.Upgrader{
@@ -40,7 +41,20 @@ func (api *WebApi) updateNowPlayingData() {
 		cache.Duration = api.mpd.Duration()
 		cache.Rating = api.mp3.GetRating(fullPath)
 
-		time.Sleep(3 * time.Second)
+		allFiles := api.mp3.GetAllFiles()
+		newList := make([]string, len(allFiles))
+
+		for _, file := range allFiles {
+			if file == "" {
+				continue
+			}
+			newList = append(newList, file[:len(file)-16])
+		}
+
+		sort.Strings(newList)
+		cache.Playlist = newList
+
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -161,11 +175,11 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
-	for _, file := range api.mp3.GetAllFiles() {
-		if file == "" {
+	for _, title := range cache.Playlist {
+		if title == "" {
 			continue
 		}
-		line := fmt.Sprintf("%s\n", file)
+		line := fmt.Sprintf("%s\n", title)
 		w.Write([]byte(line))
 	}
 }

@@ -132,11 +132,18 @@ func (i *MP3Library) GetAllFiles() []string {
 		fmt.Fprintf(os.Stderr, "%v", err)
 	}
 
-	response := make([]string, len(files))
-
+	tmpList := make([]string, len(files))
+	totItems := 0
 	for _, fs := range files {
-		response = append(response, fs.Name())
+		if fs.Name() == "" {
+			continue
+		}
+		tmpList = append(tmpList, fs.Name())
+		totItems += 1
 	}
+
+	response := make([]string, totItems)
+	response = tmpList
 
 	sort.Strings(response)
 
