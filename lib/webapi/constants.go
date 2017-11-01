@@ -27,7 +27,14 @@ type ClientRequest struct {
 
 type SearchRequest struct {
 	Operation string
-	Query string
+	Query     string
+}
+
+type CachedData struct {
+	Title    string
+	Duration string
+	Rating   int
+	Playlist []string
 }
 
 type NowPlaying struct {
@@ -43,5 +50,5 @@ type NowPlayingResp struct {
 
 type GetFilesResp struct {
 	Data []string
-	Pkt string
+	Pkt  string
 }

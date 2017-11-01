@@ -24,7 +24,11 @@ var gTitle string = "Loading"
 var gDuration string = "..."
 var gRating int = -1
 
+var cache CachedData
+
 func (api *WebApi) updateNowPlayingData() {
+	cache = CachedData{}
+
 	for {
 		fileName := api.mpd.NowPlaying()
 		if strings.HasPrefix(fileName, "Error: ") {
@@ -32,9 +36,9 @@ func (api *WebApi) updateNowPlayingData() {
 		}
 		fullPath := api.yt.MusicDir + "/" + fileName
 
-		gTitle = fileName[:len(fileName)-16]
-		gDuration = api.mpd.Duration()
-		gRating = api.mp3.GetRating(fullPath)
+		cache.Title = fileName[:len(fileName)-16]
+		cache.Duration = api.mpd.Duration()
+		cache.Rating = api.mp3.GetRating(fullPath)
 
 		time.Sleep(3 * time.Second)
 	}

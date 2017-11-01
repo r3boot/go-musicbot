@@ -7,19 +7,23 @@ body {
 }
 
 input::-webkit-input-placeholder {
-    color: black !important;
+    color: #222222 !important;
+    font-style: italic;
 }
 
 input:-moz-placeholder { /* Firefox 18- */
-    color: black !important;
+    color: #222222 !important;
+    font-style: italic;
 }
 
 input::-moz-placeholder {  /* Firefox 19+ */
-    color: black !important;
+    color: #222222 !important;
+    font-style: italic;
 }
 
 input:-ms-input-placeholder {
-    color: black !important;
+    color: #222222 !important;
+    font-style: italic;
 }
 
 #controls {
