@@ -51,6 +51,64 @@ func (m *MPDClient) KeepAlive() {
 	}
 }
 
+func (m *MPDClient) UpdateNowPlaying() {
+	for {
+		curSongData := NowPlayingData{}
+
+		songAttrs, err := m.conn.CurrentSong()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: Failed to fetch current song info: %v", err)
+			return
+		}
+		fileName := songAttrs["file"]
+		fullPath := m.mp3.BaseDir + "/" + fileName
+		curSongData.Title = fileName[:len(fileName)-16]
+
+		statusAttrs, err := m.conn.Status()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: Failed to fetch status info: %v", err)
+			return
+		}
+		curSongData.Elapsed, _ = strconv.ParseFloat(statusAttrs["elapsed"], 32)
+		curSongData.Duration, _ = strconv.ParseFloat(statusAttrs["duration"], 32)
+		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
+		curSongData.Rating = m.mp3.GetRating(fullPath)
+
+		m.np = curSongData
+
+		time.Sleep(1 * time.Second)
+	}
+
+}
+
+func (m *MPDClient) RequestQueueRunner() {
+	for {
+		time.Sleep(500 * time.Millisecond)
+
+		if m.np.Remaining > 1 {
+			continue
+		}
+
+		if len(m.queue) == 0 {
+			continue
+		}
+
+		qitem := <-m.queue
+
+		fmt.Printf("Skipping to %s\n", qitem.Title)
+		m.PlayPos(qitem.Pos)
+
+		curLen := len(m.queueMeta)
+		for i, _ := range m.queueMeta {
+			if i == 0 {
+				continue
+			}
+			m.queueMeta[i-1] = m.queueMeta[i]
+		}
+		m.queueMeta[curLen] = nil
+	}
+}
+
 func (m *MPDClient) UpdateDB(fname string) error {
 	_, err := m.conn.Update(fname)
 	time.Sleep(1 * time.Second)
@@ -160,4 +218,38 @@ func (m *MPDClient) Search(q string) (int, error) {
 	}
 
 	return -1, fmt.Errorf("MPDClient.Search: failed to search mpd")
+}
+
+func (m *MPDClient) Enqueue(title string) (int, error) {
+	pos, err := m.Search(title)
+	if err != nil {
+		return -1, fmt.Errorf("MPDClient.Enqueue: failed to enqueue: %v", err)
+	}
+
+	if len(m.queue) >= MAX_QUEUE_ITEMS {
+		return -1, fmt.Errorf("MPDClient.Enqueue: queue is full")
+	}
+
+	qitem := &RequestQueueItem{
+		Title: title,
+		Pos:   pos,
+	}
+
+	m.queue <- qitem
+
+	m.queueMeta[len(m.queue)] = qitem
+
+	return len(m.queue), nil
+}
+
+func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
+	playQueue := make(map[int]string, MAX_QUEUE_ITEMS)
+	for pos, meta := range m.queueMeta {
+		if meta.Title == "" {
+			continue
+		}
+		playQueue[pos] = meta.Title
+	}
+
+	return playQueue, nil
 }

@@ -134,7 +134,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 		switch request.Operation {
 		case "np":
 			{
-				var response = api.NowPlayingResponse()
+				response := api.NowPlayingResponse()
 
 				err = conn.WriteMessage(msgType, response)
 				if err != nil {
@@ -144,6 +144,19 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				// Note, ignored
 				// wsLog(r, http.StatusOK, request.Operation, "Now Playing response")
+			}
+		case "queue":
+			{
+				response := api.PlayQueueResponse()
+
+				err = conn.WriteMessage(msgType, response)
+				if err != nil {
+					errmsg := fmt.Sprintf("Failed to send message: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+					continue
+				}
+				// Note, ignored
+				// wsLog(r, http.StatusOK, request.Operation, "Play Queue response")
 			}
 		case "next":
 			{
@@ -188,16 +201,14 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 
-				pos, err := api.mpd.Search(query.Query)
+				qpos, err := api.mpd.Enqueue(query.Query)
 				if err != nil {
-					errmsg := fmt.Sprintf("search failed: %v\n", err)
+					errmsg := fmt.Sprintf("enqueue failed: %v\n", err)
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
-					continue
-				} else {
-					fileName := api.mpd.PlayPos(pos)
-					msg := fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
-					wsLog(r, http.StatusOK, request.Operation, msg)
 				}
+
+				msg := fmt.Sprintf("Queued in %d songs\n", qpos)
+				wsLog(r, http.StatusOK, request.Operation, msg)
 			}
 		default:
 			{
@@ -212,7 +223,6 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 
 func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-
 
 	for key, value := range r.URL.Query() {
 		if key != "query" {
@@ -231,7 +241,7 @@ func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 		results := api.mpd.TypeAheadQuery(q)
 
 		response := AutoCompleteResponse{
-			Query: q,
+			Query:       q,
 			Suggestions: results,
 		}
 
@@ -253,6 +263,27 @@ func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	httpLog(r, http.StatusInternalServerError, len(errmsg))
 }
 
+func (api *WebApi) PlayQueueHandler(w http.ResponseWriter, r *http.Request) {
+	playQueue, err := api.mpd.GetPlayQueue()
+	if err != nil {
+		errmsg := fmt.Sprintf("Failed to get play queue: %v", err)
+		http.Error(w, errmsg, http.StatusInternalServerError)
+		httpLog(r, http.StatusInternalServerError, len(errmsg))
+		return
+	}
+
+	data, err := json.Marshal(playQueue)
+	if err != nil {
+		errmsg := fmt.Sprintf("Failed to marshal json: %v", err)
+		http.Error(w, errmsg, http.StatusInternalServerError)
+		httpLog(r, http.StatusInternalServerError, len(errmsg))
+		return
+	}
+
+	w.Write(data)
+	httpLog(r, http.StatusOK, len(data))
+}
+
 func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
 	totSize := 0
 	for _, title := range cache.Playlist {
@@ -265,6 +296,7 @@ func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
 			errmsg := "Failed to write playlist"
 			http.Error(w, errmsg, http.StatusInternalServerError)
 			httpLog(r, http.StatusInternalServerError, len(errmsg))
+			return
 		}
 		totSize += nwritten
 	}

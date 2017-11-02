@@ -13,3 +13,4 @@
 - Make api process dedicated per stream
 - Re-encode everything with --audio-quality 0
 - Download all videos
+- Add play queue for requests

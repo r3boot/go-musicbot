@@ -108,7 +108,7 @@ func (i *MP3Library) IncreaseRating(name string) int {
 func (i *MP3Library) RemoveFile(name string) bool {
 	var err error
 
-	fname := i.baseDir + "/" + name
+	fname := i.BaseDir + "/" + name
 
 	_, err = os.Stat(fname)
 	if err != nil {
@@ -127,7 +127,7 @@ func (i *MP3Library) RemoveFile(name string) bool {
 
 func (i *MP3Library) GetAllFiles() []string {
 
-	files, err := ioutil.ReadDir(i.baseDir)
+	files, err := ioutil.ReadDir(i.BaseDir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 	}

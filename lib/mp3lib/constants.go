@@ -15,6 +15,6 @@ const (
 )
 
 type MP3Library struct {
-	baseDir string
+	BaseDir string
 	mutex   sync.Mutex
 }

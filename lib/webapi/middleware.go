@@ -27,6 +27,27 @@ func (api *WebApi) newNowPlayingMsg() []byte {
 	return data
 }
 
+func (api *WebApi) PlayQueueResponse() []byte {
+	playQueue, err := api.mpd.GetPlayQueue()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to get play queue: %v\n", err)
+		return nil
+	}
+
+	response := GetQueueResp{
+		Data: playQueue,
+		Pkt:  "queue_r",
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to serialize data: %v\n", err)
+		return nil
+	}
+
+	return data
+}
+
 func (api *WebApi) NowPlayingResponse() []byte {
 	return api.newNowPlayingMsg()
 }

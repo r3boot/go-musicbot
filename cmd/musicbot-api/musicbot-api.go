@@ -51,13 +51,13 @@ func main() {
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
-	MPDClient, err := mpdclient.NewMPDClient(Config)
+	MP3Library := mp3lib.NewMP3Library(musicDir)
+
+	MPDClient, err := mpdclient.NewMPDClient(Config, MP3Library)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "MPDClient: %v\n", err)
 		os.Exit(1)
 	}
-
-	MP3Library := mp3lib.NewMP3Library(musicDir)
 
 	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, MP3Library, musicDir)
 

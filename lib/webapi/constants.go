@@ -60,6 +60,11 @@ type NowPlayingResp struct {
 	Pkt  string
 }
 
+type GetQueueResp struct {
+	Data map[int]string
+	Pkt string
+}
+
 type GetFilesResp struct {
 	Data []string
 	Pkt  string

@@ -125,6 +125,14 @@ input:-ms-input-placeholder {
     cursor: initial;
 }
 
+#playQueue {
+    border: 1px solid darkred;
+    color: #39ac5e;
+    background-color: #222222;
+    align: left;
+    text-align: left;
+}
+
 #leftSpace {
     width: calc(50% - 450px);
     float: left;

@@ -1,5 +1,6 @@
 
 var npMsg = {"Operation":"np"};
+var queueMsg = {"Operation":"queue"};
 var nextMsg = {"Operation":"next"};
 var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
@@ -54,6 +55,10 @@ function StartWebSocket() {
         setInterval(function getNowPlaying() {
             ws.send(JSON.stringify(npMsg));
         }, 1000);
+
+        setInterval(function getPlayQueue() {
+            ws.send(JSON.stringify(queueMsg))
+        }, 1000);
     };
 
     ws.onmessage = function(e) {
@@ -64,6 +69,31 @@ function StartWebSocket() {
                 var update = "" + r.Data.Title + " (" + r.Data.Duration + ",  " + r.Data.Rating + "/10)";
 
                 nps.innerHTML = update;
+                break;
+            case "queue_r":
+                var pqWrapper =$("#playQueue");
+
+                var numItems = 0;
+
+                console.log(r.Data);
+                console.log(numItems);
+
+                if (numItems == 0) {
+                    pqWrapper.hide();
+                    e.preventDefault();
+                    return;
+                } else {
+                    pqWrapper.show();
+                }
+
+                var newList = "";
+
+                for (i=0; i=numItems; i++) {
+                    newList += "<li>" + queue[i] + "</li>"
+                }
+
+                var playQueue = document.getElementById("pqList");
+                playQueue.innerHTML = newList;
                 break;
             default:
                 console.log("Unknown message received: " + r.Pkt)

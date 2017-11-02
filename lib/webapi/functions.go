@@ -64,6 +64,7 @@ func (api *WebApi) Run() {
 	http.Handle("/js/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
 
 	http.HandleFunc("/playlist", api.PlaylistHandler)
+	http.HandleFunc("/queue", api.PlayQueueHandler)
 	http.HandleFunc("/ta", api.AutoCompleteHandler)
 	http.HandleFunc("/ws", api.SocketHandler)
 	http.HandleFunc("/", api.HomeHandler)
