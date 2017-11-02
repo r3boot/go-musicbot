@@ -214,6 +214,10 @@ func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 
 
 	for key, value := range r.URL.Query() {
+		if key != "query" {
+			continue
+		}
+		
 		if len(value[0]) < 3 {
 			msg := "Please specify a query of 3 chars or more"
 			w.Write([]byte(msg))
