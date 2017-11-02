@@ -75,6 +75,7 @@ function ToggleStream() {
         isPlaying = false;
     } else {
         stream.play();
+        stream.currentTime = 0;
         label.value = "Pause";
         isPlaying = true;
     }
