@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <title>{{.Title}}</title>
     <link rel="stylesheet" href="/css/2600nl.css">
-    <script src="/js/jquery-3.2.1.min.js"></script>
-    <script src="/js/jquery.autocomplete.min.js"></script>
-    <script src="/js/player.js"></script>
 </head>
 <body>
 
@@ -18,7 +15,7 @@
         <div id="controls">
             <div id="streamcontrols">
                 <audio id="audiocontrols">
-                    <source src="{{.Stream}}" type="audio/ogg" />
+                    <source id="streamSrc" src="{{.Stream}}" type="audio/ogg" />
                     Your browser does not support the audio element for ogg.
                 </audio>
             </div>
@@ -41,5 +38,8 @@
     <div id="rightSpace">&nbsp;</div>
 </div>
 <div style="clear:both;"></div>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery.autocomplete.min.js"></script>
+<script src="/js/player.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
 var playlistMsg = {"Operation":"playlist"};
 var isPlaying = false;
+var streamSrc = "";
 
 function StartWebSocket() {
     var qInput = document.getElementById("idQuery");
@@ -75,16 +76,35 @@ function StartWebSocket() {
 }
 
 function ToggleStream() {
-    var stream = document.getElementById("audiocontrols");
+    var player = document.getElementById("audiocontrols");
+    var source = document.getElementById("streamSrc");
     var label = document.getElementById("idPlay");
 
+    if (streamSrc == "") {
+        if (source.src == "") {
+            console.log("streamSrc and source.src both not set!");
+            return
+        }
+        streamSrc = source.src;
+    }
+
     if (isPlaying) {
-        stream.pause();
+        player.pause();
+        player.currentTime = 0;
+        source.src = "";
         label.value = "  Play ";
         isPlaying = false;
     } else {
-        stream.play();
-        stream.currentTime = 0;
+        source.src = streamSrc;
+        player.load();
+
+        var promise = player.play();
+        if (promise !== undefined) {
+            promise.then(function() {}).catch(function(error) {
+                console.log("Failed to open stream: " + error);
+            });
+        }
+
         label.value = "Pause";
         isPlaying = true;
     }
