@@ -7,6 +7,8 @@ var playlistMsg = {"Operation":"playlist"};
 var isPlaying = false;
 
 function StartWebSocket() {
+    var qInput = document.getElementById("idQuery");
+
     var wsProto = "wss:";
 
     if (location.protocol == "http:") {
@@ -29,11 +31,18 @@ function StartWebSocket() {
     };
 
     document.getElementById("idSearch").onclick = function() {
-        var qInput = document.getElementById("idQuery");
-        var query = {"Operation":"play","Query":qInput.value};
         ws.send(JSON.stringify(query));
         qInput.value = "";
     };
+
+    $("#idQuery").autocomplete({
+        serviceUrl: '/ta',
+        onSelect: function (suggestion) {
+            var query = {"Operation":"play","Query":suggestion.value};
+            ws.send(JSON.stringify(query));
+            qInput.value = "";
+        }
+    });
 
     ws.onopen = function() {
         var nps = document.getElementById("nowPlaying");

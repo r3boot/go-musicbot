@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fhs/gompd/mpd"
+	"os"
 )
 
 func (m *MPDClient) Connect() error {
@@ -113,6 +114,22 @@ func (m *MPDClient) Shuffle() {
 func (m *MPDClient) Add(fileName string) {
 	fmt.Printf("Adding %s to playlist\n", fileName)
 	m.conn.Add(fileName)
+}
+
+func (m *MPDClient) TypeAheadQuery(q string) []string {
+	result, err := m.conn.Search("filename", q)
+	if err != nil {
+		errmsg := fmt.Sprintf("MPDClient.TypeAheadQuery: %v", err)
+		fmt.Fprint(os.Stderr, "%v\n", errmsg)
+		return nil
+	}
+
+	foundFiles := []string{}
+	for _, entry := range result {
+		foundFiles = append(foundFiles, entry["file"][:len(entry["file"])-16])
+	}
+
+	return foundFiles
 }
 
 func (m *MPDClient) Search(q string) (int, error) {

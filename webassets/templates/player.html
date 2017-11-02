@@ -5,6 +5,7 @@
     <title>{{.Title}}</title>
     <link rel="stylesheet" href="/css/2600nl.css">
     <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/js/jquery.autocomplete.min.js"></script>
     <script src="/js/player.js"></script>
 </head>
 <body>
@@ -31,7 +32,8 @@
             </div>
         </div>
         <div id="links">
-            <input class="button" id="idQuery" type="text" placeholder="Enter query"/>
+            <input class="button" id="idQuery" name="query" type="text" placeholder="Enter query"/>
+            <div class="autocomplete-suggestions"></div>
             <input class="button" id="idSearch" type="button" value="Request"/>
             <input class="button" id="idPlaylist" type="button" value="Playlist"/>
         </div>

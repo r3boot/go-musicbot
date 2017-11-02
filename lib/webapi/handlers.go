@@ -209,6 +209,45 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+
+	for key, value := range r.URL.Query() {
+		if len(value[0]) < 3 {
+			msg := "Please specify a query of 3 chars or more"
+			w.Write([]byte(msg))
+			httpLog(r, http.StatusOK, len(msg))
+			return
+		}
+
+		q := value[0]
+
+		results := api.mpd.TypeAheadQuery(q)
+
+		response := AutoCompleteResponse{
+			Query: q,
+			Suggestions: results,
+		}
+
+		data, err := json.Marshal(response)
+		if err != nil {
+			errmsg := fmt.Sprintf("Failed to marshal results: %v", err)
+			http.Error(w, errmsg, http.StatusInternalServerError)
+			httpLog(r, http.StatusInternalServerError, len(errmsg))
+			return
+		}
+
+		w.Write(data)
+		httpLog(r, http.StatusOK, len(data))
+		return
+	}
+
+	errmsg := "No query found"
+	http.Error(w, errmsg, http.StatusInternalServerError)
+	httpLog(r, http.StatusInternalServerError, len(errmsg))
+}
+
 func (api *WebApi) PlaylistHandler(w http.ResponseWriter, r *http.Request) {
 	totSize := 0
 	for _, title := range cache.Playlist {

@@ -40,6 +40,15 @@ type CachedData struct {
 	Playlist []string
 }
 
+type AutoCompleteRequest struct {
+	Query string `json:"query"`
+}
+
+type AutoCompleteResponse struct {
+	Query string `json:"query"`
+	Suggestions []string `json:"suggestions"`
+}
+
 type NowPlaying struct {
 	Title    string
 	Duration string
