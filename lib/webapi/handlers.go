@@ -117,6 +117,12 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	for {
+		if conn == nil {
+			errmsg := fmt.Sprintf("Socket closed: %v\n", err)
+			wsLog(r, http.StatusInternalServerError, "socket", errmsg)
+			break
+		}
+
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
 			errmsg := fmt.Sprintf("ReadMessage failed: %v\n", err)
