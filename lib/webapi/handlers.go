@@ -147,6 +147,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case "next":
 			{
+				api.mpd.Next()
 				var response = api.NowPlayingResponse()
 
 				err = conn.WriteMessage(msgType, response)
@@ -217,7 +218,7 @@ func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 		if key != "query" {
 			continue
 		}
-		
+
 		if len(value[0]) < 3 {
 			msg := "Please specify a query of 3 chars or more"
 			w.Write([]byte(msg))
