@@ -105,6 +105,7 @@ input:-ms-input-placeholder {
 
 #idQuery {
     width: 329px;
+    cursor: text;
 }
 
 #contentDiv {
@@ -121,6 +122,7 @@ input:-ms-input-placeholder {
     font-weight: bold;
     margin-bottom: 20px;
     border: 2px solid red;
+    cursor: initial;
 }
 
 #leftSpace {
