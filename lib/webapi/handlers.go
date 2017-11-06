@@ -49,6 +49,10 @@ func (api *WebApi) updateNowPlayingData() {
 			if file == "" {
 				continue
 			}
+			if len(file) < 16 {
+				fmt.Fprint(os.Stderr, "Filename too short: %s\n", file)
+			}
+			fmt.Printf("file :%s\n", file)
 			newList = append(newList, file[:len(file)-16])
 		}
 
