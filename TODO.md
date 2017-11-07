@@ -1,3 +1,4 @@
+# musicbot
 - Add possibility to send reply via /q
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable
@@ -5,10 +6,14 @@
 - Make sure rating isnt overwritten when downloading double item
 - Make playlist download possible using ID instead of URL
 - Add possibility for an ACL on various commands
-- Fix media type for ogg stream (?)
+
+# webui/api
 - Add attribution for next function in webapi
 - Add scroller for keeping track of webapi commands
+- Add list of currently enqueued songs
 - Auto reload when websocket is closed
 - Make api process dedicated per stream
-- Download all videos
+
+# Future
+- Download all videos, investigate video stream
 - Investigate blockchain technology to moderate webui controls
