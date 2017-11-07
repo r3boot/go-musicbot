@@ -20,6 +20,8 @@ const (
 	CMD_TUNE     string = "tune"
 	CMD_PLAYLIST string = "djlist"
 	CMD_PLAY     string = "play"
+	NICK_SJAAK   string = "Sjaak"
+	NICK_FLUNK   string = "flunk"
 )
 
 var (
@@ -35,4 +37,5 @@ type IrcClient struct {
 	mpdClient  *mpdclient.MPDClient
 	ytClient   *youtubeclient.YoutubeClient
 	mp3Library *mp3lib.MP3Library
+	Online     map[string]bool
 }

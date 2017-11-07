@@ -6,12 +6,40 @@ import (
 	"github.com/thoj/go-ircevent"
 	"os"
 	"strings"
+	"time"
 )
 
 func (c *IrcClient) initCallbacks() {
 	c.conn.AddCallback("001", func(e *irc.Event) { c.conn.Join(c.config.IRC.Channel) })
-	c.conn.AddCallback("366", func(e *irc.Event) {})
+	c.conn.AddCallback("366", func(e *irc.Event) {}) // RPL_ENDOFNAMES
+	c.conn.AddCallback("303", c.ParseIsOn)           // RPL_ISON
 	c.conn.AddCallback("PRIVMSG", c.ParsePrivmsg)
+}
+
+func (c *IrcClient) CheckIfSjaakIsOnline() {
+	// time.Sleep(5 * time.Second)
+	c.Online[NICK_SJAAK] = false
+	for {
+		c.conn.SendRawf("ISON %s", NICK_SJAAK)
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func (c *IrcClient) ParseIsOn(e *irc.Event) {
+	if len(e.Arguments) != 2 {
+		return
+	}
+
+	line := e.Arguments[1]
+
+	if len(line) > 0 {
+		isOnNickname := strings.Split(line, " ")[0]
+		if isOnNickname == NICK_SJAAK {
+			c.Online[NICK_SJAAK] = true
+		}
+	} else {
+		c.Online[NICK_SJAAK] = false
+	}
 }
 
 func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
@@ -65,7 +93,12 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
 		fmt.Printf("Added %s to download queue\n", yid)
-		// response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
+		if !c.Online[NICK_SJAAK] {
+			response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
+			c.conn.Privmsg(channel, response)
+			privmsg_response := fmt.Sprintf("Jow! Sjaak is offline! Denk nou aan je SLA JONGUH! Voeg dit ff toe aan de DB: %s", yid)
+			c.conn.Privmsg(NICK_FLUNK, privmsg_response)
+		}
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
 		fmt.Printf("no results found\n")

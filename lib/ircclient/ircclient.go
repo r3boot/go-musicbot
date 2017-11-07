@@ -16,6 +16,7 @@ func NewIrcClient(config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient,
 		mpdClient:  mpdClient,
 		ytClient:   ytClient,
 		mp3Library: mp3Library,
+		Online:     make(map[string]bool),
 	}
 
 	client.conn = irc.IRC(config.IRC.Nickname, config.IRC.Nickname)
@@ -36,6 +37,9 @@ func (c *IrcClient) Run() error {
 	if err != nil {
 		return fmt.Errorf("Err %s", err)
 	}
+
+	go c.CheckIfSjaakIsOnline()
+
 	c.conn.Loop()
 
 	return nil
