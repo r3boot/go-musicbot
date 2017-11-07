@@ -1,4 +1,3 @@
-- Add !help function
 - Add possibility to send reply via /q
 - Add feature to create a favourites list based on rating
 - Make control-char actually configurable

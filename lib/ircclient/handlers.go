@@ -62,6 +62,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	}
 
 	switch command {
+	case CMD_HELP:
+		c.HandleHelp(channel, line)
 	case CMD_DJPLUS:
 		c.HandleYidDownload(channel, line)
 	case CMD_PLAYLIST:
@@ -81,6 +83,10 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	case CMD_PLAY:
 		c.HandleSearchAndPlay(channel, line)
 	}
+}
+
+func (c *IrcClient) HandleHelp(channel, line string) {
+	c.conn.Privmsg(channel, RESPONSE_HELP)
 }
 
 func (c *IrcClient) HandleYidDownload(channel, line string) {

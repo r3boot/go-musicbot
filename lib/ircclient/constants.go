@@ -11,17 +11,19 @@ import (
 )
 
 const (
-	CMD_DJPLUS   string = "dj+"
-	CMD_START    string = "start"
-	CMD_NEXT     string = "next"
-	CMD_PLAYING  string = "np"
-	CMD_RADIO    string = "radio"
-	CMD_BOO      string = "boo"
-	CMD_TUNE     string = "tune"
-	CMD_PLAYLIST string = "djlist"
-	CMD_PLAY     string = "play"
-	NICK_SJAAK   string = "Sjaak"
-	NICK_FLUNK   string = "flunk"
+	CMD_DJPLUS    string = "dj+"
+	CMD_START     string = "start"
+	CMD_NEXT      string = "next"
+	CMD_PLAYING   string = "np"
+	CMD_RADIO     string = "radio"
+	CMD_BOO       string = "boo"
+	CMD_TUNE      string = "tune"
+	CMD_PLAYLIST  string = "djlist"
+	CMD_PLAY      string = "play"
+	CMD_HELP      string = "help"
+	NICK_SJAAK    string = "Sjaak"
+	NICK_FLUNK    string = "flunk"
+	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, djlist <yt list id>, play <query>, np, next, tune, boo, start, radio"
 )
 
 var (
