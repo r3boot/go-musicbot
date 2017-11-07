@@ -17,7 +17,6 @@ func (c *IrcClient) initCallbacks() {
 }
 
 func (c *IrcClient) CheckIfSjaakIsOnline() {
-	// time.Sleep(5 * time.Second)
 	c.Online[NICK_SJAAK] = false
 	for {
 		c.conn.SendRawf("ISON %s", NICK_SJAAK)
@@ -96,8 +95,8 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 		if !c.Online[NICK_SJAAK] {
 			response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
 			c.conn.Privmsg(channel, response)
-			privmsg_response := fmt.Sprintf("Jow! Sjaak is offline! Denk nou aan je SLA JONGUH! Voeg dit ff toe aan de DB: %s", yid)
-			c.conn.Privmsg(NICK_FLUNK, privmsg_response)
+			privmsgResponse := fmt.Sprintf("Jow! Sjaak is offline! Denk nou aan je SLA JONGUH! Voeg dit ff toe aan de DB: %s", yid)
+			c.conn.Privmsg(NICK_FLUNK, privmsgResponse)
 		}
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")

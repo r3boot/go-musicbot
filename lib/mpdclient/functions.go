@@ -89,24 +89,28 @@ func (m *MPDClient) RequestQueueRunner() {
 			continue
 		}
 
-		if len(m.queue) == 0 {
+		m.RunTopOfPlayQueue()
+	}
+}
+
+func (m *MPDClient) RunTopOfPlayQueue() {
+	if len(m.queue) == 0 {
+		return
+	}
+
+	qitem := <-m.queue
+
+	fmt.Printf("Skipping to %s\n", qitem.Title)
+	m.PlayPos(qitem.Pos)
+
+	curLen := len(m.queueMeta)
+	for i, _ := range m.queueMeta {
+		if i == 0 {
 			continue
 		}
-
-		qitem := <-m.queue
-
-		fmt.Printf("Skipping to %s\n", qitem.Title)
-		m.PlayPos(qitem.Pos)
-
-		curLen := len(m.queueMeta)
-		for i, _ := range m.queueMeta {
-			if i == 0 {
-				continue
-			}
-			m.queueMeta[i-1] = m.queueMeta[i]
-		}
-		m.queueMeta[curLen] = nil
+		m.queueMeta[i-1] = m.queueMeta[i]
 	}
+	m.queueMeta[curLen] = nil
 }
 
 func (m *MPDClient) UpdateDB(fname string) error {
@@ -150,13 +154,21 @@ func (m *MPDClient) Duration() string {
 }
 
 func (m *MPDClient) Next() string {
-	m.conn.Next()
+	if len(m.queue) > 0 {
+		m.RunTopOfPlayQueue()
+	} else {
+		m.conn.Next()
+	}
 	return m.NowPlaying()
 }
 
 func (m *MPDClient) Play() string {
 	m.Shuffle()
-	m.conn.Play(1)
+	if len(m.queue) > 0 {
+		m.RunTopOfPlayQueue()
+	} else {
+		m.conn.Play(1)
+	}
 	return m.NowPlaying()
 }
 
