@@ -193,13 +193,13 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 		}
 
 		query := result[0][2]
-		pos, err := c.mpdClient.Search(query)
+
+		qpos, err := c.mpdClient.Enqueue(query)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "IrcClient.HandleSearchAndPlay: %v\n", err)
-			response = fmt.Sprintf("No results found for %s", query)
+			fmt.Fprintf(os.Stderr, "Failed to enqueue: %v\n", err)
+			response = fmt.Sprintf("Failed to enqueue", err)
 		} else {
-			fileName := c.mpdClient.PlayPos(pos)
-			response = fmt.Sprintf("Skipping to %s", fileName[:len(fileName)-16])
+			response = fmt.Sprintf("Added to queue at position %d", qpos)
 		}
 	} else {
 		response = fmt.Sprintf("Need a query to search .. stupid!")
