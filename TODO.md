@@ -14,3 +14,6 @@
 - Re-encode everything with --audio-quality 0
 - Download all videos
 - Add play queue for requests
+- Prevent double items from entering the queue
+- check if there is an item in the queue on !next
+- Investigate blockchain technology to moderate webui controls
