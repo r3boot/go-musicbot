@@ -12,3 +12,4 @@
 - Make api process dedicated per stream
 - Download all videos
 - Investigate blockchain technology to moderate webui controls
+- Build notification bridge between musicbot and musicbot-api
