@@ -197,7 +197,7 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 		qpos, err := c.mpdClient.Enqueue(query)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to enqueue: %v\n", err)
-			response = fmt.Sprintf("Failed to enqueue", err)
+			response = fmt.Sprintf("Failed to enqueue: %v", err)
 		} else {
 			response = fmt.Sprintf("Added to queue at position %d", qpos)
 		}
