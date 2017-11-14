@@ -17,3 +17,5 @@
 # Future
 - Download all videos, investigate video stream
 - Investigate blockchain technology to moderate webui controls
+- Build notification bridge between musicbot and musicbot-api
+- Improve queue handling (make users more aware of queue items)

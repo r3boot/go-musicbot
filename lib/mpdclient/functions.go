@@ -234,6 +234,9 @@ func (m *MPDClient) Search(q string) (int, error) {
 
 func (m *MPDClient) Enqueue(title string) (int, error) {
 	for _, item := range m.queueMeta {
+		if item == nil {
+			return -1, fmt.Errorf("MPDClient.Enqueue: queue object is empty")
+		}
 		if item.Title == title {
 			return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
 		}
