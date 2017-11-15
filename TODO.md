@@ -5,6 +5,7 @@
 - Add a negative rating to the person who submitted a yid when rating == 0
 - Make playlist download possible using ID instead of URL
 - Add possibility for an ACL on various commands
+- Integrate gompd + diffs into codebase
 
 # webui/api
 - Add attribution for next function in webapi
