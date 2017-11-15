@@ -82,6 +82,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleIncreaseRating(channel, line)
 	case CMD_REQUEST:
 		c.HandleSearchAndPlay(channel, line)
+	case CMD_QUEUE:
+		c.HandleShowQueue(channel, line)
 	default:
 		fmt.Fprintf(os.Stderr, "Invalid command received: %s\n", command)
 	}
@@ -212,4 +214,26 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 		response = fmt.Sprintf("Need a query to search .. stupid!")
 	}
 	c.conn.Privmsg(channel, response)
+}
+
+func (c *IrcClient) HandleShowQueue(channel, line string) {
+	entries, err := c.mpdClient.GetPlayQueue()
+	if err != nil {
+		errmsg := fmt.Sprintf("Failed to get queue entries")
+		fmt.Fprintf(os.Stderr, "%v\n", errmsg)
+		c.conn.Privmsg(channel, errmsg)
+		return
+	}
+
+	if len(entries) == 0 {
+		response := fmt.Sprintf("Queue is empty")
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
+	c.conn.Privmsg(channel, "Current queue:")
+	for i := 0; i < len(entries); i++ {
+		response := fmt.Sprintf("%d) %s\n", i, entries[i])
+		c.conn.Privmsg(channel, response)
+	}
 }
