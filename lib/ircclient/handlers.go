@@ -201,9 +201,9 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 		} else {
 			title, err := c.mpdClient.GetTitle(qpos)
 			if err != nil {
-				response = fmt.Sprintf("Added to queue")
+				response = fmt.Sprintf("Added to the queue")
 			} else {
-				response = fmt.Sprintf("Added %s to queue", title)
+				response = fmt.Sprintf("Added %s to the queue", title)
 			}
 		}
 	} else {
