@@ -66,17 +66,16 @@ function StartWebSocket() {
 
         switch (r.Pkt) {
             case "np_r":
-                console.log("Got np_r packet");
                 var update = "" + r.Data.Title + " (" + r.Data.Duration + ",  " + r.Data.Rating + "/10)";
 
                 nps.innerHTML = update;
                 break;
             case "queue_r":
-                console.log("Got queue_r packet");
                 var pqWrapper =$("#playQueue");
+                var i = 0;
 
                 if (r.Data.Size == 0) {
-                    // pqWrapper.hide();
+                    pqWrapper.hide();
                     e.preventDefault();
                     return;
                 } else {
@@ -85,18 +84,13 @@ function StartWebSocket() {
 
                 var newList = "";
 
-                console.log("r.Data.Size: " + r.Data.Size);
-
-                for (i=0; i=r.Data.Size; i++) {
+                for (i=0; i<r.Data.Size; i++) {
                     newList += "<li>" + r.Data.Entries[i] + "</li>"
                 }
-
-                console.log("list: " + newList);
 
                 var playQueue = document.getElementById("pqList");
                 playQueue.innerHTML = newList;
                 pqWrapper.show();
-                console.log("Showing new elements");
                 break;
             default:
                 console.log("Unknown message received: " + r.Pkt)
