@@ -74,7 +74,7 @@ function StartWebSocket() {
                 var pqWrapper =$("#playQueue");
                 var i = 0;
 
-                if (r.Data.Size == 0) {
+                if (r.Data.Size === 0) {
                     pqWrapper.hide();
                     e.preventDefault();
                     return;
