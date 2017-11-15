@@ -7,7 +7,7 @@ import (
 )
 
 func (c *IrcClient) isValidCommand(cmd string) (string, bool) {
-	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,6})", c.config.Bot.CommandChar)
+	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,8})", c.config.Bot.CommandChar)
 	reValidCmd := regexp.MustCompile(cmdReString)
 
 	result := reValidCmd.FindAllStringSubmatch(cmd, -1)

@@ -207,12 +207,13 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 			if err != nil {
 				response = fmt.Sprintf("Added to the queue")
 			} else {
-				response = fmt.Sprintf("Added %s to the queue", title)
+				response = fmt.Sprintf("Added %s to the queue", title[:len(title)-16])
 			}
 		}
 	} else {
 		response = fmt.Sprintf("Need a query to search .. stupid!")
 	}
+
 	c.conn.Privmsg(channel, response)
 }
 
