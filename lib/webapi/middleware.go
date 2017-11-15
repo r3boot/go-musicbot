@@ -35,8 +35,11 @@ func (api *WebApi) PlayQueueResponse() []byte {
 	}
 
 	response := GetQueueResp{
-		Data: playQueue,
-		Pkt:  "queue_r",
+		Data: GetQueueRespData{
+			Entries: playQueue,
+			Size:    len(playQueue),
+		},
+		Pkt: "queue_r",
 	}
 
 	data, err := json.Marshal(response)

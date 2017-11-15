@@ -9,12 +9,11 @@ import (
 
 func NewMPDClient(config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDClient, error) {
 	client := &MPDClient{
-		config:    config,
-		mp3:       mp3,
-		address:   fmt.Sprintf("%s:%d", config.MPD.Address, config.MPD.Port),
-		np:        NowPlayingData{},
-		queue:     make(chan *RequestQueueItem, MAX_QUEUE_ITEMS),
-		queueMeta: make(map[int]*RequestQueueItem),
+		config:  config,
+		mp3:     mp3,
+		address: fmt.Sprintf("%s:%d", config.MPD.Address, config.MPD.Port),
+		np:      NowPlayingData{},
+		queue:   NewRequestQueue(MAX_QUEUE_ITEMS),
 	}
 
 	if err := client.Connect(); err != nil {

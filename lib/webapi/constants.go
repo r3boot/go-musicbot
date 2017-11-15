@@ -45,7 +45,7 @@ type AutoCompleteRequest struct {
 }
 
 type AutoCompleteResponse struct {
-	Query string `json:"query"`
+	Query       string   `json:"query"`
 	Suggestions []string `json:"suggestions"`
 }
 
@@ -60,9 +60,14 @@ type NowPlayingResp struct {
 	Pkt  string
 }
 
+type GetQueueRespData struct {
+	Entries map[int]string
+	Size    int
+}
+
 type GetQueueResp struct {
-	Data map[int]string
-	Pkt string
+	Data GetQueueRespData
+	Pkt  string
 }
 
 type GetFilesResp struct {

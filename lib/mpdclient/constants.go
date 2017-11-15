@@ -23,12 +23,17 @@ type RequestQueueItem struct {
 	Pos   int
 }
 
+type RequestQueue struct {
+	entries []*RequestQueueItem
+	size    int
+	Count   int
+}
+
 type MPDClient struct {
 	config  *config.MusicBotConfig
 	mp3     *mp3lib.MP3Library
 	address string
 	conn    *mpd.Client
 	np      NowPlayingData
-	queue   chan *RequestQueueItem
-	queueMeta map[int]*RequestQueueItem
+	queue   *RequestQueue
 }

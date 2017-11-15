@@ -76,7 +76,7 @@ func (m *MPDClient) UpdateNowPlaying() {
 
 		m.np = curSongData
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 
 }
@@ -89,28 +89,23 @@ func (m *MPDClient) RequestQueueRunner() {
 			continue
 		}
 
+		fmt.Printf("Running request queue runner\n")
 		m.RunTopOfPlayQueue()
 	}
 }
 
 func (m *MPDClient) RunTopOfPlayQueue() {
-	if len(m.queue) == 0 {
+	if m.queue.Count == -1 {
 		return
 	}
 
-	qitem := <-m.queue
-
-	fmt.Printf("Skipping to %s\n", qitem.Title)
-	m.PlayPos(qitem.Pos)
-
-	curLen := len(m.queueMeta)
-	for i, _ := range m.queueMeta {
-		if i == 0 {
-			continue
-		}
-		m.queueMeta[i-1] = m.queueMeta[i]
+	entry, ok := m.queue.Pop()
+	if !ok {
+		return
 	}
-	m.queueMeta[curLen] = nil
+
+	fmt.Printf("Skipping to %s\n", entry.Title)
+	m.PlayPos(entry.Pos)
 }
 
 func (m *MPDClient) UpdateDB(fname string) error {
@@ -154,7 +149,7 @@ func (m *MPDClient) Duration() string {
 }
 
 func (m *MPDClient) Next() string {
-	if len(m.queue) > 0 {
+	if m.queue.Count >= 0 {
 		m.RunTopOfPlayQueue()
 	} else {
 		m.conn.Next()
@@ -164,7 +159,7 @@ func (m *MPDClient) Next() string {
 
 func (m *MPDClient) Play() string {
 	m.Shuffle()
-	if len(m.queue) > 0 {
+	if m.queue.Count >= 0 {
 		m.RunTopOfPlayQueue()
 	} else {
 		m.conn.Play(1)
@@ -233,21 +228,16 @@ func (m *MPDClient) Search(q string) (int, error) {
 }
 
 func (m *MPDClient) Enqueue(title string) (int, error) {
-	for _, item := range m.queueMeta {
-		if item == nil {
-			return -1, fmt.Errorf("MPDClient.Enqueue: queue object is empty")
-		}
-		if item.Title == title {
-			return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
-		}
+	if m.queue.Has(title) {
+		return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
 	}
 
 	pos, err := m.Search(title)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: failed to enqueue: %v", err)
+		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
-	if len(m.queue) >= MAX_QUEUE_ITEMS {
+	if m.queue.Count >= MAX_QUEUE_ITEMS {
 		return -1, fmt.Errorf("MPDClient.Enqueue: queue is full")
 	}
 
@@ -256,21 +246,14 @@ func (m *MPDClient) Enqueue(title string) (int, error) {
 		Pos:   pos,
 	}
 
-	m.queue <- qitem
+	ok := m.queue.Push(qitem)
+	if !ok {
+		return -1, fmt.Errorf("MPDClient.Enqueue: Failed to push")
+	}
 
-	m.queueMeta[len(m.queue)] = qitem
-
-	return len(m.queue), nil
+	return m.queue.Count, nil
 }
 
 func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
-	playQueue := make(map[int]string, MAX_QUEUE_ITEMS)
-	for pos, meta := range m.queueMeta {
-		if meta.Title == "" {
-			continue
-		}
-		playQueue[pos] = meta.Title
-	}
-
-	return playQueue, nil
+	return m.queue.Dump(), nil
 }
