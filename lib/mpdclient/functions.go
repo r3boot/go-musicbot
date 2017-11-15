@@ -286,7 +286,7 @@ func (m *MPDClient) Enqueue(query string) (int, error) {
 		return -1, fmt.Errorf("MPDClient.Enqueue: Failed to push")
 	}
 
-	return m.queue.count, nil
+	return pos, nil
 }
 
 func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
