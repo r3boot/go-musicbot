@@ -62,7 +62,7 @@ Decrease the rating for the currently playing song
 
 Search for a song and play it if found
 ~~~~
-<@r3boot> !play hardcore vibes
+<@r3boot> !request hardcore vibes
 < IrcBot> Skipping to Dune - Hardcore Vibes
 ~~~~
 

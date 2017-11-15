@@ -80,8 +80,10 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleDecreaseRating(channel, line)
 	case CMD_TUNE:
 		c.HandleIncreaseRating(channel, line)
-	case CMD_PLAY:
+	case CMD_REQUEST:
 		c.HandleSearchAndPlay(channel, line)
+	default:
+		fmt.Fprintf(os.Stderr, "Invalid command received: %s\n", command)
 	}
 }
 

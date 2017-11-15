@@ -19,18 +19,18 @@ const (
 	CMD_BOO       string = "boo"
 	CMD_TUNE      string = "tune"
 	CMD_PLAYLIST  string = "djlist"
-	CMD_PLAY      string = "play"
+	CMD_REQUEST   string = "request"
 	CMD_HELP      string = "help"
 	NICK_SJAAK    string = "Sjaak"
 	NICK_FLUNK    string = "flunk"
-	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, djlist <yt list id>, play <query>, np, next, tune, boo, start, radio"
+	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, djlist <yt list id>, request <query>, np, next, tune, boo, start, radio"
 )
 
 var (
 	RE_CMD       = regexp.MustCompile("^(\\![a-z\\+\\-]{2,6})")
 	RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 	RE_DJLIST    = regexp.MustCompile("(\\!djlist) (https://www.youtube.com/watch.*list=.*)")
-	RE_SEARCH    = regexp.MustCompile("(\\!play) ([a-zA-Z0-9_\\-\\.\\ ]+)$")
+	RE_SEARCH    = regexp.MustCompile("(\\!request) ([a-zA-Z0-9_\\-\\.\\ ]+)$")
 )
 
 type IrcClient struct {
