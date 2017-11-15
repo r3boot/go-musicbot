@@ -21,8 +21,7 @@ func NewMPDClient(config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDCl
 	}
 
 	go client.KeepAlive()
-	go client.UpdateNowPlaying()
-	go client.RequestQueueRunner()
+	go client.MaintainMPDState()
 
 	return client, nil
 }

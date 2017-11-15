@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fhs/gompd/mpd"
 	"os"
+
+	"github.com/fhs/gompd/mpd"
 )
 
 func (m *MPDClient) Connect() error {
@@ -51,7 +52,7 @@ func (m *MPDClient) KeepAlive() {
 	}
 }
 
-func (m *MPDClient) UpdateNowPlaying() {
+func (m *MPDClient) MaintainMPDState() {
 	for {
 		curSongData := NowPlayingData{}
 
@@ -60,6 +61,7 @@ func (m *MPDClient) UpdateNowPlaying() {
 			fmt.Fprintf(os.Stderr, "Error: Failed to fetch current song info: %v", err)
 			return
 		}
+
 		fileName := songAttrs["file"]
 		fullPath := m.mp3.BaseDir + "/" + fileName
 		curSongData.Title = fileName[:len(fileName)-16]
@@ -69,42 +71,76 @@ func (m *MPDClient) UpdateNowPlaying() {
 			fmt.Fprintf(os.Stderr, "Error: Failed to fetch status info: %v", err)
 			return
 		}
-		curSongData.Elapsed, _ = strconv.ParseFloat(statusAttrs["elapsed"], 32)
-		curSongData.Duration, _ = strconv.ParseFloat(statusAttrs["duration"], 32)
+		curSongData.Elapsed, err = strconv.ParseFloat(statusAttrs["elapsed"], 32)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to convert to float: %s: %v\n", statusAttrs["elapsed"], err)
+		}
+
+		curSongData.Duration, err = strconv.ParseFloat(statusAttrs["duration"], 32)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to convert to float: %s: %v\n", statusAttrs["elapsed"], err)
+		}
+
 		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
+
 		curSongData.Rating = m.mp3.GetRating(fullPath)
 
 		m.np = curSongData
 
-		time.Sleep(500 * time.Millisecond)
+		m.UpdateQueueIDs()
+
+		time.Sleep(1 * time.Second)
 	}
 
 }
 
-func (m *MPDClient) RequestQueueRunner() {
-	for {
-		time.Sleep(500 * time.Millisecond)
-
-		if m.np.Remaining > 1 {
+func findID(entries []mpd.Attrs, title string) int {
+	for _, entry := range entries {
+		if !strings.HasPrefix(entry["file"], title) {
 			continue
 		}
 
-		m.RunTopOfPlayQueue()
+		id, err := strconv.Atoi(entry["Id"])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "findID: Failed to convert int: %v\n", err)
+			break
+		}
+
+		return id
 	}
+	return -1
 }
 
-func (m *MPDClient) RunTopOfPlayQueue() {
-	if m.queue.Count == -1 {
+func (m *MPDClient) UpdateQueueIDs() {
+	var i int
+
+	queueEntries := m.queue.Dump()
+
+	if m.queue.count > 0 && m.np.Title == queueEntries[0] {
+		m.queue.Pop()
+		queueEntries = m.queue.Dump()
+	}
+
+	playlist, err := m.conn.PlaylistInfo(-1, -1)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "UpdateQueueIDs: Failed to fetch playlist info: %v\n", err)
 		return
 	}
 
-	entry, ok := m.queue.Pop()
-	if !ok {
-		return
+	maxCount := 9
+	if m.queue.count < maxCount {
+		maxCount = m.queue.count
 	}
 
-	fmt.Printf("Skipping to %s\n", entry.Title)
-	m.PlayPos(entry.Pos)
+	for i = 0; i < maxCount; i++ {
+		title := queueEntries[i]
+		id := findID(playlist, title)
+		prio := 9 - i
+		err := m.conn.PrioId(prio, id)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to set prio: %v\n", err)
+		}
+	}
 }
 
 func (m *MPDClient) UpdateDB(fname string) error {
@@ -148,21 +184,14 @@ func (m *MPDClient) Duration() string {
 }
 
 func (m *MPDClient) Next() string {
-	if m.queue.Count >= 0 {
-		m.RunTopOfPlayQueue()
-	} else {
-		m.conn.Next()
-	}
+	m.conn.Next()
 	return m.NowPlaying()
 }
 
 func (m *MPDClient) Play() string {
 	m.Shuffle()
-	if m.queue.Count >= 0 {
-		m.RunTopOfPlayQueue()
-	} else {
-		m.conn.Play(1)
-	}
+
+	m.conn.Play(1)
 	return m.NowPlaying()
 }
 
@@ -226,17 +255,24 @@ func (m *MPDClient) Search(q string) (int, error) {
 	return -1, fmt.Errorf("MPDClient.Search: failed to search mpd")
 }
 
-func (m *MPDClient) Enqueue(title string) (int, error) {
-	if m.queue.Has(title) {
-		return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
-	}
+func (m *MPDClient) Enqueue(query string) (int, error) {
 
-	pos, err := m.Search(title)
+	pos, err := m.Search(query)
 	if err != nil {
 		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
-	if m.queue.Count >= MAX_QUEUE_ITEMS {
+	title, err := m.GetTitle(pos)
+	if err != nil {
+		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+	}
+	title = title[:len(title)-16]
+
+	if m.queue.Has(title) {
+		return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
+	}
+
+	if m.queue.count >= MAX_QUEUE_ITEMS {
 		return -1, fmt.Errorf("MPDClient.Enqueue: queue is full")
 	}
 
@@ -250,9 +286,18 @@ func (m *MPDClient) Enqueue(title string) (int, error) {
 		return -1, fmt.Errorf("MPDClient.Enqueue: Failed to push")
 	}
 
-	return m.queue.Count, nil
+	return m.queue.count, nil
 }
 
 func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
 	return m.queue.Dump(), nil
+}
+
+func (m *MPDClient) GetTitle(pos int) (string, error) {
+	info, err := m.conn.PlaylistInfo(pos, -1)
+	if err != nil {
+		return "", fmt.Errorf("GetTitle: failed to get playlist info: %v", err)
+	}
+
+	return info[0]["file"], nil
 }

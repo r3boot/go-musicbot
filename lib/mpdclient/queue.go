@@ -1,31 +1,74 @@
 package mpdclient
 
+import (
+	"sync"
+)
+
 func NewRequestQueue(size int) *RequestQueue {
 	return &RequestQueue{
 		entries: make([]*RequestQueueItem, size),
 		size:    size,
-		Count:   -1,
+		count:   0,
+		mutex:   sync.RWMutex{},
 	}
 }
 
+func (q *RequestQueue) Size() int {
+	return q.count
+}
+
 func (q *RequestQueue) Push(entry *RequestQueueItem) bool {
-	if q.Count == (q.size - 1) {
+	if q.count == (q.size - 1) {
 		return false
 	}
 
-	q.Count++
-	q.entries[q.Count] = entry
+	if q.Has(entry.Title) {
+		return false
+	}
+
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	q.entries[q.count] = entry
+	q.count++
 
 	return true
 }
 
 func (q *RequestQueue) Pop() (*RequestQueueItem, bool) {
-	if q.Count < 0 {
-		return nil, false
+	var value *RequestQueueItem
+
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	value = nil
+
+	switch {
+	case q.count < 0:
+		{
+			return nil, false
+		}
+	case q.count == 0:
+		{
+			return nil, false
+		}
+	case q.count == 1:
+		{
+			value = q.entries[0]
+			q.entries[0] = nil
+		}
+	default:
+		{
+			value = q.entries[0]
+			q.entries[0] = nil
+			for i := 1; i < q.count; i++ {
+				q.entries[i-1] = q.entries[i]
+				q.entries[i] = nil
+			}
+		}
 	}
-	value := q.entries[q.Count]
-	q.entries[q.Count] = nil
-	q.Count--
+
+	q.count--
 
 	return value, true
 }
@@ -33,7 +76,10 @@ func (q *RequestQueue) Pop() (*RequestQueueItem, bool) {
 func (q *RequestQueue) Dump() map[int]string {
 	response := map[int]string{}
 
-	for i := 0; i < q.Count+1; i++ {
+	q.mutex.RLock()
+	defer q.mutex.RUnlock()
+
+	for i := 0; i < q.count; i++ {
 		response[i] = q.entries[i].Title
 	}
 
@@ -41,7 +87,11 @@ func (q *RequestQueue) Dump() map[int]string {
 }
 
 func (q *RequestQueue) Has(title string) bool {
-	for i := 0; i < q.Count+1; i++ {
+
+	q.mutex.RLock()
+	defer q.mutex.RUnlock()
+
+	for i := 0; i < q.count; i++ {
 		if q.entries[i].Title == title {
 			return true
 		}

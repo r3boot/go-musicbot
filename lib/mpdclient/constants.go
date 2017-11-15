@@ -4,6 +4,7 @@ import (
 	"github.com/fhs/gompd/mpd"
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"sync"
 )
 
 const (
@@ -26,7 +27,8 @@ type RequestQueueItem struct {
 type RequestQueue struct {
 	entries []*RequestQueueItem
 	size    int
-	Count   int
+	count   int
+	mutex   sync.RWMutex
 }
 
 type MPDClient struct {
