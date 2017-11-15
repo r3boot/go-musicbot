@@ -1,5 +1,11 @@
 package config
 
+type ServicesConfig struct {
+	IrcBotEnabled bool `yaml:"ircbot"`
+	APIEnabled    bool `yaml:"api"`
+	WebUIEnabled  bool `yaml:"webui"`
+}
+
 type IrcConfig struct {
 	Nickname  string `yaml:"nickname"`
 	Server    string `yaml:"server"`
@@ -40,9 +46,10 @@ type ApiConfig struct {
 }
 
 type MusicBotConfig struct {
-	IRC     IrcConfig     `yaml:"irc"`
-	Bot     BotConfig     `yaml:"bot"`
-	Youtube YoutubeConfig `yaml:"youtube"`
-	MPD     MpdConfig     `yaml:"mpd"`
-	Api     ApiConfig     `yaml:"api"`
+	Services ServicesConfig `yaml:"services"`
+	IRC      IrcConfig      `yaml:"irc"`
+	Bot      BotConfig      `yaml:"bot"`
+	Youtube  YoutubeConfig  `yaml:"youtube"`
+	MPD      MpdConfig      `yaml:"mpd"`
+	Api      ApiConfig      `yaml:"api"`
 }

@@ -1,4 +1,9 @@
 ---
+services:
+  ircbot: true
+  api: true
+  webui: true
+
 irc:
   nickname: "IrcBot"
   server: "irc.mononoke.nl"
