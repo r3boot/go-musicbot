@@ -24,7 +24,7 @@ const (
 	CMD_HELP      string = "help"
 	NICK_SJAAK    string = "Sjaak"
 	NICK_FLUNK    string = "flunk"
-	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, djlist <yt list id>, request <query>, np, next, tune, boo, start, radio"
+	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, djlist <yt list id>, request <query>, query, np, next, tune, boo, start, radio"
 )
 
 var (
