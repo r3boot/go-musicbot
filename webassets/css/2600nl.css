@@ -131,6 +131,8 @@ input:-ms-input-placeholder {
     background-color: #222222;
     align: left;
     text-align: left;
+    margin-top: 20px;
+    padding: 5px;
 }
 
 #leftSpace {

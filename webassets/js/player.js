@@ -142,15 +142,17 @@ function main() {
         StartWebSocket();
         ToggleStream();
 
-        document.getElementById("idPlaylist").onclick = function() {
+        $("#playQueue").hide();
+
+        $("idPlaylist").onclick = function() {
             window.open("/playlist", "_blank");
         };
 
-        document.getElementById("idPlay").onclick = function() {
+        $("idPlay").onclick = function() {
             ToggleStream();
         };
 
-        document.getElementById("idVolUp").onclick = function() {
+        $("idVolUp").onclick = function() {
             var ac = document.getElementById("audiocontrols");
             if (ac.volume < 1) {
                 ac.volume += 0.1;
@@ -158,8 +160,8 @@ function main() {
             console.log("up: " + ac.volume);
         };
 
-        document.getElementById("idVolDown").onclick = function() {
-            var ac = document.getElementById("audiocontrols");
+        $("idVolDown").onclick = function() {
+            var ac = $("audiocontrols");
             if (ac.volume > 0.1) {
                 ac.volume -= 0.1;
             }
@@ -167,9 +169,6 @@ function main() {
         };
 
         window.addEventListener('keydown', function (e) {
-            var ac = document.getElementById("audiocontrols");
-            var qInput = document.getElementById("idQuery");
-
             evt = e || window.event;
             if (evt.keyCode == 32) {
                 if (document.activeElement.id != "idQuery") {
