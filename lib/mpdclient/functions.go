@@ -89,7 +89,6 @@ func (m *MPDClient) RequestQueueRunner() {
 			continue
 		}
 
-		fmt.Printf("Running request queue runner\n")
 		m.RunTopOfPlayQueue()
 	}
 }

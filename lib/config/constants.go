@@ -1,9 +1,11 @@
 package config
 
-type ServicesConfig struct {
+type ApplicationConfig struct {
 	IrcBotEnabled bool `yaml:"ircbot"`
 	APIEnabled    bool `yaml:"api"`
 	WebUIEnabled  bool `yaml:"webui"`
+	Daemonize     bool `yaml:"daemonize"`
+	Debug         bool `yaml:"debug"`
 }
 
 type IrcConfig struct {
@@ -13,8 +15,6 @@ type IrcConfig struct {
 	Channel   string `yaml:"channel"`
 	UseTLS    bool   `yaml:"tls"`
 	VerifyTLS bool   `yaml:"tls_verify"`
-	Daemonize bool   `yaml:"daemonize"`
-	Debug     bool   `yaml:"debug"`
 }
 
 type BotConfig struct {
@@ -46,10 +46,10 @@ type ApiConfig struct {
 }
 
 type MusicBotConfig struct {
-	Services ServicesConfig `yaml:"services"`
-	IRC      IrcConfig      `yaml:"irc"`
-	Bot      BotConfig      `yaml:"bot"`
-	Youtube  YoutubeConfig  `yaml:"youtube"`
-	MPD      MpdConfig      `yaml:"mpd"`
-	Api      ApiConfig      `yaml:"api"`
+	App     ApplicationConfig `yaml:"application"`
+	IRC     IrcConfig         `yaml:"irc"`
+	Bot     BotConfig         `yaml:"bot"`
+	Youtube YoutubeConfig     `yaml:"youtube"`
+	MPD     MpdConfig         `yaml:"mpd"`
+	Api     ApiConfig         `yaml:"api"`
 }

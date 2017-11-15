@@ -12,6 +12,7 @@ import (
 
 	"github.com/r3boot/go-musicbot/lib/ircclient"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/webapi"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"gopkg.in/sevlyar/go-daemon.v0"
 )
@@ -65,33 +66,51 @@ func main() {
 
 	IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient, MP3Library)
 
-	if Config.IRC.Daemonize {
-		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
-		logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", Config.IRC.Nickname, chanName)
+	// API + Web UI
+	if Config.App.APIEnabled {
+		WebApi := webapi.NewWebApi(Config, MPDClient, MP3Library, YoutubeClient)
 
-		ctx := daemon.Context{
-			PidFileName: pidFile,
-			PidFilePerm: 0644,
-			LogFileName: logFile,
-			LogFilePerm: 0640,
-			WorkDir:     "/tmp",
-			Umask:       022,
-			Args:        []string{},
+		if err = WebApi.Setup(); err != nil {
+			fmt.Fprintf(os.Stderr, "%v", err)
 		}
 
-		d, err := ctx.Reborn()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
-			os.Exit(1)
+		if Config.App.IrcBotEnabled {
+			go WebApi.Run()
+		} else {
+			WebApi.Run()
 		}
-		if d != nil {
-			return
-		}
-		defer ctx.Release()
 	}
 
-	if err = IRCClient.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to run IRC bot: %v", err)
-		os.Exit(1)
+	// IRC bot
+	if Config.App.IrcBotEnabled {
+		if Config.App.Daemonize {
+			pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
+			logFile := fmt.Sprintf("/var/log/musicbot/%s-%s.log", Config.IRC.Nickname, chanName)
+
+			ctx := daemon.Context{
+				PidFileName: pidFile,
+				PidFilePerm: 0644,
+				LogFileName: logFile,
+				LogFilePerm: 0640,
+				WorkDir:     "/tmp",
+				Umask:       022,
+				Args:        []string{},
+			}
+
+			d, err := ctx.Reborn()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
+				os.Exit(1)
+			}
+			if d != nil {
+				return
+			}
+			defer ctx.Release()
+		}
+
+		if err = IRCClient.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to run IRC bot: %v", err)
+			os.Exit(1)
+		}
 	}
 }

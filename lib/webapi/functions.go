@@ -59,15 +59,17 @@ func (api *WebApi) Setup() error {
 func (api *WebApi) Run() {
 	url := fmt.Sprintf("%s:%s", api.config.Api.Address, api.config.Api.Port)
 
-	http.Handle("/css/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
-	http.Handle("/img/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
-	http.Handle("/js/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
+	if api.config.App.WebUIEnabled {
+		http.Handle("/css/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
+		http.Handle("/img/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
+		http.Handle("/js/", logHandler(http.FileServer(http.Dir(api.config.Api.Assets))))
 
-	http.HandleFunc("/playlist", api.PlaylistHandler)
-	http.HandleFunc("/queue", api.PlayQueueHandler)
-	http.HandleFunc("/ta", api.AutoCompleteHandler)
-	http.HandleFunc("/ws", api.SocketHandler)
-	http.HandleFunc("/", api.HomeHandler)
+		http.HandleFunc("/playlist", api.PlaylistHandler)
+		http.HandleFunc("/queue", api.PlayQueueHandler)
+		http.HandleFunc("/ta", api.AutoCompleteHandler)
+		http.HandleFunc("/ws", api.SocketHandler)
+		http.HandleFunc("/", api.HomeHandler)
+	}
 
 	fmt.Printf("Listening on http://%s\n", url)
 	err := http.ListenAndServe(url, nil)

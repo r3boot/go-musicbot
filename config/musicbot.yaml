@@ -1,8 +1,10 @@
 ---
-services:
+application:
   ircbot: true
   api: true
   webui: true
+  daemonize: false
+  debug: true
 
 irc:
   nickname: "IrcBot"
@@ -11,8 +13,6 @@ irc:
   channel: "#bot-test"
   tls: true
   tls_verify: true
-  daemonize: false
-  debug: false
 
 bot:
   command_character: "!"

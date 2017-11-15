@@ -20,8 +20,8 @@ func NewIrcClient(config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient,
 	}
 
 	client.conn = irc.IRC(config.IRC.Nickname, config.IRC.Nickname)
-	client.conn.VerboseCallbackHandler = config.IRC.Debug
-	client.conn.Debug = config.IRC.Debug
+	client.conn.VerboseCallbackHandler = config.App.Debug
+	client.conn.Debug = config.App.Debug
 	client.conn.UseTLS = config.IRC.UseTLS
 	client.conn.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
