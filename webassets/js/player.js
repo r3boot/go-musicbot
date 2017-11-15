@@ -40,7 +40,7 @@ function StartWebSocket() {
     $("#idQuery").autocomplete({
         serviceUrl: '/ta',
         onSelect: function (suggestion) {
-            var query = {"Operation":"play","Query":suggestion.value};
+            var query = {"Operation":"request","Query":suggestion.value};
             ws.send(JSON.stringify(query));
             qInput.value = "";
         }

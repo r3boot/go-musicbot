@@ -198,7 +198,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				wsLog(r, http.StatusOK, request.Operation, "got no response")
 			}
-		case "play":
+		case "request":
 			{
 				query := &SearchRequest{}
 				if err := json.Unmarshal(msg, query); err != nil {
@@ -213,7 +213,13 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 				}
 
-				msg := fmt.Sprintf("Queued in %d songs\n", qpos)
+				title, err := api.mpd.GetTitle(qpos)
+				if err != nil {
+					errmsg := fmt.Sprintf("enqueue failed: %v\n", err)
+					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
+				}
+
+				msg := fmt.Sprintf("Added %s to the play queue\n", title)
 				wsLog(r, http.StatusOK, request.Operation, msg)
 			}
 		default:
