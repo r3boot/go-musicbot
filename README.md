@@ -66,6 +66,13 @@ Search for a song and play it if found
 < IrcBot> Skipping to Dune - Hardcore Vibes
 ~~~~
 
+Show the current play queue
+~~~~
+<@r3boot> !queue
+< IrcBot> Current queue:
+< IrcBot> 0) NOFX - Franco Un-American (Official Video)
+~~~~
+
 # Installation
 First, fetch the code
 ~~~~
