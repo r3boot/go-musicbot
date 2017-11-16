@@ -4,11 +4,15 @@ import (
 	"sync"
 
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/logger"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 )
 
-func NewYoutubeClient(config *config.MusicBotConfig, mpdclient *mpdclient.MPDClient, mp3Library *mp3lib.MP3Library, musicDir string) *YoutubeClient {
+var log *logger.Logger
+
+func NewYoutubeClient(l *logger.Logger, config *config.MusicBotConfig, mpdclient *mpdclient.MPDClient, mp3Library *mp3lib.MP3Library, musicDir string) *YoutubeClient {
+	log = l
 	yt := &YoutubeClient{
 		seenFileMutex: sync.RWMutex{},
 		downloadMutex: sync.RWMutex{},

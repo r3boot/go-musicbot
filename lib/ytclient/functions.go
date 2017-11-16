@@ -16,7 +16,7 @@ import (
 func (yt *YoutubeClient) DownloadSerializer() {
 	for {
 		newYid := <-yt.DownloadChan
-		fmt.Printf("Downloading new YID: %s\n", newYid)
+		log.Infof("Downloading new YID: %s", newYid)
 		fileName, err := yt.DownloadYID(newYid)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v", err)
@@ -29,19 +29,19 @@ func (yt *YoutubeClient) DownloadSerializer() {
 func (yt *YoutubeClient) PlaylistSerializer() {
 	for {
 		newPlaylistUrl := <-yt.PlaylistChan
-		fmt.Printf("Downloading playlist: %s\n", newPlaylistUrl)
+		log.Infof("Downloading playlist: %s", newPlaylistUrl)
 		yt.DownloadPlaylist(newPlaylistUrl)
 	}
 }
 
 func (yt *YoutubeClient) SetMetadataForNewSong(yid, fileName string) error {
 	if err := yt.addYID(yid); err != nil {
-		return fmt.Errorf("SetMetadataForNewSong: Failed to add yid to seen file: %v", err)
+		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
 	}
 
 	curRating := yt.mp3Library.GetRating(fileName)
 	if curRating != mp3lib.RATING_UNKNOWN {
-		return fmt.Errorf("SetMetadataForNewSong: Rating already set for %s", curRating)
+		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: Rating already set for %s", curRating)
 	}
 	yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
 
@@ -54,7 +54,7 @@ func (yt *YoutubeClient) hasYID(yid string) bool {
 
 	fd, err := os.Open(yt.config.Youtube.SeenFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
+		log.Warningf("YoutubeClient.hasYID os.Open: %v", err)
 		return false
 	}
 
@@ -74,12 +74,12 @@ func (yt *YoutubeClient) addYID(yid string) error {
 
 	fd, err := os.OpenFile(yt.config.Youtube.SeenFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("addYID failed: %v", err)
+		return fmt.Errorf("YoutubeClient.addYID os.OpenFile: %v", err)
 	}
 	defer fd.Close()
 
 	if _, err = fd.WriteString(yid); err != nil {
-		return fmt.Errorf("addYID failed to add yid to file: %v", err)
+		return fmt.Errorf("YoutubeClient.addYID fd.WriteString: %v", err)
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	defer yt.downloadMutex.Unlock()
 
 	if yt.hasYID(yid) {
-		return "", fmt.Errorf("YID %s has already been downloaded\n", yid)
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: YID %s has already been downloaded", yid)
 	}
 
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
@@ -101,9 +101,9 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf("Running command: %v\n", cmd)
+	log.Debugf("YoutubeClient.DownloadYID: Running command: %v", cmd)
 	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
+		return "", fmt.Errorf("YoutubeClient.DownloadYID cmd.Start: %v", err)
 	}
 
 	if err := cmd.Wait(); err != nil {
@@ -112,14 +112,14 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	}
 
 	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.MusicDir, yid)
-	fmt.Printf("globPattern: %v\n", globPattern)
+
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
-		return "", fmt.Errorf("YoutubeClient.DownloadYID: %v\n", err)
+		return "", fmt.Errorf("YoutubeClient.DownloadYID filepath.Glob: %v", err)
 	}
 
 	if results == nil {
-		return "", fmt.Errorf("YoutubeClient.DownloadYID: filepath.Glob did not return any results\n")
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: filepath.Glob did not return any results")
 	}
 
 	fileName := results[0]
@@ -127,7 +127,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	yt.SetMetadataForNewSong(yid, fileName)
 
 	if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
-		fmt.Printf("Failed to update mpd database: %v\n", err)
+		log.Warningf("YoutubeClient.DownloadYID: %v", err)
 	}
 
 	return results[0], nil
@@ -144,9 +144,9 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf("Running command: %v\n", cmd)
+	log.Debugf("Running command: %v", cmd)
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("Failed to run %s: %v\n", yt.config.Youtube.Downloader, err)
+		return fmt.Errorf("YoutubeClient.DownloadPlaylist cmd.Start: %v", yt.config.Youtube.Downloader, err)
 	}
 
 	if err := cmd.Wait(); err != nil {
@@ -172,7 +172,7 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 		yt.SetMetadataForNewSong(yid, fileName)
 
 		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
-			return fmt.Errorf("Failed to update mpd database: %v\n", err)
+			return fmt.Errorf("YoutubeClient.DownloadPlaylist: %v", err)
 		}
 	}
 

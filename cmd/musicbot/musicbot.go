@@ -65,7 +65,7 @@ func main() {
 		Logger.Fatalf("%v", err)
 	}
 
-	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, MP3Library, musicDir)
+	YoutubeClient := youtubeclient.NewYoutubeClient(Logger, Config, MPDClient, MP3Library, musicDir)
 
 	if Config.App.Daemonize {
 		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
