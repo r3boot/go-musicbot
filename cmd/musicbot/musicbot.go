@@ -11,6 +11,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 
 	"github.com/r3boot/go-musicbot/lib/ircclient"
+	"github.com/r3boot/go-musicbot/lib/logger"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/webapi"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
@@ -19,10 +20,12 @@ import (
 
 const (
 	D_CFGFILE string = "musicbot.yaml"
+	D_DEBUG   bool   = false
 )
 
 var (
 	cfgFile  = flag.String("f", D_CFGFILE, "Configuration file to use")
+	debug    = flag.Bool("d", D_DEBUG, "Enable debug mode")
 	musicDir string
 )
 
@@ -45,21 +48,21 @@ func main() {
 
 	rand.Seed(time.Now().Unix())
 
-	Config, err := config.LoadConfig(*cfgFile)
+	Logger := logger.NewLogger(*debug, *debug)
+
+	Config, err := config.LoadConfig(Logger, *cfgFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
+		Logger.Fatalf("%v", err)
 	}
 
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
-	MP3Library := mp3lib.NewMP3Library(musicDir)
+	MP3Library := mp3lib.NewMP3Library(Logger, musicDir)
 
 	MPDClient, err := mpdclient.NewMPDClient(Config, MP3Library)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MPDClient: %v\n", err)
-		os.Exit(1)
+		Logger.Fatalf("%v", err)
 	}
 
 	YoutubeClient := youtubeclient.NewYoutubeClient(Config, MPDClient, MP3Library, musicDir)
@@ -80,8 +83,7 @@ func main() {
 
 		d, err := ctx.Reborn()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to run as daemon: %v", err)
-			os.Exit(1)
+			Logger.Fatalf("Unable to run as daemon: %v", err)
 		}
 		if d != nil {
 			return
@@ -94,11 +96,11 @@ func main() {
 		WebApi := webapi.NewWebApi(Config, MPDClient, MP3Library, YoutubeClient)
 
 		if err = WebApi.Setup(); err != nil {
-			fmt.Fprintf(os.Stderr, "%v", err)
-			os.Exit(1)
+			Logger.Fatalf("%v", err)
 		}
 
 		if Config.App.IrcBotEnabled {
+			Logger.Debugf("WebUI enabled")
 			go WebApi.Run()
 		} else {
 			WebApi.Run()
@@ -108,8 +110,9 @@ func main() {
 	// IRC bot
 	if Config.App.IrcBotEnabled {
 		IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient, MP3Library)
+		Logger.Debugf("Running IRC bot")
 		if err = IRCClient.Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to run IRC bot: %v", err)
+			Logger.Fatalf("%v", err)
 			os.Exit(1)
 		}
 	}

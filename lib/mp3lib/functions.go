@@ -1,13 +1,13 @@
 package mp3lib
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
-	id3 "github.com/mikkyang/id3-go"
 	"io/ioutil"
 	"sort"
+
+	id3 "github.com/mikkyang/id3-go"
 )
 
 func (i *MP3Library) SetRating(fname string, rating int) int {
@@ -16,7 +16,7 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 
 	fd, err := id3.Open(fname)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
+		log.Warningf("MP3Library.SetRating id3.Open: %v", err)
 		return RATING_UNKNOWN
 	}
 	defer fd.Close()
@@ -24,7 +24,7 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 	newRating := strconv.Itoa(rating)
 	fd.SetYear(newRating)
 
-	fmt.Printf("Set rating for %s to %d\n", fname, RATING_DEFAULT)
+	log.Infof("MP3Library.SetRating: Rating for %s set to %d", fname, RATING_DEFAULT)
 
 	return rating
 }
@@ -33,7 +33,7 @@ func (i *MP3Library) GetRating(fname string) int {
 	var err error
 
 	if _, err := os.Stat(fname); err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
+		log.Warningf("MP3Library.GetRating os.Stat: %v", err)
 		return RATING_UNKNOWN
 	}
 
@@ -42,7 +42,7 @@ func (i *MP3Library) GetRating(fname string) int {
 
 	fd, err := id3.Open(fname)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
+		log.Warningf("MP3Library.GetRating id3.Open: %v", err)
 		return RATING_UNKNOWN
 	}
 	defer fd.Close()
@@ -55,7 +55,7 @@ func (i *MP3Library) GetRating(fname string) int {
 
 	curRating, err := strconv.Atoi(curRating_s)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.GetRating %v\n", err)
+		log.Warningf("MP3Library.GetRating strconv.Atoi: %v", err)
 		return RATING_UNKNOWN
 	}
 
@@ -112,13 +112,13 @@ func (i *MP3Library) RemoveFile(name string) bool {
 
 	_, err = os.Stat(fname)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.RemoveFile %v\n", err)
+		log.Warningf("MP3Library.RemoveFile os.Stat: %v", err)
 		return false
 	}
 
 	err = os.Remove(fname)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "MP3Library.RemoveFile: %v\n", err)
+		log.Warningf("MP3Library.RemoveFile os.Remove: %v", err)
 		return false
 	}
 
@@ -129,7 +129,8 @@ func (i *MP3Library) GetAllFiles() []string {
 
 	files, err := ioutil.ReadDir(i.BaseDir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+		log.Warningf("MP3Library.GetAllFiles ioutil.ReadDir: %v", err)
+		return nil
 	}
 
 	tmpList := make([]string, len(files))
