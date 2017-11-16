@@ -40,17 +40,17 @@ func wsLog(r *http.Request, code int, cmd, msg string) {
 	logline = srcip + " [" + time.Now().Format(TF_CLF) + "] "
 	logline += strconv.Itoa(code) + " " + cmd + ": " + msg
 
-	fmt.Println(logline)
+	fmt.Printf("%s\n", logline)
 }
 
 func (api *WebApi) Setup() error {
 	fs, err := os.Stat(api.config.Api.Assets)
 	if err != nil {
-		return fmt.Errorf("WebApi.Setup: unable to load media: %v", err)
+		return fmt.Errorf("WebApi.Setup os.Stat: %v", err)
 	}
 
 	if !fs.IsDir() {
-		return fmt.Errorf("WebApi.Setup: %s: not a directory", fs.Name())
+		return fmt.Errorf("WebApi.Setup: not a directory: %s", fs.Name())
 	}
 
 	return nil
@@ -71,10 +71,10 @@ func (api *WebApi) Run() {
 		http.HandleFunc("/", api.HomeHandler)
 	}
 
-	fmt.Printf("Listening on http://%s\n", url)
+	log.Infof("Listening on http://%s", url)
 	err := http.ListenAndServe(url, nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to run server: %v", err)
+		log.Warningf("WebApi.Run http.ListenAndServe: %v", err)
 	}
 
 }

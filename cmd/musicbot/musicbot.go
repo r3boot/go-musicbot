@@ -93,7 +93,7 @@ func main() {
 
 	// API + Web UI
 	if Config.App.APIEnabled {
-		WebApi := webapi.NewWebApi(Config, MPDClient, MP3Library, YoutubeClient)
+		WebApi := webapi.NewWebApi(Logger, Config, MPDClient, MP3Library, YoutubeClient)
 
 		if err = WebApi.Setup(); err != nil {
 			Logger.Fatalf("%v", err)

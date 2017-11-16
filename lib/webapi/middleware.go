@@ -3,7 +3,6 @@ package webapi
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
@@ -20,7 +19,7 @@ func (api *WebApi) newNowPlayingMsg() []byte {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to marshal response: %v\n", err)
+		log.Warningf("WebApi.newNowPlayingMsg json.Marshal: %v", err)
 		return nil
 	}
 
@@ -30,7 +29,7 @@ func (api *WebApi) newNowPlayingMsg() []byte {
 func (api *WebApi) PlayQueueResponse() []byte {
 	playQueue, err := api.mpd.GetPlayQueue()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get play queue: %v\n", err)
+		log.Warningf("WebApi.PlayQueueResponse: %v", err)
 		return nil
 	}
 
@@ -44,7 +43,7 @@ func (api *WebApi) PlayQueueResponse() []byte {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to serialize data: %v\n", err)
+		log.Warningf("WebApi.PlayQueueResponse json.Marshal: %v", err)
 		return nil
 	}
 
@@ -64,16 +63,17 @@ func (api *WebApi) BooResponse() []byte {
 	fileName := api.mpd.NowPlaying()
 	fullPath := api.yt.MusicDir + "/" + fileName
 	newRating := api.mp3.DecreaseRating(fullPath)
-	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
+
+	log.Infof("Rating for %s is now %d", fileName, newRating)
+
 	if newRating == mp3lib.RATING_ZERO {
 		api.mpd.Next()
 		api.mp3.RemoveFile(fileName)
+
 		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName[:len(fileName)-16])
-		fmt.Printf("%s\n", response)
-	} else {
-		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fileName[:len(fileName)-16], newRating)
-		fmt.Printf("%s\n", response)
+		log.Infof("%s", response)
 	}
+
 	return api.newNowPlayingMsg()
 }
 
@@ -81,6 +81,6 @@ func (api *WebApi) TuneResponse() []byte {
 	fileName := api.mpd.NowPlaying()
 	fullPath := api.yt.MusicDir + "/" + fileName
 	newRating := api.mp3.IncreaseRating(fullPath)
-	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
+	log.Infof("Rating for %s is now %d", fileName, newRating)
 	return api.newNowPlayingMsg()
 }
