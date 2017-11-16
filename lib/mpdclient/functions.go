@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"os"
-
 	"github.com/fhs/gompd/mpd"
 )
 
@@ -17,12 +15,12 @@ func (m *MPDClient) Connect() error {
 	if m.config.MPD.Password != "" {
 		m.conn, err = mpd.DialAuthenticated("tcp", m.address, m.config.MPD.Password)
 		if err != nil {
-			return fmt.Errorf("connect failed: %v", err)
+			return fmt.Errorf("MPDClient.Connect mpd.DialAuthenticated: %v", err)
 		}
 	} else {
 		m.conn, err = mpd.Dial("tcp", m.address)
 		if err != nil {
-			return fmt.Errorf("connect failed: %v", err)
+			return fmt.Errorf("MPDClient.Connect mpd.Dial: %v", err)
 		}
 	}
 
@@ -58,7 +56,7 @@ func (m *MPDClient) MaintainMPDState() {
 
 		songAttrs, err := m.conn.CurrentSong()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: Failed to fetch current song info: %v", err)
+			log.Warningf("MPDClient.MaintainMPDState m.conn.CurrentSong: %v", err)
 			return
 		}
 
@@ -68,17 +66,19 @@ func (m *MPDClient) MaintainMPDState() {
 
 		statusAttrs, err := m.conn.Status()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: Failed to fetch status info: %v", err)
+			log.Warningf("MPDClient.MaintainMPDState m.conn.Status: %v", err)
 			return
 		}
 		curSongData.Elapsed, err = strconv.ParseFloat(statusAttrs["elapsed"], 32)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to convert to float: %s: %v\n", statusAttrs["elapsed"], err)
+			log.Warningf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
+			return
 		}
 
 		curSongData.Duration, err = strconv.ParseFloat(statusAttrs["duration"], 32)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to convert to float: %s: %v\n", statusAttrs["elapsed"], err)
+			log.Warningf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
+			return
 		}
 
 		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
@@ -102,7 +102,7 @@ func findID(entries []mpd.Attrs, title string) int {
 
 		id, err := strconv.Atoi(entry["Id"])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "findID: Failed to convert int: %v\n", err)
+			log.Warningf("findID: Failed to convert int: %v", err)
 			break
 		}
 
@@ -123,7 +123,7 @@ func (m *MPDClient) UpdateQueueIDs() {
 
 	playlist, err := m.conn.PlaylistInfo(-1, -1)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "UpdateQueueIDs: Failed to fetch playlist info: %v\n", err)
+		log.Warningf("MPDClient.UpdateQueueIDs m.conn.PlaylistInfo: %v", err)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (m *MPDClient) UpdateQueueIDs() {
 		prio := 9 - i
 		err := m.conn.PrioId(prio, id)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to set prio: %v\n", err)
+			log.Warningf("MPDClient.UpdateQueueIDs m.conn.PrioId: %s: %v", title, err)
 		}
 	}
 }
@@ -154,7 +154,7 @@ func (m *MPDClient) Close() error {
 	var err error
 
 	if err = m.conn.Close(); err != nil {
-		return fmt.Errorf("MPD.Close failed: %v\n", err)
+		return fmt.Errorf("MPDClient.Close m.conn.Close: %v", err)
 	}
 
 	return nil
@@ -163,7 +163,7 @@ func (m *MPDClient) Close() error {
 func (m *MPDClient) NowPlaying() string {
 	attrs, err := m.conn.CurrentSong()
 	if err != nil {
-		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
+		return fmt.Sprintf("MPDClient.NowPlaying m.conn.CurrentSong: %v", err)
 	}
 	return attrs["file"]
 }
@@ -171,14 +171,14 @@ func (m *MPDClient) NowPlaying() string {
 func (m *MPDClient) Duration() string {
 	attrs, err := m.conn.CurrentSong()
 	if err != nil {
-		return fmt.Sprintf("Error: Failed to fetch current song info: %v", err)
+		return fmt.Sprintf("MPDClient.Duration m.conn.CurrentSong: Failed to fetch current song info: %v", err)
 	}
 
 	rawDuration := strings.Split(attrs["duration"], ".")[0]
 	rawDuration += "s"
 	duration, err := time.ParseDuration(rawDuration)
 	if err != nil {
-		return fmt.Sprintf("Error: Failed to parse duration: %v", err)
+		return fmt.Sprintf("MPDClient.Duration time.ParseDuration: Failed to parse duration: %v", err)
 	}
 	return duration.String()
 }
@@ -205,15 +205,15 @@ func (m *MPDClient) Shuffle() {
 }
 
 func (m *MPDClient) Add(fileName string) {
-	fmt.Printf("Adding %s to playlist\n", fileName)
+	log.Infof("Adding %s to playlist", fileName)
 	m.conn.Add(fileName)
 }
 
 func (m *MPDClient) TypeAheadQuery(q string) []string {
 	result, err := m.conn.Search("filename", q)
 	if err != nil {
-		errmsg := fmt.Sprintf("MPDClient.TypeAheadQuery: %v", err)
-		fmt.Fprint(os.Stderr, "%v\n", errmsg)
+		errmsg := fmt.Sprintf("MPDClient.TypeAheadQuery m.conn.Search: %v", err)
+		log.Warningf(errmsg)
 		return nil
 	}
 
@@ -228,7 +228,7 @@ func (m *MPDClient) TypeAheadQuery(q string) []string {
 func (m *MPDClient) Search(q string) (int, error) {
 	result, err := m.conn.Search("filename", q)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Search: %v", err)
+		return -1, fmt.Errorf("MPDClient.Search m.conn.Search: %v", err)
 	}
 
 	if len(result) == 0 {
@@ -239,14 +239,14 @@ func (m *MPDClient) Search(q string) (int, error) {
 
 	curPlaylist, err := m.conn.PlaylistInfo(-1, -1)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Search: failed to retrieve playlist")
+		return -1, fmt.Errorf("MPDClient.Search m.conn.PlaylistInfo: %v", err)
 	}
 
 	for _, song := range curPlaylist {
 		if song["file"] == fileName {
 			pos, err := strconv.Atoi(song["Pos"])
 			if err != nil {
-				return -1, fmt.Errorf("MPDClient.Search: failed to convert pos to int")
+				return -1, fmt.Errorf("MPDClient.Search strconv.Atoi: %v", err)
 			}
 			return pos, nil
 		}
@@ -283,7 +283,7 @@ func (m *MPDClient) Enqueue(query string) (int, error) {
 
 	ok := m.queue.Push(qitem)
 	if !ok {
-		return -1, fmt.Errorf("MPDClient.Enqueue: Failed to push")
+		return -1, fmt.Errorf("MPDClient.Enqueue m.queue.Push: Failed to push")
 	}
 
 	return pos, nil
@@ -296,7 +296,7 @@ func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
 func (m *MPDClient) GetTitle(pos int) (string, error) {
 	info, err := m.conn.PlaylistInfo(pos, -1)
 	if err != nil {
-		return "", fmt.Errorf("GetTitle: failed to get playlist info: %v", err)
+		return "", fmt.Errorf("MPDClient.GetTitle m.conn.PlaylistInfo: %v", err)
 	}
 
 	return info[0]["file"], nil

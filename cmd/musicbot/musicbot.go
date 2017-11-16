@@ -60,7 +60,7 @@ func main() {
 
 	MP3Library := mp3lib.NewMP3Library(Logger, musicDir)
 
-	MPDClient, err := mpdclient.NewMPDClient(Config, MP3Library)
+	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, MP3Library)
 	if err != nil {
 		Logger.Fatalf("%v", err)
 	}

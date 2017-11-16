@@ -4,10 +4,15 @@ import (
 	"fmt"
 
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/logger"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
-func NewMPDClient(config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDClient, error) {
+var log *logger.Logger
+
+func NewMPDClient(l *logger.Logger, config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDClient, error) {
+	log = l
+
 	client := &MPDClient{
 		config:  config,
 		mp3:     mp3,
@@ -17,7 +22,7 @@ func NewMPDClient(config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDCl
 	}
 
 	if err := client.Connect(); err != nil {
-		return nil, fmt.Errorf("failed to initialized client: %v", err)
+		return nil, fmt.Errorf("NewMPDClient client.Connect: %v", err)
 	}
 
 	go client.KeepAlive()
