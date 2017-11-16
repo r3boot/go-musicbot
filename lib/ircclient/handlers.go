@@ -55,12 +55,7 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		return
 	}
 
-	cmd := cmdResult[0][1]
-
-	command, ok := c.isValidCommand(cmd)
-	if !ok {
-		return
-	}
+	command := cmdResult[0][1]
 
 	log.Debugf("IrcClient.ParsePrivmsg: Got command %s", command)
 
