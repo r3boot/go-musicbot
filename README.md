@@ -10,6 +10,10 @@ basic functionality for MPD.
 * Display a link to the associated radio stream
 * Maintain a rating for a song.
 * Remove song when rating drops to 0
+* Downloading of the complete playlist
+* Ability to request songs. Requests are placed in a queue.
+* Web UI with similar functionality exposed as the irc bot
+* Selective enabling of various functionality
 
 # Commands
 Downloading a new link:
