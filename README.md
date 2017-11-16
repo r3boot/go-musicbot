@@ -77,6 +77,12 @@ Show the current play queue
 < IrcBot> 0) NOFX - Franco Un-American (Official Video)
 ~~~~
 
+Show help
+~~~~
+<@r3boot> !help
+< IrcBot> Available commands: dj+ <yt vid id>, djlist <yt list id>, request <query>, query, np, next, tune, boo, start, radio
+~~~~
+
 # Installation
 First, fetch the code
 ~~~~
