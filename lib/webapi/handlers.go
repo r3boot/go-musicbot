@@ -128,7 +128,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
 			log.Warningf("WebApi.SocketHandler conn.ReadMessage: %v", err)
-			errmsg := fmt.Sprintf("ReadMessage failed: %v", err)
+			errmsg := fmt.Sprintf("ReadMessage failed")
 			wsLog(r, http.StatusInternalServerError, "socket", errmsg)
 			continue
 		}
@@ -136,7 +136,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 		request := &ClientRequest{}
 		if err := json.Unmarshal(msg, request); err != nil {
 			log.Warningf("WebApi.SocketHandler json.Unmarshal: %v", err)
-			errmsg := fmt.Sprintf("Unmarshal failed: %v", err)
+			errmsg := fmt.Sprintf("Unmarshal failed")
 			wsLog(r, http.StatusInternalServerError, "nil", errmsg)
 			continue
 		}
@@ -149,7 +149,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteMessage(msgType, response)
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler conn.WriteMessage: %v", err)
-					errmsg := fmt.Sprintf("Failed to send message: %v", err)
+					errmsg := fmt.Sprintf("Failed to send message")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -163,7 +163,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteMessage(msgType, response)
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler conn.WriteMessage: %v", err)
-					errmsg := fmt.Sprintf("Failed to send message: %v", err)
+					errmsg := fmt.Sprintf("Failed to send message")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -180,7 +180,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteMessage(msgType, response)
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler conn.WriteMessage: %v", err)
-					errmsg := fmt.Sprintf("Failed to send message: %v", err)
+					errmsg := fmt.Sprintf("Failed to send message")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -193,7 +193,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteMessage(msgType, api.BooResponse())
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler conn.WriteMessage: %v", err)
-					errmsg := fmt.Sprintf("Failed to send message: %v", err)
+					errmsg := fmt.Sprintf("Failed to send message")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -206,7 +206,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteMessage(msgType, api.TuneResponse())
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler conn.WriteMessage: %v", err)
-					errmsg := fmt.Sprintf("Failed to send message: %v", err)
+					errmsg := fmt.Sprintf("Failed to send message")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -219,7 +219,7 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				query := &SearchRequest{}
 				if err := json.Unmarshal(msg, query); err != nil {
 					log.Warningf("WebApi.SocketHandler json.Unmarshal: %v", err)
-					errmsg := fmt.Sprintf("Unmarshal failed: %v", err)
+					errmsg := fmt.Sprintf("Unmarshal failed")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 					continue
 				}
@@ -227,26 +227,25 @@ func (api *WebApi) SocketHandler(w http.ResponseWriter, r *http.Request) {
 				qpos, err := api.mpd.Enqueue(query.Query)
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler: %v", err)
-					errmsg := fmt.Sprintf("enqueue failed: %v", err)
+					errmsg := fmt.Sprintf("enqueue failed")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 				}
 
 				title, err := api.mpd.GetTitle(qpos)
 				if err != nil {
 					log.Warningf("WebApi.SocketHandler: %v", err)
-					errmsg := fmt.Sprintf("enqueue failed: %v", err)
+					errmsg := fmt.Sprintf("enqueue failed")
 					wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 				}
 
 				msg := fmt.Sprintf("Added %s to the play queue", title)
-				log.Infof(msg)
 				wsLog(r, http.StatusOK, request.Operation, msg)
 			}
 		default:
 			{
 				conn.Close()
 				log.Warningf("WebApi.SocketHandler: unknown operation received")
-				errmsg := fmt.Sprintf("Unknown operation received: %s", string(msg))
+				errmsg := fmt.Sprintf("Unknown operation received")
 				wsLog(r, http.StatusInternalServerError, request.Operation, errmsg)
 				break
 			}
@@ -281,7 +280,7 @@ func (api *WebApi) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 		data, err := json.Marshal(response)
 		if err != nil {
 			log.Warningf("WebApi.AutoCompleteHandler json.Marshal: %v", err)
-			errmsg := fmt.Sprintf("Failed to marshal results: %v", err)
+			errmsg := fmt.Sprintf("Failed to marshal results")
 			http.Error(w, errmsg, http.StatusInternalServerError)
 			httpLog(r, http.StatusInternalServerError, len(errmsg))
 			return
@@ -302,7 +301,7 @@ func (api *WebApi) PlayQueueHandler(w http.ResponseWriter, r *http.Request) {
 	playQueue, err := api.mpd.GetPlayQueue()
 	if err != nil {
 		log.Warningf("WebApi.PlayQueueHandler: %v", err)
-		errmsg := fmt.Sprintf("Failed to get play queue: %v", err)
+		errmsg := fmt.Sprintf("Failed to get play queue")
 		http.Error(w, errmsg, http.StatusInternalServerError)
 		httpLog(r, http.StatusInternalServerError, len(errmsg))
 		return
@@ -311,7 +310,7 @@ func (api *WebApi) PlayQueueHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(playQueue)
 	if err != nil {
 		log.Warningf("WebApi.PlayQueueHandler json.Marshal: %v", err)
-		errmsg := fmt.Sprintf("Failed to marshal json: %v", err)
+		errmsg := fmt.Sprintf("Failed to marshal json")
 		http.Error(w, errmsg, http.StatusInternalServerError)
 		httpLog(r, http.StatusInternalServerError, len(errmsg))
 		return
