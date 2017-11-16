@@ -4,13 +4,18 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/logger"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"github.com/thoj/go-ircevent"
 )
 
-func NewIrcClient(config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient, mp3Library *mp3lib.MP3Library) *IrcClient {
+var log *logger.Logger
+
+func NewIrcClient(l *logger.Logger, config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient, mp3Library *mp3lib.MP3Library) *IrcClient {
+	log = l
+
 	client := &IrcClient{
 		config:     config,
 		mpdClient:  mpdClient,
@@ -35,7 +40,7 @@ func (c *IrcClient) Run() error {
 
 	err := c.conn.Connect(server)
 	if err != nil {
-		return fmt.Errorf("Err %s", err)
+		return fmt.Errorf("IrcClient.Run c.conn.Connect: %v", err)
 	}
 
 	go c.CheckIfSjaakIsOnline()

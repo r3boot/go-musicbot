@@ -2,11 +2,11 @@ package ircclient
 
 import (
 	"fmt"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
-	"github.com/thoj/go-ircevent"
-	"os"
 	"strings"
 	"time"
+
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/thoj/go-ircevent"
 )
 
 func (c *IrcClient) initCallbacks() {
@@ -26,6 +26,7 @@ func (c *IrcClient) CheckIfSjaakIsOnline() {
 
 func (c *IrcClient) ParseIsOn(e *irc.Event) {
 	if len(e.Arguments) != 2 {
+		log.Warningf("IrcClient.ParseIsOn: Invalid number of arguments")
 		return
 	}
 
@@ -61,6 +62,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		return
 	}
 
+	log.Debugf("IrcClient.ParsePrivmsg: Got command %s", command)
+
 	switch command {
 	case CMD_HELP:
 		c.HandleHelp(channel, line)
@@ -85,7 +88,7 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	case CMD_QUEUE:
 		c.HandleShowQueue(channel, line)
 	default:
-		fmt.Fprintf(os.Stderr, "Invalid command received: %s\n", command)
+		log.Warningf("IrcClient.ParsePrivmsg: Invalid command received: %s", command)
 	}
 }
 
@@ -101,16 +104,17 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 	if len(result) == 1 {
 		yid := result[0][2]
 		c.ytClient.DownloadChan <- yid
-		fmt.Printf("Added %s to download queue\n", yid)
+		log.Infof("Added %s to download queue", yid)
 		if !c.Online[NICK_SJAAK] {
 			response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
 			c.conn.Privmsg(channel, response)
 			privmsgResponse := fmt.Sprintf("Jow! Sjaak is offline! Denk nou aan je SLA JONGUH! Voeg dit ff toe aan de DB: %s", yid)
 			c.conn.Privmsg(NICK_FLUNK, privmsgResponse)
+			log.Infof("Sent message to %s", NICK_FLUNK)
 		}
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
-		fmt.Printf("no results found\n")
+		log.Warningf("IrcClient.HandleYidDownload: no results found")
 		c.conn.Privmsg(channel, response)
 	}
 }
@@ -121,11 +125,11 @@ func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
 	if len(result) == 1 {
 		playlistUrl := result[0][2]
 		c.ytClient.PlaylistChan <- playlistUrl
-		fmt.Printf("Added playlist %s to download queue\n", playlistUrl)
+		log.Infof("Added playlist %s to download queue", playlistUrl)
 		response := fmt.Sprintf("Added playlist to download queue")
 		c.conn.Privmsg(channel, response)
 	} else {
-		fmt.Printf("no playlist found\n")
+		log.Warningf("IrcClient.HandlePlaylistDownload: no playlist found")
 		response := fmt.Sprintf("Did not find any playlist")
 		c.conn.Privmsg(channel, response)
 	}
@@ -166,10 +170,11 @@ func (c *IrcClient) HandleRadioUrl(channel, line string) {
 func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.DecreaseRating(fileName)
-	fmt.Printf("IrcClient.HandleDecreaseRating rating for %s is now %d\n", fileName, newRating)
+	log.Infof("Rating for %s is now %d", fileName, newRating)
 	if newRating == mp3lib.RATING_ZERO {
 		c.mpdClient.Next()
 		c.mp3Library.RemoveFile(fileName)
+		log.Warningf("IrcClient.HandleDecreaseRating: Rating was 0, removed %s", fileName)
 		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName[:len(fileName)-16])
 		c.conn.Privmsg(channel, response)
 	} else {
@@ -181,7 +186,7 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
 	newRating := c.mp3Library.IncreaseRating(fileName)
-	fmt.Printf("IrcClient.HandleIncreaseRating rating for %s is now %d\n", fileName, newRating)
+	log.Infof("Rating for %s is now %d", fileName, newRating)
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fileName[:len(fileName)-16], newRating)
 	c.conn.Privmsg(channel, response)
 }
@@ -192,25 +197,31 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 
 	if len(result) == 1 {
 		if len(result[0][2]) > 256 {
+			log.Warningf("IrcClient.HandleSearchAndPlay: query too large")
 			response = fmt.Sprintf("Size of query too large")
 			c.conn.Privmsg(channel, response)
+			return
 		}
 
 		query := result[0][2]
 
 		qpos, err := c.mpdClient.Enqueue(query)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to enqueue: %v\n", err)
+			log.Warningf("IrcClient.HandleSearchAndPlay: %v", err)
 			response = fmt.Sprintf("Failed to enqueue: %v", err)
 		} else {
 			title, err := c.mpdClient.GetTitle(qpos)
 			if err != nil {
-				response = fmt.Sprintf("Added to the queue")
+				log.Warningf("IrcClient.HandleSearchAndPlay: %v", err)
+				response = fmt.Sprintf("Failed to get title")
 			} else {
-				response = fmt.Sprintf("Added %s to the queue", title[:len(title)-16])
+				name := title[:len(title)-16]
+				log.Infof("Added %s to the queue", name)
+				response = fmt.Sprintf("Added %s to the queue", name)
 			}
 		}
 	} else {
+		log.Warningf("IrcClient.HandleSearchAndPlay: No query found")
 		response = fmt.Sprintf("Need a query to search .. stupid!")
 	}
 
@@ -220,8 +231,8 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 func (c *IrcClient) HandleShowQueue(channel, line string) {
 	entries, err := c.mpdClient.GetPlayQueue()
 	if err != nil {
+		log.Warningf("IrcClient.HandleShowQueue: %v", err)
 		errmsg := fmt.Sprintf("Failed to get queue entries")
-		fmt.Fprintf(os.Stderr, "%v\n", errmsg)
 		c.conn.Privmsg(channel, errmsg)
 		return
 	}

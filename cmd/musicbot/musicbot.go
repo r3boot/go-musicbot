@@ -109,7 +109,7 @@ func main() {
 
 	// IRC bot
 	if Config.App.IrcBotEnabled {
-		IRCClient := ircclient.NewIrcClient(Config, MPDClient, YoutubeClient, MP3Library)
+		IRCClient := ircclient.NewIrcClient(Logger, Config, MPDClient, YoutubeClient, MP3Library)
 		Logger.Debugf("Running IRC bot")
 		if err = IRCClient.Run(); err != nil {
 			Logger.Fatalf("%v", err)

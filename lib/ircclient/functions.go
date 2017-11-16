@@ -1,19 +1,14 @@
 package ircclient
 
 import (
-	"fmt"
 	"math/rand"
-	"regexp"
 )
 
 func (c *IrcClient) isValidCommand(cmd string) (string, bool) {
-	cmdReString := fmt.Sprintf("^\\%s([a-z\\+\\-]{2,8})", c.config.Bot.CommandChar)
-	reValidCmd := regexp.MustCompile(cmdReString)
-
-	result := reValidCmd.FindAllStringSubmatch(cmd, -1)
+	result := RE_VALIDCMD.FindAllStringSubmatch(cmd, -1)
 
 	if len(result) == 0 {
-		fmt.Printf("isValidCommand: %s does not match the valid command regexp\n", cmd)
+		log.Warningf("IrcClient.isValidCommand: Did not find any valid command", cmd)
 		return "", false
 	}
 
@@ -24,7 +19,7 @@ func (c *IrcClient) isValidCommand(cmd string) (string, bool) {
 		}
 	}
 
-	fmt.Printf("isValidCommand: Unknown command: %s\n", cmd)
+	log.Warningf("IrcClient.isValidCommand: Unknown command: %s", cmd)
 	return "", false
 }
 
