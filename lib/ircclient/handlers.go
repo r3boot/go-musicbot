@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
-	"github.com/thoj/go-ircevent"
+	"go-ircevent"
 )
 
 func (c *IrcClient) initCallbacks() {

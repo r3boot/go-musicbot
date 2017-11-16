@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fhs/gompd/mpd"
+	"gompd/mpd"
 )
 
 func (m *MPDClient) Connect() error {

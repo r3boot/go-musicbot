@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"sort"
 
-	id3 "github.com/mikkyang/id3-go"
+	id3 "id3-go"
 )
 
 func (i *MP3Library) SetRating(fname string, rating int) int {

@@ -1,9 +1,9 @@
 package mpdclient
 
 import (
-	"github.com/fhs/gompd/mpd"
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"gompd/mpd"
 	"sync"
 )
 

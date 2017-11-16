@@ -7,7 +7,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
-	"github.com/thoj/go-ircevent"
+	"go-ircevent"
 )
 
 const (
