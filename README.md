@@ -98,12 +98,6 @@ To run the bot, enter the following command (as a non-root user):
 /usr/local/bin/musicbot -f /etc/musicbot.yaml
 ~~~~
 
-# Running the web player
-The web player is a separate process from the bot. To start this, run the following (as a non-root user):
-~~~~
-/usr/local/bin/musicbot-api -f /etc/musicbot.yaml
-~~~~
-
 # Ratings
 Every song can have a rating of 1..10. The default rating is 5. As soon
 as the rating of a song drops below 1, it will be removed from the
