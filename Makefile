@@ -4,7 +4,10 @@ ID3TAG = id3tag
 BUILD_DIR = ./build
 PREFIX = /usr/local
 
-all: ${TARGET} ${ID3TAG}
+all: deps ${TARGET} ${ID3TAG}
+
+deps:
+	go get -v ./...
 
 ${TARGET}:
 	[[ -d "${BUILD_DIR}" ]] || mkdir -p "${BUILD_DIR}"
