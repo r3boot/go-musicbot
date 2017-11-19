@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"sort"
 
-	"fmt"
 	id3 "id3-go"
 	"path/filepath"
 	"strings"
