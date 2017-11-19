@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"sort"
 
+	"fmt"
 	id3 "id3-go"
 	"path/filepath"
 	"strings"
@@ -60,7 +61,7 @@ func (i *MP3Library) GetRating(fname string) int {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
-	fd, err := id3.Open(fname)
+	fd, err := id3.Open(fullPath)
 	if err != nil {
 		log.Warningf("MP3Library.GetRating id3.Open: %v", err)
 		return RATING_UNKNOWN
