@@ -9,16 +9,21 @@ import (
 
 	id3 "id3-go"
 	"path/filepath"
+	"strings"
 )
 
 func (i *MP3Library) SetRating(fname string, rating int) int {
+	var err error
+
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
-	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
-	if err != nil {
-		log.Warningf("MP3Library.SetRating filepath.Abs: %v", err)
-		return RATING_UNKNOWN
+	fullPath := fname
+	if !strings.HasPrefix(fname, "/") {
+		fullPath, err = filepath.Abs(i.BaseDir + "/" + fname)
+		if err != nil {
+			log.Warningf("SetRating filepath.Abs: %v", err)
+		}
 	}
 
 	fd, err := id3.Open(fullPath)
@@ -39,9 +44,12 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 func (i *MP3Library) GetRating(fname string) int {
 	var err error
 
-	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
-	if err != nil {
-		log.Warningf("SetRating filepath.Abs: %v", err)
+	fullPath := fname
+	if !strings.HasPrefix(fname, "/") {
+		fullPath, err = filepath.Abs(i.BaseDir + "/" + fname)
+		if err != nil {
+			log.Warningf("SetRating filepath.Abs: %v", err)
+		}
 	}
 
 	if _, err := os.Stat(fullPath); err != nil {
@@ -120,9 +128,12 @@ func (i *MP3Library) IncreaseRating(name string) int {
 func (i *MP3Library) RemoveFile(fname string) bool {
 	var err error
 
-	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
-	if err != nil {
-		log.Warningf("SetRating filepath.Abs: %v", err)
+	fullPath := fname
+	if !strings.HasPrefix(fname, "/") {
+		fullPath, err = filepath.Abs(i.BaseDir + "/" + fname)
+		if err != nil {
+			log.Warningf("SetRating filepath.Abs: %v", err)
+		}
 	}
 
 	_, err = os.Stat(fullPath)
