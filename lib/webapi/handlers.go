@@ -80,15 +80,10 @@ func (api *WebApi) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stream_url := api.config.Bot.StreamURL
-
-	if api.config.Api.StreamURL != "" {
-		stream_url = api.config.Api.StreamURL
-	}
-
 	data := TemplateData{
-		Title:  api.config.Api.Title,
-		Stream: stream_url,
+		Title:     api.config.Api.Title,
+		OggStream: api.config.Api.OggStreamURL,
+		Mp3Stream: api.config.Api.Mp3StreamURL,
 	}
 
 	output := bytes.Buffer{}

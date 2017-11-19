@@ -13,8 +13,9 @@ const (
 )
 
 type TemplateData struct {
-	Title  string
-	Stream string
+	Title     string
+	OggStream string
+	Mp3Stream string
 }
 
 type WebApi struct {

@@ -15,8 +15,9 @@
         <div id="controls">
             <div id="streamcontrols">
                 <audio id="audiocontrols">
-                    <source id="streamSrc" src="{{.Stream}}" type="audio/ogg" />
-                    Your browser does not support the audio element for ogg.
+                    <source id="streamSrc" src="{{.OggStream}}" type="audio/ogg" />
+                    <source id="streamSrc" src="{{.Mp3Stream}}" type="audio/mpeg" />
+                    Your browser does not support the audio element for the stream formats.
                 </audio>
             </div>
             <div id="buttons">

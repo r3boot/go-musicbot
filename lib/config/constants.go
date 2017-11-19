@@ -38,11 +38,12 @@ type MpdConfig struct {
 }
 
 type ApiConfig struct {
-	Address   string `yaml:"address"`
-	Port      string `yaml:"port"`
-	Title     string `yaml:"title"`
-	StreamURL string `yaml:"stream_url"`
-	Assets    string `yaml:"assets"`
+	Address      string `yaml:"address"`
+	Port         string `yaml:"port"`
+	Title        string `yaml:"title"`
+	OggStreamURL string `yaml:"ogg_stream_url"`
+	Mp3StreamURL string `yaml:"mp3_stream_url"`
+	Assets       string `yaml:"assets"`
 }
 
 type MusicBotConfig struct {
