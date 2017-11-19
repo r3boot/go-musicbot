@@ -15,7 +15,7 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
-	fullPath, err := filepath.Abs(fname)
+	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
 	if err != nil {
 		log.Warningf("MP3Library.SetRating filepath.Abs: %v", err)
 		return RATING_UNKNOWN
@@ -39,7 +39,7 @@ func (i *MP3Library) SetRating(fname string, rating int) int {
 func (i *MP3Library) GetRating(fname string) int {
 	var err error
 
-	fullPath, err := filepath.Abs(fname)
+	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
 	if err != nil {
 		log.Warningf("SetRating filepath.Abs: %v", err)
 	}
@@ -120,7 +120,7 @@ func (i *MP3Library) IncreaseRating(name string) int {
 func (i *MP3Library) RemoveFile(fname string) bool {
 	var err error
 
-	fullPath, err := filepath.Abs(fname)
+	fullPath, err := filepath.Abs(i.BaseDir + "/" + fname)
 	if err != nil {
 		log.Warningf("SetRating filepath.Abs: %v", err)
 	}
