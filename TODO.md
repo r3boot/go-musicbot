@@ -17,3 +17,8 @@
 - Download all videos, investigate video stream
 - Investigate blockchain technology to moderate webui controls
 - Use ratings to create ~1hr playlist for favourites hour
+
+# Stream
+- Embed metadata into stream
+- Query metadata for id3 tags
+- Create djingles
