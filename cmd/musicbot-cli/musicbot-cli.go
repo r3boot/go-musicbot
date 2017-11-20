@@ -70,6 +70,7 @@ func ShowRatingsForDir(dirname string) {
 // Playlist based on a 6 or higher rating
 func GenerateFavouritesPlayList() {
 	ratings := MP3Library.GetAllRatings()
+	fmt.Printf("ratings: %v\n", ratings)
 
 	favourites := []string{}
 
@@ -98,6 +99,7 @@ func init() {
 
 func main() {
 	target := flag.Args()[0]
+
 	if *setRating != -1 {
 		SetRating(target, *setRating)
 	} else if *playlistFavourites {
