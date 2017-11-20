@@ -176,3 +176,34 @@ func (i *MP3Library) GetAllFiles() []string {
 
 	return response
 }
+
+func (i *MP3Library) GetAllRatings() map[string]int {
+	ratings := map[string]int{}
+
+	files, err := ioutil.ReadDir(i.BaseDir)
+	if err != nil {
+		log.Warningf("MP3Library.GetAllRatings ioutil.ReadDir: %v", err)
+		return nil
+	}
+
+	for _, fs := range files {
+		if fs.IsDir() {
+			continue
+		}
+		if fs.Name() == "" {
+			continue
+		}
+
+		fullPath, err := filepath.Abs(i.BaseDir + "/" + fs.Name())
+		if err != nil {
+			log.Warningf("MP3Library.GetAllRatings filepath.Abs: %v", err)
+			return nil
+		}
+
+		rating := i.GetRating(fullPath)
+
+		ratings[fs.Name()] = rating
+	}
+
+	return ratings
+}

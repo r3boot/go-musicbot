@@ -14,6 +14,8 @@ const (
 	RATING_FRAME string = "POPM"
 )
 
+type RatingsMap map[string]int
+
 type MP3Library struct {
 	BaseDir string
 	mutex   sync.Mutex

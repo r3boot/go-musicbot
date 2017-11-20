@@ -571,3 +571,6 @@ available. Try navigating to one of the URL's below:
 
 [TLS Web UI](https://localhost/2600nl)
 
+# Installation of liquidsoap
+
+yaourt -S liquidsoap

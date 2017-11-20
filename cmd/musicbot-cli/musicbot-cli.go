@@ -65,6 +65,22 @@ func ShowRatingsForDir(dirname string) {
 	}
 }
 
+// Playlist based on a 6 or higher rating
+func GenerateFavouritesPlayList() {
+	ratings := MP3Library.GetAllRatings()
+
+	favourites := []string{}
+
+	for path, rating := range ratings {
+		if rating < 6 {
+			continue
+		}
+		favourites = append(favourites, path)
+	}
+
+	fmt.Printf("%v\n", favourites)
+}
+
 func init() {
 	flag.Parse()
 
