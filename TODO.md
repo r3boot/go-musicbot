@@ -6,6 +6,7 @@
 - Make playlist download possible using ID instead of URL
 - Add possibility for an ACL on various commands
 - Bind !dj+ command to username in some database
+- Make sure we report proper duration/elapsed times
 
 # webui/api
 - Add attribution for next function in webapi
