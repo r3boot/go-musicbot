@@ -3,18 +3,21 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/r3boot/go-musicbot/lib/logger"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/r3boot/go-musicbot/lib/logger"
+	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
 const (
 	D_DEBUG         = false
 	D_GET_RATING    = true
 	D_SET_RATING    = -1
-	D_BASEDIR       = "/music"
+	D_BASEDIR       = "/music/2600nl"
+	D_PLAYLISTDIR   = "/var/lib/mpd/2600nl/playlists"
+	D_PL_ELITE      = false
 	D_PL_FAVOURITES = false
 	D_RECURSE       = true
 	D_USE_TIMESTAMP = false
@@ -26,6 +29,8 @@ var (
 	setRating          = flag.Int("sr", D_SET_RATING, "Set the rating")
 	baseDir            = flag.String("d", D_BASEDIR, "Music directory")
 	playlistFavourites = flag.Bool("pf", D_PL_FAVOURITES, "Generate playlist for 6 or higher rating")
+	playlistElite      = flag.Bool("pe", D_PL_ELITE, "Generate playlist for tracks with rating 9 or higher")
+	playlistDir        = flag.String("pd", D_PLAYLISTDIR, "Directory to store playlists in")
 	MP3Library         *mp3lib.MP3Library
 	Logger             *logger.Logger
 )
@@ -68,20 +73,34 @@ func ShowRatingsForDir(dirname string) {
 }
 
 // Playlist based on a 6 or higher rating
-func GenerateFavouritesPlayList() {
+func GeneratePlayList(name string, minRating int) {
 	ratings := MP3Library.GetAllRatings()
-	fmt.Printf("ratings: %v\n", ratings)
 
 	favourites := []string{}
 
 	for path, rating := range ratings {
-		if rating < 6 {
+		if rating < minRating {
 			continue
 		}
-		favourites = append(favourites, path)
+
+		fullPath := fmt.Sprintf("%s/%s", *baseDir, path)
+		favourites = append(favourites, fullPath)
 	}
 
-	fmt.Printf("%v\n", favourites)
+	fname := fmt.Sprintf("%s/%s.m3u", *playlistDir, name)
+
+	fd, err := os.Create(fname)
+	if err != nil {
+		Logger.Fatalf("GenerateFavouritesPlayList os.Open: %v", err)
+	}
+	defer fd.Close()
+
+	for _, entry := range favourites {
+		data := fmt.Sprintf("%s\n", entry)
+		fd.WriteString(data)
+	}
+
+	Logger.Infof("Wrote %s\n", fname)
 }
 
 func init() {
@@ -89,22 +108,27 @@ func init() {
 
 	Logger = logger.NewLogger(D_USE_TIMESTAMP, *debug)
 	MP3Library = mp3lib.NewMP3Library(Logger, *baseDir)
-
-	// No arguments passed
-	if len(flag.Args()) == 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
 }
 
 func main() {
-	target := flag.Args()[0]
+	target := ""
+	if len(flag.Args()) > 0 {
+		target = flag.Args()[0]
+	}
 
 	if *setRating != -1 {
+		if target == "" {
+			Logger.Fatalf("Need a target")
+		}
 		SetRating(target, *setRating)
 	} else if *playlistFavourites {
-		GenerateFavouritesPlayList()
+		GeneratePlayList("favourites", 7)
+	} else if *playlistElite {
+		GeneratePlayList("elite", 9)
 	} else if *getRating {
+		if target == "" {
+			Logger.Fatalf("Need a target")
+		}
 		fs, err := os.Stat(target)
 		if err != nil {
 			Logger.Fatalf("os.Stat: %v", err)
