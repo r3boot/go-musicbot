@@ -7,6 +7,13 @@
 - Add possibility for an ACL on various commands
 - Bind !dj+ command to username in some database
 - Make sure we report proper duration/elapsed times
+- Make ratings drift back to the starting point over time
+
+# liquidsoap
+- Make sure its clear which program is playing
+- Make sure that !tune/!boo/!next redirects to liquidsoap if required
+- Only add promo on mpd source
+- Add leading + following jingle to favourites + toptracks
 
 # webui/api
 - Add attribution for next function in webapi
