@@ -8,6 +8,7 @@
 - Bind !dj+ command to username in some database
 - Make sure we report proper duration/elapsed times
 - Make ratings drift back to the starting point over time
+- Add duplicate check
 
 # liquidsoap
 - Make sure its clear which program is playing
@@ -24,9 +25,7 @@
 # Future
 - Download all videos, investigate video stream
 - Investigate blockchain technology to moderate webui controls
-- Use ratings to create ~1hr playlist for favourites hour
 
 # Stream
 - Embed metadata into stream
 - Query metadata for id3 tags
-- Create djingles
