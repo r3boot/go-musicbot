@@ -126,8 +126,10 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 
 	yt.SetMetadataForNewSong(yid, fileName)
 
-	if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
-		log.Warningf("YoutubeClient.DownloadYID: %v", err)
+	if yt.mpdClient != nil {
+		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
+			log.Warningf("YoutubeClient.DownloadYID: %v", err)
+		}
 	}
 
 	return results[0], nil
@@ -171,8 +173,10 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 
 		yt.SetMetadataForNewSong(yid, fileName)
 
-		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
-			return fmt.Errorf("YoutubeClient.DownloadPlaylist: %v", err)
+		if yt.mpdClient != nil {
+			if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
+				return fmt.Errorf("YoutubeClient.DownloadPlaylist: %v", err)
+			}
 		}
 	}
 

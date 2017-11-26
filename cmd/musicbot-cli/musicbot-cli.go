@@ -7,8 +7,13 @@ import (
 	"os"
 	"path/filepath"
 
+	"bytes"
+	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/logger"
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/ytclient"
+	"regexp"
+	"time"
 )
 
 const (
@@ -16,22 +21,29 @@ const (
 	D_GET_RATING    = true
 	D_SET_RATING    = -1
 	D_BASEDIR       = "/music/2600nl"
+	D_CFGFILE       = "/etc/musicbot.yaml"
 	D_PLAYLISTDIR   = "/var/lib/mpd/2600nl/playlists"
 	D_PL_ELITE      = false
 	D_PL_FAVOURITES = false
+	D_FETCH_MISSING = ""
 	D_RECURSE       = true
 	D_USE_TIMESTAMP = false
 )
 
 var (
 	debug              = flag.Bool("D", D_DEBUG, "Enable debug mode")
+	cfgFile            = flag.String("f", D_CFGFILE, "Path to configuration file")
 	getRating          = flag.Bool("lr", D_GET_RATING, "Show current rating")
 	setRating          = flag.Int("sr", D_SET_RATING, "Set the rating")
 	baseDir            = flag.String("d", D_BASEDIR, "Music directory")
 	playlistFavourites = flag.Bool("pf", D_PL_FAVOURITES, "Generate playlist for 6 or higher rating")
 	playlistElite      = flag.Bool("pe", D_PL_ELITE, "Generate playlist for tracks with rating 9 or higher")
 	playlistDir        = flag.String("pd", D_PLAYLISTDIR, "Directory to store playlists in")
+	fetchMissing       = flag.String("fetch-missing", D_FETCH_MISSING, "Fetch all YIDs not in list")
+	RE_YID             = regexp.MustCompile(".*([a-zA-Z0-9_-]{11}).mp3")
 	MP3Library         *mp3lib.MP3Library
+	YoutubeClient      *youtubeclient.YoutubeClient
+	Config             *config.MusicBotConfig
 	Logger             *logger.Logger
 )
 
@@ -103,11 +115,81 @@ func GeneratePlayList(name string, minRating int) {
 	Logger.Infof("Wrote %s\n", fname)
 }
 
+// Fetch all yids not found in list
+func FetchMissing(inputFile string) {
+	wantedYid := []string{}
+
+	data, err := ioutil.ReadFile(inputFile)
+	if err != nil {
+		Logger.Fatalf("FetchMissing ioutil.ReadFile: %v", err)
+	}
+
+	for _, rawYid := range bytes.Split(data, []byte("\n")) {
+		yid := string(rawYid)
+		if yid == "" {
+			continue
+		}
+
+		wantedYid = append(wantedYid, yid)
+	}
+
+	entries, err := ioutil.ReadDir(*baseDir)
+	if err != nil {
+		Logger.Fatalf("FetchMissing ioutil.ReadDir: %v", err)
+	}
+
+	haveYid := []string{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		result := RE_YID.FindAllStringSubmatch(entry.Name(), -1)
+		if len(result) > 0 {
+			yid := result[0][1]
+			haveYid = append(haveYid, yid)
+		}
+	}
+
+	toFetchYid := []string{}
+	for _, wanted := range wantedYid {
+		hasYid := false
+		for _, have := range haveYid {
+			if have == wanted {
+				hasYid = true
+			}
+		}
+		if !hasYid {
+			toFetchYid = append(toFetchYid, wanted)
+		}
+	}
+
+	for _, yid := range toFetchYid {
+		YoutubeClient.DownloadChan <- yid
+		Logger.Infof("Added %v to download queue", yid)
+	}
+
+	for {
+		queueSize := len(YoutubeClient.DownloadChan)
+		if queueSize == 0 {
+			break
+		}
+		Logger.Infof("Queue has %d items", queueSize)
+		time.Sleep(5 * time.Second)
+	}
+}
+
 func init() {
 	flag.Parse()
 
 	Logger = logger.NewLogger(D_USE_TIMESTAMP, *debug)
+	Config, err := config.LoadConfig(Logger, *cfgFile)
+	if err != nil {
+		Logger.Fatalf("config.LoadConfig: %v", err)
+	}
+
 	MP3Library = mp3lib.NewMP3Library(Logger, *baseDir)
+	YoutubeClient = youtubeclient.NewYoutubeClient(Logger, Config, nil, MP3Library, *baseDir)
 }
 
 func main() {
@@ -125,6 +207,8 @@ func main() {
 		GeneratePlayList("favourites", 7)
 	} else if *playlistElite {
 		GeneratePlayList("elite", 9)
+	} else if *fetchMissing != D_FETCH_MISSING {
+		FetchMissing(*fetchMissing)
 	} else if *getRating {
 		if target == "" {
 			Logger.Fatalf("Need a target")

@@ -14,7 +14,6 @@
 # liquidsoap
 - Make sure its clear which program is playing
 - Make sure that !tune/!boo/!next redirects to liquidsoap if required
-- Only add promo on mpd source
 - Add leading + following jingle to favourites + toptracks
 
 # webui/api
