@@ -29,6 +29,7 @@ type YoutubeConfig struct {
 	BaseUrl    string `yaml:"url"`
 	Downloader string `yaml:"downloader"`
 	SeenFile   string `yaml:"seen_file"`
+	NumWorkers int    `yaml:"num_workers"`
 }
 
 type MpdConfig struct {

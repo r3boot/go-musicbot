@@ -13,16 +13,15 @@ import (
 	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
-func (yt *YoutubeClient) DownloadSerializer() {
-	for {
-		newYid := <-yt.DownloadChan
-		log.Infof("Downloading new YID: %s", newYid)
-		fileName, err := yt.DownloadYID(newYid)
+func (yt *YoutubeClient) DownloadWorker(id int, yids <-chan string) {
+	for yid := range yids {
+		log.Infof("Downloading new YID: %s", yid)
+		fileName, err := yt.DownloadYID(yid)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v", err)
 			continue
 		}
-		yt.SetMetadataForNewSong(newYid, fileName)
+		yt.SetMetadataForNewSong(yid, fileName)
 	}
 }
 
@@ -88,8 +87,10 @@ func (yt *YoutubeClient) addYID(yid string) error {
 func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	var stdout, stderr bytes.Buffer
 
-	yt.downloadMutex.Lock()
-	defer yt.downloadMutex.Unlock()
+	if yt.config.Youtube.NumWorkers <= 1 {
+		yt.downloadMutex.Lock()
+		defer yt.downloadMutex.Unlock()
+	}
 
 	if yt.hasYID(yid) {
 		return "", fmt.Errorf("YoutubeClient.DownloadYID: YID %s has already been downloaded", yid)
@@ -127,6 +128,8 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	yt.SetMetadataForNewSong(yid, fileName)
 
 	if yt.mpdClient != nil {
+		yt.mpdMutex.Lock()
+		defer yt.mpdMutex.Unlock()
 		if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
 			log.Warningf("YoutubeClient.DownloadYID: %v", err)
 		}
@@ -174,6 +177,8 @@ func (yt *YoutubeClient) DownloadPlaylist(url string) error {
 		yt.SetMetadataForNewSong(yid, fileName)
 
 		if yt.mpdClient != nil {
+			yt.mpdMutex.Lock()
+			defer yt.mpdMutex.Unlock()
 			if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
 				return fmt.Errorf("YoutubeClient.DownloadPlaylist: %v", err)
 			}

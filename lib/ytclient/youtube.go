@@ -16,6 +16,7 @@ func NewYoutubeClient(l *logger.Logger, config *config.MusicBotConfig, mpdclient
 	yt := &YoutubeClient{
 		seenFileMutex: sync.RWMutex{},
 		downloadMutex: sync.RWMutex{},
+		mpdMutex:      sync.RWMutex{},
 		config:        config,
 		mpdClient:     mpdclient,
 		mp3Library:    mp3Library,
@@ -24,7 +25,15 @@ func NewYoutubeClient(l *logger.Logger, config *config.MusicBotConfig, mpdclient
 		PlaylistChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
 	}
 
-	go yt.DownloadSerializer()
+	// Start download workers
+	num := 0
+	for id := 1; id <= yt.config.Youtube.NumWorkers; id++ {
+		go yt.DownloadWorker(id, yt.DownloadChan)
+		num += 1
+	}
+
+	log.Debugf("NewYoutubeClient: Started %d download workers", num)
+
 	go yt.PlaylistSerializer()
 
 	return yt

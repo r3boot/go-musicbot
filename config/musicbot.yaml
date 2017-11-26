@@ -43,6 +43,7 @@ youtube:
   downloader: "/usr/local/bin/youtube-dl"
   seen_file: "/var/spool/fetch_youtube.seen"
   url: "https://www.youtube.com/watch?v="
+  num_workers: 1
 
 mpd:
   address: "127.0.0.1"

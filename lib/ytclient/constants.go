@@ -21,6 +21,7 @@ var (
 type YoutubeClient struct {
 	seenFileMutex sync.RWMutex
 	downloadMutex sync.RWMutex
+	mpdMutex      sync.RWMutex
 	config        *config.MusicBotConfig
 	mpdClient     *mpdclient.MPDClient
 	mp3Library    *mp3lib.MP3Library
