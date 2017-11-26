@@ -9,6 +9,8 @@
 - Make sure we report proper duration/elapsed times
 - Make ratings drift back to the starting point over time
 - Add duplicate check
+- Rework favourites/toptracks playlist into mp3 priorities
+- Fix queueing
 
 # liquidsoap
 - Make sure its clear which program is playing
@@ -25,6 +27,7 @@
 # Future
 - Download all videos, investigate video stream
 - Investigate blockchain technology to moderate webui controls
+- Look into possibility of writing a mobile app
 
 # Stream
 - Embed metadata into stream
