@@ -10,7 +10,6 @@
 - Make ratings drift back to the starting point over time
 - Add duplicate check
 - Rework favourites/toptracks playlist into mp3 priorities
-- Fix queueing
 
 # liquidsoap
 - Make sure its clear which program is playing
