@@ -4,7 +4,6 @@ var queueMsg = {"Operation":"queue"};
 var nextMsg = {"Operation":"next"};
 var booMsg = {"Operation":"boo"};
 var tuneMsg = {"Operation":"tune"};
-var playlistMsg = {"Operation":"playlist"};
 var isPlaying = false;
 var streamSrc = "";
 
@@ -13,7 +12,7 @@ function StartWebSocket() {
 
     var wsProto = "wss:";
 
-    if (location.protocol == "http:") {
+    if (location.protocol === "http:") {
         wsProto = "ws:";
     }
 
@@ -107,8 +106,8 @@ function ToggleStream() {
     var source = document.getElementById("streamSrc");
     var label = document.getElementById("idPlay");
 
-    if (streamSrc == "") {
-        if (source.src == "") {
+    if (streamSrc === "") {
+        if (source.src === "") {
             console.log("streamSrc and source.src both not set!");
             return
         }
@@ -139,44 +138,48 @@ function ToggleStream() {
 
 function main() {
     $(document).ready(function() {
-        StartWebSocket();
-        ToggleStream();
+        var playlist      = document.getElementById("idPlaylist");
+        var play          = document.getElementById("idPlay");
+        var volUp         = document.getElementById("idVolUp");
+        var volDown       = document.getElementById("idVolDown");
+        var audioControls = document.getElementById("audiocontrols");
 
         $("#playQueue").hide();
 
-        $("idPlaylist").onclick = function() {
+        playlist.onclick = function() {
             window.open("/playlist", "_blank");
         };
 
-        $("idPlay").onclick = function() {
+        play.onclick = function() {
             ToggleStream();
         };
 
-        $("idVolUp").onclick = function() {
-            var ac = document.getElementById("audiocontrols");
-            if (ac.volume < 1) {
-                ac.volume += 0.1;
+        volUp.onclick = function() {
+            if (audioControls.volume < 1) {
+                audioControls.volume += 0.1;
             }
-            console.log("up: " + ac.volume);
+            console.log("up: " + audioControls.volume);
         };
 
-        $("idVolDown").onclick = function() {
-            var ac = $("audiocontrols");
-            if (ac.volume > 0.1) {
-                ac.volume -= 0.1;
+        volDown.onclick = function() {
+            if (audioControls.volume > 0.1) {
+                audioControls.volume -= 0.1;
             }
-            console.log("down: " + ac.volume);
+            console.log("down: " + audioControls.volume);
         };
 
         window.addEventListener('keydown', function (e) {
             evt = e || window.event;
-            if (evt.keyCode == 32) {
-                if (document.activeElement.id != "idQuery") {
+            if (evt.keyCode === 32) {
+                if (document.activeElement.id !== "idQuery") {
                     evt.preventDefault();
                     ToggleStream();
                 }
             }
         });
+
+        StartWebSocket();
+        ToggleStream();
     });
 }
 
