@@ -135,6 +135,10 @@ func (m *MPDClient) UpdateQueueIDs() {
 	for i = 0; i < maxCount; i++ {
 		title := queueEntries[i]
 		id := findID(playlist, title)
+		if id == -1 {
+			log.Warningf("id for %s not found", title)
+			continue
+		}
 		prio := 9 - i
 		err := m.conn.PrioId(prio, id)
 		if err != nil {
