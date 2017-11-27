@@ -54,6 +54,8 @@ func (m *MPDClient) MaintainMPDState() {
 	for {
 		curSongData := NowPlayingData{}
 
+		m.UpdateQueueIDs()
+
 		songAttrs, err := m.conn.CurrentSong()
 		if err != nil {
 			log.Warningf("MPDClient.MaintainMPDState m.conn.CurrentSong: %v", err)
@@ -86,8 +88,6 @@ func (m *MPDClient) MaintainMPDState() {
 		curSongData.Rating = m.mp3.GetRating(fullPath)
 
 		m.np = curSongData
-
-		m.UpdateQueueIDs()
 
 		time.Sleep(1 * time.Second)
 	}
