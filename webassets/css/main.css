@@ -28,15 +28,15 @@ h2 {
 }
 
 .stationDescription {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .stationContent {
+    font-size: 12px;
     margin: 20px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 10px;
+    padding: 10px;
     background-color: #ff0000;
+    border: 1px solid #13d62a;
     text-align: left;
 }
 
