@@ -98,7 +98,14 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
 	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, yid)
-	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "--audio-format", "mp3", "--audio-quality", "0", "-o", output, url)
+	cmd := exec.Command(
+		yt.config.Youtube.Downloader,
+		"-x",
+		"--audio-format", "mp3",
+		"--audio-quality", "0",
+		"--add-metadata",
+		"--metadata-from-title '%(artist)s - %(title)s'",
+		"-o", output, url)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
