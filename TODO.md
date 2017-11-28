@@ -15,6 +15,7 @@
 - Make sure its clear which program is playing
 - Make sure that !tune/!boo/!next redirects to liquidsoap if required
 - Add leading + following jingle to favourites + toptracks
+- Checkout http://savonet.sourceforge.net/doc-svn/radiopi.html
 
 # webui/api
 - Add attribution for next function in webapi
