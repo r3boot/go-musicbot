@@ -1,0 +1,64 @@
+body {
+    background: url('../img/main-bg.jpg') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+a:link {
+    color: #222222;
+    text-decoration: none;
+}
+a:visited {
+    color: #222222;
+}
+a:hover {
+    color: #444444;
+}
+
+h2 {
+    font-size: 32px;
+    color: #fffaad;
+}
+
+.stationHeader {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stationDescription {
+    font-size: 18px;
+}
+
+.stationContent {
+    margin: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    background-color: #ff0000;
+    text-align: left;
+}
+
+#contentDiv {
+    width: 750px;
+    float: left;
+    text-align: center;
+    background-color: #222222;
+    border: 2px solid #670093;
+    padding: 5px;
+}
+
+#leftSpace {
+    width: calc(50% - 350px);
+    float: left;
+}
+
+#rightSpace {
+    width: calc(50% - 450px);
+    float: left;
+}
+
+#contentDiv, #leftSpace, #rightSpace {
+    margin-top: 200px;
+}
