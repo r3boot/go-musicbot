@@ -104,7 +104,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		"--audio-format", "mp3",
 		"--audio-quality", "0",
 		"--add-metadata",
-		"--metadata-from-title '%(artist)s - %(title)s'",
+		"--metadata-from-title", "%(artist)s - %(title)s",
 		"-o", output, url)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
