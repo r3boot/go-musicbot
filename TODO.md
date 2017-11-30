@@ -10,8 +10,8 @@
 - Make ratings drift back to the starting point over time
 - Add duplicate check
 - Rework favourites/toptracks playlist into mp3 priorities
-- Fix Nov 29 15:19:57 motoko.as65342.net musicbot[11431]: youtube-dl: error: no such option: --metadata-from-title '%!((MISSING)artist)s - %!((MISSING)title)s'
 - Rework ratings to use track field
+- Rework id3 tagging to use id3v2 instead of go-id3
 
 # liquidsoap
 - Make sure its clear which program is playing
