@@ -35,7 +35,7 @@ func (i *ID3Tags) runId3v2(params []string) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf("Running %v\n", cmd)
+	fmt.Printf("Running %s %s\n", "id3v2", strings.Join(params, " "))
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("ID3Tags.runId3v2 cmd.Start: %v", err)
 	}
