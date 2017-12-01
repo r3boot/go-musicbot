@@ -45,7 +45,10 @@ func (i *ID3Tags) runId3v2(params []string) (string, error) {
 		return "", fmt.Errorf(msg)
 	}
 
-	fmt.Printf("stderr: %s\n", stderr.String())
+	if stderr.Len() > 0 {
+		msg := fmt.Sprintf("ID3Tags.runId3v2: failed to run: %v\n", stderr.String())
+		return "", fmt.Errorf(msg)
+	}
 
 	return stdout.String(), nil
 }
@@ -73,7 +76,6 @@ func (i *ID3Tags) ReadFrame(fname, frame string) (string, error) {
 
 		response := result[0][1]
 
-		fmt.Printf("Found frame %s: %s\n", frame, response)
 		return response, nil
 	}
 
