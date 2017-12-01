@@ -24,6 +24,7 @@
 - Add scroller for keeping track of webapi commands
 - Auto reload when websocket is closed
 - Make api process dedicated per stream
+- Send back valid JSON when TA search is less then 3 chars
 
 # Future
 - Download all videos, investigate video stream
