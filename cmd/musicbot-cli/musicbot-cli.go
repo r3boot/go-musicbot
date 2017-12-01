@@ -8,12 +8,13 @@ import (
 	"path/filepath"
 
 	"bytes"
-	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/logger"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
-	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"regexp"
 	"time"
+
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
+	"github.com/r3boot/go-musicbot/lib/logger"
+	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
 
 const (
@@ -41,7 +42,7 @@ var (
 	playlistDir        = flag.String("pd", D_PLAYLISTDIR, "Directory to store playlists in")
 	fetchMissing       = flag.String("fetch-missing", D_FETCH_MISSING, "Fetch all YIDs not in list")
 	RE_YID             = regexp.MustCompile(".*([a-zA-Z0-9_-]{11}).mp3")
-	MP3Library         *mp3lib.MP3Library
+	Id3Tags            *id3tags.ID3Tags
 	YoutubeClient      *youtubeclient.YoutubeClient
 	Config             *config.MusicBotConfig
 	Logger             *logger.Logger
@@ -53,7 +54,10 @@ func SetRating(fname string, newRating int) {
 		Logger.Fatalf("SetRating filepath.Abs: %v", err)
 	}
 
-	MP3Library.SetRating(fullPath, newRating)
+	_, err = Id3Tags.SetRating(fullPath, newRating)
+	if err != nil {
+		Logger.Fatalf("SetRating: %v", err)
+	}
 }
 
 func ShowRating(fname string) {
@@ -62,7 +66,10 @@ func ShowRating(fname string) {
 		Logger.Fatalf("ShowRating filepath.Abs: %v", err)
 	}
 
-	rating := MP3Library.GetRating(fullPath)
+	rating, err := Id3Tags.GetRating(fullPath)
+	if err != nil {
+		Logger.Fatalf("ShowRating: %v", err)
+	}
 
 	fmt.Printf("%d %s\n", rating, fullPath)
 }
@@ -86,7 +93,10 @@ func ShowRatingsForDir(dirname string) {
 
 // Playlist based on a 6 or higher rating
 func GeneratePlayList(name string, minRating int) {
-	ratings := MP3Library.GetAllRatings()
+	ratings, err := Id3Tags.GetAllRatings()
+	if err != nil {
+		Logger.Fatalf("GeneratePlaylist: %v", err)
+	}
 
 	favourites := []string{}
 
@@ -188,8 +198,8 @@ func init() {
 		Logger.Fatalf("config.LoadConfig: %v", err)
 	}
 
-	MP3Library = mp3lib.NewMP3Library(Logger, *baseDir)
-	YoutubeClient = youtubeclient.NewYoutubeClient(Logger, Config, nil, MP3Library, *baseDir)
+	Id3Tags = id3tags.NewID3Tags(Logger, *baseDir)
+	YoutubeClient = youtubeclient.NewYoutubeClient(Logger, Config, nil, Id3Tags, *baseDir)
 }
 
 func main() {

@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 )
 
 func (yt *YoutubeClient) DownloadWorker(id int, yids <-chan string) {
@@ -38,11 +38,19 @@ func (yt *YoutubeClient) SetMetadataForNewSong(yid, fileName string) error {
 		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
 	}
 
-	curRating := yt.mp3Library.GetRating(fileName)
-	if curRating != mp3lib.RATING_UNKNOWN {
+	curRating, err := yt.id3.GetRating(fileName)
+	if err != nil {
+		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
+	}
+
+	if curRating != id3tags.RATING_UNKNOWN {
 		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: Rating already set for %s", curRating)
 	}
-	yt.mp3Library.SetRating(fileName, mp3lib.RATING_DEFAULT)
+
+	_, err = yt.id3.SetRating(fileName, id3tags.RATING_DEFAULT)
+	if err != nil {
+		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
+	}
 
 	return nil
 }

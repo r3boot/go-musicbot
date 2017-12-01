@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 )
 
@@ -24,7 +24,7 @@ type YoutubeClient struct {
 	mpdMutex      sync.RWMutex
 	config        *config.MusicBotConfig
 	mpdClient     *mpdclient.MPDClient
-	mp3Library    *mp3lib.MP3Library
+	id3           *id3tags.ID3Tags
 	MusicDir      string
 	DownloadChan  chan string
 	PlaylistChan  chan string

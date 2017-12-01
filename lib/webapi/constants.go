@@ -2,7 +2,7 @@ package webapi
 
 import (
 	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
@@ -21,7 +21,7 @@ type TemplateData struct {
 type WebApi struct {
 	config *config.MusicBotConfig
 	mpd    *mpdclient.MPDClient
-	mp3    *mp3lib.MP3Library
+	id3    *id3tags.ID3Tags
 	yt     *youtubeclient.YoutubeClient
 }
 

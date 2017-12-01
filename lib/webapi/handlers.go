@@ -29,6 +29,8 @@ var gRating int = -1
 var cache CachedData
 
 func (api *WebApi) updateNowPlayingData() {
+	var err error
+
 	cache = CachedData{}
 
 	for {
@@ -40,9 +42,18 @@ func (api *WebApi) updateNowPlayingData() {
 
 		cache.Title = fileName[:len(fileName)-16]
 		cache.Duration = api.mpd.Duration()
-		cache.Rating = api.mp3.GetRating(fullPath)
+		cache.Rating, err = api.id3.GetRating(fullPath)
+		if err != nil {
+			log.Warningf("WebApi.updateNowPlayingData: %v", err)
+			return
+		}
 
-		allFiles := api.mp3.GetAllFiles()
+		allFiles, err := api.id3.GetAllFiles()
+		if err != nil {
+			log.Warningf("WebApi.updateNowPlayingData: %v", err)
+			return
+		}
+
 		newList := make([]string, len(allFiles))
 
 		for _, file := range allFiles {

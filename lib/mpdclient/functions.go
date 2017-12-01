@@ -63,7 +63,7 @@ func (m *MPDClient) MaintainMPDState() {
 		}
 
 		fileName := songAttrs["file"]
-		fullPath := m.mp3.BaseDir + "/" + fileName
+		fullPath := m.id3.BaseDir + "/" + fileName
 		curSongData.Title = fileName[:len(fileName)-16]
 
 		statusAttrs, err := m.conn.Status()
@@ -85,7 +85,11 @@ func (m *MPDClient) MaintainMPDState() {
 
 		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
 
-		curSongData.Rating = m.mp3.GetRating(fullPath)
+		curSongData.Rating, err = m.id3.GetRating(fullPath)
+		if err != nil {
+			log.Warningf("MPDClient.MaintainMPDState: %v", err)
+			return
+		}
 
 		m.np = curSongData
 
