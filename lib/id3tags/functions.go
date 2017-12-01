@@ -215,6 +215,10 @@ func (i *ID3Tags) GetAllFiles() ([]string, error) {
 		if fs.Name() == "" {
 			continue
 		}
+		if !strings.HasSuffix(fs.Name(), ".mp3") {
+			continue
+		}
+
 		tmpList = append(tmpList, fs.Name())
 		totItems += 1
 	}
