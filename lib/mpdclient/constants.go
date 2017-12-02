@@ -1,10 +1,11 @@
 package mpdclient
 
 import (
-	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"gompd/mpd"
 	"sync"
+
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 )
 
 const (
@@ -33,7 +34,7 @@ type RequestQueue struct {
 
 type MPDClient struct {
 	config  *config.MusicBotConfig
-	mp3     *mp3lib.MP3Library
+	id3     *id3tags.ID3Tags
 	address string
 	conn    *mpd.Client
 	np      NowPlayingData

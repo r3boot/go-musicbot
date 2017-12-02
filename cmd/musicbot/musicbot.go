@@ -10,9 +10,9 @@ import (
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/ircclient"
 	"github.com/r3boot/go-musicbot/lib/logger"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/webapi"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
 	"gopkg.in/sevlyar/go-daemon.v0"
@@ -58,14 +58,14 @@ func main() {
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
-	MP3Library := mp3lib.NewMP3Library(Logger, musicDir)
+	Id3Tags := id3tags.NewID3Tags(Logger, musicDir)
 
-	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, MP3Library)
+	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, Id3Tags)
 	if err != nil {
 		Logger.Fatalf("%v", err)
 	}
 
-	YoutubeClient := youtubeclient.NewYoutubeClient(Logger, Config, MPDClient, MP3Library, musicDir)
+	YoutubeClient := youtubeclient.NewYoutubeClient(Logger, Config, MPDClient, Id3Tags, musicDir)
 
 	if Config.App.Daemonize {
 		pidFile := fmt.Sprintf("/var/musicbot/%s-%s.pid", Config.IRC.Nickname, chanName)
@@ -93,7 +93,7 @@ func main() {
 
 	// API + Web UI
 	if Config.App.APIEnabled {
-		WebApi := webapi.NewWebApi(Logger, Config, MPDClient, MP3Library, YoutubeClient)
+		WebApi := webapi.NewWebApi(Logger, Config, MPDClient, Id3Tags, YoutubeClient)
 
 		if err = WebApi.Setup(); err != nil {
 			Logger.Fatalf("%v", err)
@@ -109,7 +109,7 @@ func main() {
 
 	// IRC bot
 	if Config.App.IrcBotEnabled {
-		IRCClient := ircclient.NewIrcClient(Logger, Config, MPDClient, YoutubeClient, MP3Library)
+		IRCClient := ircclient.NewIrcClient(Logger, Config, MPDClient, YoutubeClient, Id3Tags)
 		Logger.Debugf("Running IRC bot")
 		if err = IRCClient.Run(); err != nil {
 			Logger.Fatalf("%v", err)

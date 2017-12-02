@@ -3,11 +3,12 @@ package ircclient
 import (
 	"regexp"
 
+	"go-ircevent"
+
 	"github.com/r3boot/go-musicbot/lib/config"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
-	"go-ircevent"
 )
 
 const (
@@ -35,10 +36,10 @@ var (
 )
 
 type IrcClient struct {
-	config     *config.MusicBotConfig
-	conn       *irc.Connection
-	mpdClient  *mpdclient.MPDClient
-	ytClient   *youtubeclient.YoutubeClient
-	mp3Library *mp3lib.MP3Library
-	Online     map[string]bool
+	config    *config.MusicBotConfig
+	conn      *irc.Connection
+	mpdClient *mpdclient.MPDClient
+	ytClient  *youtubeclient.YoutubeClient
+	id3       *id3tags.ID3Tags
+	Online    map[string]bool
 }

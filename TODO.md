@@ -11,7 +11,8 @@
 - Add duplicate check
 - Rework favourites/toptracks playlist into mp3 priorities
 - Rework ratings to use track field
-- Rework id3 tagging to use id3v2 instead of go-id3
+- Keep playlist prio + play queue in sync
+- Clear playqueue on startup
 
 # liquidsoap
 - Make sure its clear which program is playing
@@ -25,6 +26,7 @@
 - Auto reload when websocket is closed
 - Make api process dedicated per stream
 - Add chat bridge to IRC
+- Send back valid JSON when TA search is less then 3 chars
 
 # Future
 - Download all videos, investigate video stream

@@ -3,25 +3,26 @@ package ircclient
 import (
 	"crypto/tls"
 	"fmt"
+	"go-ircevent"
+
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/logger"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 	"github.com/r3boot/go-musicbot/lib/ytclient"
-	"go-ircevent"
 )
 
 var log *logger.Logger
 
-func NewIrcClient(l *logger.Logger, config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient, mp3Library *mp3lib.MP3Library) *IrcClient {
+func NewIrcClient(l *logger.Logger, config *config.MusicBotConfig, mpdClient *mpdclient.MPDClient, ytClient *youtubeclient.YoutubeClient, id3 *id3tags.ID3Tags) *IrcClient {
 	log = l
 
 	client := &IrcClient{
-		config:     config,
-		mpdClient:  mpdClient,
-		ytClient:   ytClient,
-		mp3Library: mp3Library,
-		Online:     make(map[string]bool),
+		config:    config,
+		mpdClient: mpdClient,
+		ytClient:  ytClient,
+		id3:       id3,
+		Online:    make(map[string]bool),
 	}
 
 	client.conn = irc.IRC(config.IRC.Nickname, config.IRC.Nickname)

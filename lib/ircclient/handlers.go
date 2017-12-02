@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 	"go-ircevent"
+
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 )
 
 func (c *IrcClient) initCallbacks() {
@@ -151,7 +152,13 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 	}
 
 	duration := c.mpdClient.Duration()
-	rating := c.mp3Library.GetRating(fileName)
+	rating, err := c.id3.GetRating(fileName)
+	if err != nil {
+		log.Warningf("IrcClient.HandleNowPlaying: %v", err)
+		response := "Failed to retrieve NowPlaying data"
+		c.conn.Privmsg(channel, response)
+		return
+	}
 
 	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fileName[:len(fileName)-16], duration, rating)
 	c.conn.Privmsg(channel, response)
@@ -164,11 +171,24 @@ func (c *IrcClient) HandleRadioUrl(channel, line string) {
 
 func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
-	newRating := c.mp3Library.DecreaseRating(fileName)
+	newRating, err := c.id3.DecreaseRating(fileName)
+	if err != nil {
+		log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
+		response := "Failed to decrease rating"
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
 	log.Infof("Rating for %s is now %d", fileName, newRating)
-	if newRating == mp3lib.RATING_ZERO {
+	if newRating == id3tags.RATING_ZERO {
 		c.mpdClient.Next()
-		c.mp3Library.RemoveFile(fileName)
+		err := c.id3.RemoveFile(fileName)
+		if err != nil {
+			log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
+			response := "Failed to decrease rating"
+			c.conn.Privmsg(channel, response)
+			return
+		}
 		log.Warningf("IrcClient.HandleDecreaseRating: Rating was 0, removed %s", fileName)
 		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName[:len(fileName)-16])
 		c.conn.Privmsg(channel, response)
@@ -180,7 +200,14 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 
 func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	fileName := c.mpdClient.NowPlaying()
-	newRating := c.mp3Library.IncreaseRating(fileName)
+	newRating, err := c.id3.IncreaseRating(fileName)
+	if err != nil {
+		log.Warningf("IrcClient.HandleIncreaseRating: %v", err)
+		response := "Failed to increase rating"
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
 	log.Infof("Rating for %s is now %d", fileName, newRating)
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fileName[:len(fileName)-16], newRating)
 	c.conn.Privmsg(channel, response)

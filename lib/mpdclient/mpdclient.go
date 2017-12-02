@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/logger"
-	"github.com/r3boot/go-musicbot/lib/mp3lib"
 )
 
 var log *logger.Logger
 
-func NewMPDClient(l *logger.Logger, config *config.MusicBotConfig, mp3 *mp3lib.MP3Library) (*MPDClient, error) {
+func NewMPDClient(l *logger.Logger, config *config.MusicBotConfig, id3 *id3tags.ID3Tags) (*MPDClient, error) {
 	log = l
 
 	client := &MPDClient{
 		config:  config,
-		mp3:     mp3,
+		id3:     id3,
 		address: fmt.Sprintf("%s:%d", config.MPD.Address, config.MPD.Port),
 		np:      NowPlayingData{},
 		queue:   NewRequestQueue(MAX_QUEUE_ITEMS),
