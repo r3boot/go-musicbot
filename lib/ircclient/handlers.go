@@ -146,13 +146,14 @@ func (c *IrcClient) HandleNext(channel, line string) {
 }
 
 func (c *IrcClient) HandleNowPlaying(channel, line string) {
-	fileName := c.mpdClient.NowPlaying()
-	if strings.HasPrefix(fileName, "Error: ") {
-		fileName = c.mpdClient.Play()
+	np := c.mpdClient.NowPlaying()
+	fname := np.Filename
+	if strings.HasPrefix(fname, "Error: ") {
+		fname = c.mpdClient.Play().Filename
 	}
 
-	duration := c.mpdClient.Duration()
-	rating, err := c.id3.GetRating(fileName)
+	duration := np.Duration
+	rating, err := c.id3.GetRating(fname)
 	if err != nil {
 		log.Warningf("IrcClient.HandleNowPlaying: %v", err)
 		response := "Failed to retrieve NowPlaying data"
@@ -160,7 +161,7 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 		return
 	}
 
-	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fileName[:len(fileName)-16], duration, rating)
+	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fname[:len(fname)-16], duration, rating)
 	c.conn.Privmsg(channel, response)
 }
 
@@ -170,8 +171,9 @@ func (c *IrcClient) HandleRadioUrl(channel, line string) {
 }
 
 func (c *IrcClient) HandleDecreaseRating(channel, line string) {
-	fileName := c.mpdClient.NowPlaying()
-	newRating, err := c.id3.DecreaseRating(fileName)
+	np := c.mpdClient.NowPlaying()
+	fname := np.Filename
+	newRating, err := c.id3.DecreaseRating(fname)
 	if err != nil {
 		log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
 		response := "Failed to decrease rating"
@@ -179,28 +181,29 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 		return
 	}
 
-	log.Infof("Rating for %s is now %d", fileName, newRating)
+	log.Infof("Rating for %s is now %d", fname, newRating)
 	if newRating == id3tags.RATING_ZERO {
 		c.mpdClient.Next()
-		err := c.id3.RemoveFile(fileName)
+		err := c.id3.RemoveFile(fname)
 		if err != nil {
 			log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
 			response := "Failed to decrease rating"
 			c.conn.Privmsg(channel, response)
 			return
 		}
-		log.Warningf("IrcClient.HandleDecreaseRating: Rating was 0, removed %s", fileName)
-		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fileName[:len(fileName)-16])
+		log.Warningf("IrcClient.HandleDecreaseRating: Rating was 0, removed %s", fname)
+		response := fmt.Sprintf("Rating for %s is so low, it has been removed from the playlist", fname[:len(fname)-16])
 		c.conn.Privmsg(channel, response)
 	} else {
-		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fileName[:len(fileName)-16], newRating)
+		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fname[:len(fname)-16], newRating)
 		c.conn.Privmsg(channel, response)
 	}
 }
 
 func (c *IrcClient) HandleIncreaseRating(channel, line string) {
-	fileName := c.mpdClient.NowPlaying()
-	newRating, err := c.id3.IncreaseRating(fileName)
+	np := c.mpdClient.NowPlaying()
+	fname := np.Filename
+	newRating, err := c.id3.IncreaseRating(fname)
 	if err != nil {
 		log.Warningf("IrcClient.HandleIncreaseRating: %v", err)
 		response := "Failed to increase rating"
@@ -208,8 +211,8 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 		return
 	}
 
-	log.Infof("Rating for %s is now %d", fileName, newRating)
-	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fileName[:len(fileName)-16], newRating)
+	log.Infof("Rating for %s is now %d", fname, newRating)
+	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fname[:len(fname)-16], newRating)
 	c.conn.Privmsg(channel, response)
 }
 

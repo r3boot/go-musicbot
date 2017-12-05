@@ -17,13 +17,27 @@ const (
 	TITLE  string = "TIT2"
 )
 
+type TrackTags struct {
+	Artist string
+	Title  string
+}
+
+type TagList map[string]*TrackTags
+
 type ID3Tags struct {
 	BaseDir string
-	mutex   sync.RWMutex
+	tagList TagList
 }
 
 var (
-	RE_TRACK  = regexp.MustCompile("^TRCK.*: ([0-9]+)$")
-	RE_ARTIST = regexp.MustCompile("^TPE1.*: (.*)$")
-	RE_TITLE  = regexp.MustCompile("^TIT2.*: (.*)$")
+	// id3v1 tag info for /music/2600nl/Zero 7 - In The Waiting Line-5tZlu4wP4pw.mp3:
+	RE_TRACK = regexp.MustCompile("^id3v1 tag info for (.*):$")
+
+	// TPE1 (Lead performer(s)/Soloist(s)): Zero 7
+	RE_ARTIST = regexp.MustCompile("^TPE1 .*: (.*)$")
+
+	// TIT2 (Title/songname/content description): In The Waiting Line
+	RE_TITLE = regexp.MustCompile("^TIT2 .*: (.*)$")
+
+	tagListMutex sync.RWMutex
 )

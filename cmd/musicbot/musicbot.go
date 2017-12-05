@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/r3boot/go-musicbot/lib/albumart"
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/mpdclient"
 
@@ -58,9 +59,11 @@ func main() {
 	chanName := stripChannel(Config.IRC.Channel)
 	musicDir = fmt.Sprintf("%s/%s", Config.Youtube.BaseDir, chanName)
 
+	AlbumArt := albumart.NewAlbumArt(Logger, Config.Api.Assets)
+
 	Id3Tags := id3tags.NewID3Tags(Logger, musicDir)
 
-	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, Id3Tags)
+	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, Id3Tags, AlbumArt, musicDir)
 	if err != nil {
 		Logger.Fatalf("%v", err)
 	}
@@ -93,17 +96,13 @@ func main() {
 
 	// API + Web UI
 	if Config.App.APIEnabled {
-		WebApi := webapi.NewWebApi(Logger, Config, MPDClient, Id3Tags, YoutubeClient)
-
-		if err = WebApi.Setup(); err != nil {
-			Logger.Fatalf("%v", err)
-		}
+		WebAPI := webapi.NewWebAPI(Logger, Config, MPDClient, Id3Tags, YoutubeClient)
 
 		if Config.App.IrcBotEnabled {
 			Logger.Debugf("WebUI enabled")
-			go WebApi.Run()
+			go WebAPI.Run()
 		} else {
-			WebApi.Run()
+			WebAPI.Run()
 		}
 	}
 

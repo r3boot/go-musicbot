@@ -1,50 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../img/favicon.ico">
+
     <title>{{.Title}}</title>
-    <link rel="stylesheet" href="/css/2600nl.css">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/theme-darkly.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Slider -->
+    <link href="/css/bootstrap-slider.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/css/player.css" rel="stylesheet">
 </head>
+
 <body>
-<div id="background"></div>
-<div class="wrap">
-    <div id="leftSpace">&nbsp;</div>
-    <div id="contentDiv">
-        <div id="logo"><img src="/img/logo.png" alt="{{.Title}}"/></div>
-        <div id="nowPlaying">Waiting for data..</div>
-        <div id="controls">
-            <div id="streamcontrols">
-                <audio id="audiocontrols">
-                    <source id="streamSrc" src="{{.Mp3Stream}}" type="audio/mpeg" />
-                    Your browser does not support the audio element for the stream formats.
-                </audio>
-            </div>
-            <div id="buttons">
-                <input class="button" id="idPlay" type="button" value="Play"/>
-                <input class="button" id="idVolDown" type="button" value="Vol Down"/>
-                <input class="button" id="idVolUp" type="button" value="Vol Up"/>
-                <input class="button" id="idTune" type="button" value="Tune!!"/>
-                <input class="button" id="idBoo" type="button" value="Boo!!"/>
-                <input class="button" id="idNext" type="button" value="Next"/>
+<div id="ViewPort" class="container-fluid">
+    <div id="PlayerView">
+        <div class="row">
+            <div class="col-sm-3 col-md-3 bg-default sidebar">
+                <div class="scrollbar" id="style-1">
+                    <div class="force-overflow">
+                        <input type="text" id="ArtistFilter" onkeyup="FilterArtists()"
+                               placeholder="Search artists ..." title="Type in a name">
+                        <ul id="Artists" class="nav nav-sidebar">
+                            Loading artists ...
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="links">
-            <input class="button" id="idQuery" name="query" type="text" placeholder="Enter query"/>
-            <div class="autocomplete-suggestions"></div>
-            <input class="button" id="idSearch" type="button" value="Request"/>
-            <input class="button" id="idPlaylist" type="button" value="Playlist"/>
+        <div id="streamcontrols">
+            <audio id="audioControls">
+                <source id="streamSrc" src="{{.Mp3Stream}}" type="audio/mpeg"/>
+                Your browser does not support the audio element for the stream
+                formats.
+            </audio>
         </div>
-        <div id="playQueue">
-            Upcoming requests:
-            <ul id="pqList">
-            </ul>
+        <div id="PlayerControls" class="row">
+            <div class="col col-md-2 col-md-offset-3">
+                <img id="idAlbumArt" alt="No art found"/>
+            </div>
+            <div class="col col-md-offset-5">
+                <h4 id="idNowPlaying" class="display-5">Nothing playing
+                    ...</h4>
+                <input id="trackSlider" data-slider-id='trackSliderData'
+                       type="text" data-slider-min="0" data-slider-max="100"
+                       data-slider-step="1" data-slider-value="14"/>
+                &nbsp;&nbsp;&nbsp;<span id="idDuration">-1</span>
+            </div>
+            <p/>
+            <div class="col col-md-offset-5">
+                <button type="button" class="btn btn-default"
+                        id="idPlay"><span
+                        class="glyphicon glyphicon-pause"></span></button>
+                <button type="button" class="btn btn-default"
+                        id="idNext"><span
+                        class="glyphicon glyphicon-step-forward"></span>
+                </button>
+                &nbsp;
+                <input id="volSlider" data-slider-id='volSliderData'
+                       type="text" data-slider-min="0" data-slider-max="100"
+                       data-slider-step="1" data-slider-value="14"/>
+                &nbsp;&nbsp;&nbsp;
+                <span id="idRating" class="badge">-1/10</span>&nbsp;
+                <button type="button" class="btn btn-default"
+                        id="idBoo"><span
+                        class="glyphicon glyphicon-thumbs-down"></span>
+                </button>
+                <button type="button" class="btn btn-default"
+                        id="idTune"><span
+                        class="glyphicon glyphicon-thumbs-up"></span>
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-9 col-sm-offset-5 col-md-9 col-md-offset-3 main">
+                <div id="PlayQueue">
+                    <h4>Queue is empty</h4>
+                </div>
+                <hr/>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Artist</th>
+                            <th>Title</th>
+                            <th>Duration</th>
+                            <th>Rating</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ArtistResults">
+                        </tbody>
+                    </table>
+                    <ul id="ArtistPagination" class="pagination pagination-sm">
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
-    <div id="rightSpace">&nbsp;</div>
 </div>
-<div style="clear:both;"></div>
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
 <script src="/js/jquery-3.2.1.min.js"></script>
-<script src="/js/jquery.autocomplete.min.js"></script>
-<script src="/js/player.js"></script>
+<script src="/js/bootstrap-slider.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/site.js"></script>
+<script>
+    function FilterArtists() {
+        var input, filter, ul, li, a, i;
+        input = document.getElementById("ArtistFilter");
+        filter = input.value.toUpperCase();
+        ul = document.getElementById("Artists");
+        li = ul.getElementsByTagName("li");
+        for (i = 0; i < li.length; i++) {
+            a = li[i].getElementsByTagName("a")[0];
+            if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+        pgPage = 0;
+        pgIndex = 0;
+
+        FillPlaylistResults();
+    }
+</script>
 </body>
 </html>

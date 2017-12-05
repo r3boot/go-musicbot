@@ -1,18 +1,17 @@
 package id3tags
 
-import (
-	"sync"
-
-	"github.com/r3boot/go-musicbot/lib/logger"
-)
+import "github.com/r3boot/go-musicbot/lib/logger"
 
 var log *logger.Logger
 
 func NewID3Tags(l *logger.Logger, baseDir string) *ID3Tags {
 	log = l
-
-	return &ID3Tags{
+	id3 := &ID3Tags{
 		BaseDir: baseDir,
-		mutex:   sync.RWMutex{},
+		tagList: TagList{},
 	}
+
+	go id3.UpdateTags()
+
+	return id3
 }

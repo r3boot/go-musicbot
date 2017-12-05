@@ -1,6 +1,7 @@
 package webapi
 
 import (
+	"fmt"
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/logger"
@@ -10,17 +11,22 @@ import (
 
 var log *logger.Logger
 
-func NewWebApi(l *logger.Logger, cfg *config.MusicBotConfig, mpd *mpdclient.MPDClient, id3 *id3tags.ID3Tags, yt *youtubeclient.YoutubeClient) *WebApi {
+func NewWebAPI(l *logger.Logger, cfg *config.MusicBotConfig, mpd *mpdclient.MPDClient, id3 *id3tags.ID3Tags, yt *youtubeclient.YoutubeClient) *WebAPI {
 	log = l
 
-	api := &WebApi{
-		config: cfg,
-		mpd:    mpd,
-		id3:    id3,
-		yt:     yt,
+	address := fmt.Sprintf("%s:%s", cfg.Api.Address, cfg.Api.Port)
+	assets := cfg.Api.Assets
+
+	api := &WebAPI{
+		address:   address,
+		assets:    assets,
+		mpdClient: mpd,
+		id3Tags:   id3,
+		youtube:   yt,
+		Config:    cfg,
 	}
 
-	go api.updateNowPlayingData()
+	go api.UpdatePlaylist()
 
 	return api
 }

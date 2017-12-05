@@ -1,87 +1,31 @@
 package id3tags
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
+	"path"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"path"
+	"time"
 )
 
-func (i *ID3Tags) expandFullPath(fname string) (string, error) {
-	var err error
+func (t *TagList) Has(fname string) bool {
+	tagListMutex.RLock()
+	defer tagListMutex.RUnlock()
 
-	fullPath := fname
-	if !strings.HasPrefix(fname, "/") {
-		fullPath, err = filepath.Abs(i.BaseDir + "/" + fname)
-		if err != nil {
-			return "", fmt.Errorf("i.expandFullPath filepath.Abs: %v", err)
+	if strings.HasPrefix(fname, "/") {
+		fname = path.Base(fname)
+	}
+
+	for key, _ := range *t {
+		if key == fname {
+			return true
 		}
 	}
-
-	return fullPath, nil
-}
-
-func (i *ID3Tags) runId3v2(params []string) (string, error) {
-	var stdout, stderr bytes.Buffer
-
-	cmd := exec.Command("id3v2", params...)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-
-	log.Debugf("Running %s %s\n", "id3v2", strings.Join(params, " "))
-
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("ID3Tags.runId3v2 cmd.Start: %v", err)
-	}
-
-	if err := cmd.Wait(); err != nil {
-		msg := fmt.Sprintf("ID3Tags.runId3v2 cmd.Wait: %v\nStdout: %s\nStderr: %s", err, stdout.String(), stderr.String())
-		return "", fmt.Errorf(msg)
-	}
-
-	if stderr.Len() > 0 {
-		msg := fmt.Sprintf("ID3Tags.runId3v2: failed to run: %v\n", stderr.String())
-		return "", fmt.Errorf(msg)
-	}
-
-	return stdout.String(), nil
-}
-
-func (i *ID3Tags) ReadFrame(fname, frame string) (string, error) {
-	fullPath, err := i.expandFullPath(fname)
-	if err != nil {
-		return "", fmt.Errorf("ID3Tags.ReadField: %v", err)
-	}
-
-	params := []string{"-l", fullPath}
-
-	output, err := i.runId3v2(params)
-	if err != nil {
-		return "", fmt.Errorf("ID3Tags.ReadField: %v", err)
-	}
-
-	regex := fmt.Sprintf("^%s.*: (.*)$", frame)
-	reFrame := regexp.MustCompile(regex)
-	for _, line := range strings.Split(output, "\n") {
-		result := reFrame.FindAllStringSubmatch(line, -1)
-		if len(result) == 0 {
-			continue
-		}
-
-		response := result[0][1]
-
-		return response, nil
-	}
-
-	return "", fmt.Errorf("ID3Tags.ReadField: no %s frame found", frame)
+	return false
 }
 
 func (i *ID3Tags) SetRating(fname string, rating int) (int, error) {
@@ -119,7 +63,7 @@ func (i *ID3Tags) GetRating(fname string) (int, error) {
 	if result != "" {
 		rating, err = strconv.Atoi(result)
 		if err != nil {
-			return RATING_UNKNOWN, fmt.Errorf("ID3Tags.GetRating strconv.Atoi: %v", err)
+			return RATING_UNKNOWN, fmt.Errorf("ID3Tags.GetRating strconv.Atoi:%v", err)
 		}
 	} else {
 		rating = RATING_UNKNOWN
@@ -149,7 +93,7 @@ func (i *ID3Tags) DecreaseRating(name string) (int, error) {
 			rating -= 1
 			rating, err := i.SetRating(fullPath, rating)
 			if err != nil {
-				return RATING_UNKNOWN, fmt.Errorf("ID3Tags.DecreaseRating: %v", err)
+				return RATING_UNKNOWN, fmt.Errorf("ID3Tags.DecreaseRating:%v", err)
 			}
 			return rating, nil
 		}
@@ -188,6 +132,103 @@ func (i *ID3Tags) IncreaseRating(name string) (int, error) {
 	return RATING_UNKNOWN, fmt.Errorf("ID3Tags.IncreaseRating: unknown error")
 }
 
+func isTrack(line string) (string, bool) {
+	result := RE_TRACK.FindAllStringSubmatch(line, -1)
+
+	if len(result) == 0 {
+		return "", false
+	}
+
+	return result[0][1], true
+}
+
+func isArtist(line string) (string, bool) {
+	result := RE_ARTIST.FindAllStringSubmatch(line, -1)
+
+	if len(result) == 0 {
+		return "", false
+	}
+
+	return result[0][1], true
+}
+
+func isTitle(line string) (string, bool) {
+	result := RE_TITLE.FindAllStringSubmatch(line, -1)
+
+	if len(result) == 0 {
+		return "", false
+	}
+
+	return result[0][1], true
+}
+
+func (i *ID3Tags) UpdateTags() error {
+	destPath := fmt.Sprintf("%s/*.mp3", i.BaseDir)
+
+	log.Debugf("ID3Tags.UpdateTags: Glob pattern: %s", destPath)
+
+	for {
+		time.Sleep(5 * time.Second)
+
+		allEntries, err := filepath.Glob(destPath)
+		if err != nil {
+			return fmt.Errorf("ID3Tags.GetTags filepath.Glob: %v", err)
+		}
+		log.Debugf("ID3Tags.UpdateTags: Found %d files", len(allEntries))
+
+		filteredEntries := []string{}
+		for _, entry := range allEntries {
+			if i.tagList.Has(entry) {
+				continue
+			}
+			filteredEntries = append(filteredEntries, entry)
+		}
+
+		params := []string{"-l"}
+		params = append(params, filteredEntries...)
+		output, err := i.runId3v2(params)
+		if err != nil {
+			return fmt.Errorf("ID3Tags.GetTags: %v", err)
+		}
+
+		curTrack := ""
+		tagListMutex.Lock()
+		for _, line := range strings.Split(output, "\n") {
+			if fullTrack, ok := isTrack(line); ok {
+				curTrack = path.Base(fullTrack)
+				newTrack := &TrackTags{}
+				i.tagList[curTrack] = newTrack
+			}
+
+			if artist, ok := isArtist(line); ok {
+				if curTrack == "" {
+					log.Warningf("ID3Tags.GetTags isArtist: Track is empty")
+					tagListMutex.Unlock()
+					continue
+				}
+
+				i.tagList[curTrack].Artist = artist
+			}
+
+			if title, ok := isTitle(line); ok {
+				if curTrack == "" {
+					log.Warningf("ID3Tags.GetTags isArtist: Track is empty")
+					tagListMutex.Unlock()
+					continue
+				}
+				i.tagList[curTrack].Title = title
+			}
+		}
+		tagListMutex.Unlock()
+	}
+
+	return nil
+}
+
+func (i *ID3Tags) GetTags() (TagList, error) {
+	return i.tagList, nil
+}
+
 func (i *ID3Tags) RemoveFile(fname string) error {
 	fullPath, err := i.expandFullPath(fname)
 	if err != nil {
@@ -206,7 +247,6 @@ func (i *ID3Tags) RemoveFile(fname string) error {
 
 	return nil
 }
-
 func (i *ID3Tags) GetAllFiles() ([]string, error) {
 	files, err := ioutil.ReadDir(i.BaseDir)
 	if err != nil {

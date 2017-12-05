@@ -1,0 +1,146 @@
+/*
+ * Base structure
+ */
+
+/* Move down content because we have a fixed navbar that is 3.5rem tall */
+body {
+  /* padding-top: 3.5rem;*/
+}
+
+/*
+ * Typography
+ */
+
+h1 {
+  padding-bottom: 9px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  position: fixed;
+  top: 0px;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 20px 0;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+  border-right: 1px solid #eee;
+}
+
+.sidebar .nav {
+  margin-bottom: 20px;
+}
+
+.sidebar .nav-item {
+  width: 100%;
+}
+
+.sidebar .nav-item + .nav-item {
+  margin-left: 0;
+}
+
+.sidebar .nav-link {
+  border-radius: 0;
+}
+
+/*
+ * Dashboard
+ */
+
+/* Placeholders */
+.placeholders {
+  padding-bottom: 3rem;
+}
+
+.placeholder img {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+/*
+ * Artists search box
+ */
+#ArtistFilter {
+  background-image: url('../img/searchicon.png');
+  background-position: 10px 12px;
+  background-repeat: no-repeat;
+  width: 95%;
+  margin-left: 10px;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+/*
+ * Album Art
+ */
+#AlbumArt {
+  width: 32px;
+  height: 32px;
+}
+
+/*
+ * Track duration Slider
+ */
+#trackSliderData .slider-selection {
+  background: #BABABA;
+}
+#trackSliderData.slider-horizontal {
+  width:390px !important;
+}
+
+/*
+ * Volume Slider
+ */
+#volSliderData .slider-selection {
+	background: #BABABA;
+}
+#volSliderData.slider-horizontal {
+    width:200px !important;
+}
+
+/*
+ * Audio player controls container
+ */
+#PlayerControls {
+  padding-top: 10px;
+}
+
+.scrollbar
+{
+  float: left;
+  height: 100%;
+
+  overflow-y: scroll;
+}
+
+.force-overflow
+{
+  min-height: 450px;
+}
+
+#style-1::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+#style-1::-webkit-scrollbar
+{
+	background-color: #F5F5F5;
+}
+
+#style-1::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #555;
+}

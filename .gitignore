@@ -7,3 +7,4 @@ restapi/operations
 restapi/doc.go
 restapi/embedded_spec.go
 restapi/server.go
+img/art/*.jpg

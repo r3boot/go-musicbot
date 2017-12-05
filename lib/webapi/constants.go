@@ -8,70 +8,59 @@ import (
 )
 
 const (
-	MAX_PLAYLIST_LENGTH int    = 8192
-	TF_CLF              string = "02/Jan/2006:15:04:05 -0700"
+	TF_CLF = "02/Jan/2006:15:04:05 -0700"
+
+	WS_GET_PLAYLIST = 0
+	WS_GET_ARTISTS  = 1
+	WS_NEXT         = 2
+	WS_BOO          = 3
+	WS_TUNE         = 4
+	WS_NOWPLAYING   = 5
+	WS_REQUEST      = 6
 )
 
-type TemplateData struct {
-	Title     string
-	OggStream string
-	Mp3Stream string
+type NowPlayingData struct {
+	Artist   string `json:"artist"`
+	Title    string `json:"title"`
+	Name     string `json:"name"`
+	Duration int    `json:"duration"`
+	Rating   int    `json:"rating"`
+	ImageUrl string `json:"image_url"`
 }
 
-type WebApi struct {
-	config *config.MusicBotConfig
-	mpd    *mpdclient.MPDClient
-	id3    *id3tags.ID3Tags
-	yt     *youtubeclient.YoutubeClient
+type IndexTemplateData struct {
+	Title      string
+	NowPlaying string
+	Mp3Stream  string
 }
 
-type ClientRequest struct {
-	Operation string
+type WebResponse struct {
+	Status  bool        `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
-type SearchRequest struct {
-	Operation string
-	Query     string
+type WSClientRequest struct {
+	Id        int         `json:"i"`
+	Operation int         `json:"o"`
+	Data      interface{} `json:"d"`
 }
 
-type CachedData struct {
-	Title    string
-	Duration string
-	Rating   int
-	Playlist []string
+type WSServerResponse struct {
+	ClientId  int         `json:"i"`
+	Operation int         `json:"o"`
+	Status    bool        `json:"s"`
+	Message   string      `json:"m"`
+	Data      interface{} `json:"d"`
 }
 
-type AutoCompleteRequest struct {
-	Query string `json:"query"`
-}
-
-type AutoCompleteResponse struct {
-	Query       string   `json:"query"`
-	Suggestions []string `json:"suggestions"`
-}
-
-type NowPlaying struct {
-	Title    string
-	Duration string
-	Rating   int
-}
-
-type NowPlayingResp struct {
-	Data NowPlaying
-	Pkt  string
-}
-
-type GetQueueRespData struct {
-	Entries map[int]string
-	Size    int
-}
-
-type GetQueueResp struct {
-	Data GetQueueRespData
-	Pkt  string
-}
-
-type GetFilesResp struct {
-	Data []string
-	Pkt  string
+type WebAPI struct {
+	address   string
+	assets    string
+	mpdClient *mpdclient.MPDClient
+	id3Tags   *id3tags.ID3Tags
+	youtube   *youtubeclient.YoutubeClient
+	Config    *config.MusicBotConfig
+	Playlist  mpdclient.Playlist
+	Artists   mpdclient.Artists
 }
