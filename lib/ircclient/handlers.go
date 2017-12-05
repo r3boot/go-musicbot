@@ -161,7 +161,11 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 		return
 	}
 
-	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fname[:len(fname)-16], duration, rating)
+	durationFormat := fmt.Sprintf("%ds", int(duration))
+	d, _ := time.ParseDuration(durationFormat)
+	formattedDuration := d.String()
+
+	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fname[:len(fname)-16], formattedDuration, rating)
 	c.conn.Privmsg(channel, response)
 }
 
