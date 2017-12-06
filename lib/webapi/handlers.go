@@ -36,7 +36,8 @@ func (a *WebAPI) HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 			data := IndexTemplateData{
 				Title:     "2600nl radio",
-				Mp3Stream: "https://radio.as65342.net/stream/2600nl.mp3",
+				Mp3Stream: a.Config.Api.Mp3StreamURL,
+				OggStream: a.Config.Api.OggStreamURL,
 			}
 
 			output := bytes.Buffer{}

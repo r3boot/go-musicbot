@@ -32,6 +32,7 @@ type IndexTemplateData struct {
 	Title      string
 	NowPlaying string
 	Mp3Stream  string
+	OggStream  string
 }
 
 type WebResponse struct {
