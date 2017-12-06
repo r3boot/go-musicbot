@@ -26,16 +26,16 @@
     <div id="PlayerView">
         <div class="row">
             <div class="col-sm-3 col-md-3 bg-default sidebar">
-                <div class="scrollbar" id="style-1">
-                    <div class="force-overflow">
-                        <input type="text" id="ArtistFilter" onkeyup="FilterArtists()"
-                               placeholder="Search artists ..." title="Type in a name">
-                        <ul id="Artists" class="nav nav-sidebar">
-                            Loading artists ...
-                        </ul>
-                    </div>
-                </div>
+                <input type="search" id="ArtistFilter"
+                       onchange="FilterArtists()"
+                       placeholder="Search ...">
+                <span id="top-link-block" styledata-spy="affix" data-offset-bottom="600">
+                </span>
+                <ul id="Artists" class="nav nav-sidebar" styledata-spy="affix" data-offset-bottom="10">
+                    Loading artists ...
+                </ul>
             </div>
+
         </div>
         <div id="streamcontrols">
             <audio id="audioControls">
@@ -101,9 +101,13 @@
                         <tbody id="ArtistResults">
                         </tbody>
                     </table>
-                    <ul id="ArtistPagination" class="pagination pagination-sm">
-                    </ul>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-5 col-md-offset-5">
+                <ul id="ArtistPagination" class="pagination pagination-sm">
+                </ul>
             </div>
         </div>
     </div>

@@ -9,10 +9,20 @@ const WS_REQUEST = 6;
 const RESULTS_PER_PAGE = 10;
 const MAX_PAGES = 10;
 
+const ENC_SINGLE_QUOTE = "|s|";
+const ENC_DOUBLE_QUOTE = "|d|";
+const ENC_BACKTICK = "|b|";
+const DEC_SINGLE_QUOTE = /|s|/g;
+const DEC_DOUBLE_QUOTE = /|d|/g;
+const DEC_BACKTICK = /|b|/g;
+
+var curResultsPerPage = 0;
+var resultsPerPage = 10;
 var lastRequest = 0;
 var Playlist = [];
 var Artists = [];
 var NowPlaying = "";
+var numQueued = 0;
 
 var ArtistsViewData = [];
 
@@ -29,8 +39,43 @@ function toInt(value) {
     return tmp.substring(0, tmp.indexOf("."));
 }
 
+function calcResultsPerPage() {
+    var contentHeight = window.innerHeight - 275;
+    console.log("contentHeight: " + contentHeight);
+
+    var queueHeight = 0;
+    if (numQueued > 0) {
+        queueHeight = (numQueued * 40) + 40;
+    }
+    console.log("queueHeight: " + queueHeight);
+
+    var resultsHeight = (contentHeight - queueHeight);
+    console.log("resultsHeight: " + resultsHeight);
+
+    resultsPerPage = Math.round((resultsHeight / 40) - 2);
+    console.log("resultsPerPage: " + resultsPerPage);
+}
+
+function encodeString(plain) {
+    var result = plain.replace(/\"/g, "|d|");
+    result = result.replace(/\'/g, "|s|");
+    result = result.replace(/\`/g, "|b|");
+    result = encodeURI(result);
+    result = btoa(result);
+    return result;
+}
+
+function decodeString(encoded) {
+    var result = atob(encoded);
+    result = decodeURI(result);
+    result = result.replace(/\|d\|/g, "\"");
+    result = result.replace(/\|s\|/g, "\'");
+    result = result.replace(/\|b\|/g, "\`");
+    return result
+}
+
 function pgFilterObjects(data) {
-    return data.slice(pgIndex, pgIndex + RESULTS_PER_PAGE);
+    return data.slice(pgIndex, pgIndex + resultsPerPage);
 }
 
 function pgGotoPage(page) {
@@ -47,7 +92,7 @@ function pgGotoPage(page) {
             pgPage = page;
     }
 
-    pgIndex = pgPage * RESULTS_PER_PAGE;
+    pgIndex = pgPage * resultsPerPage;
 
     FillPlaylistResults();
 }
@@ -62,10 +107,12 @@ function navItem(p) {
 }
 
 function pgShowPagination(numItems) {
-    var maxPages = numItems / RESULTS_PER_PAGE;
+    var maxPages = numItems / resultsPerPage;
     var pages = [];
 
-    if (numItems <= RESULTS_PER_PAGE) {
+    console.log("pg: " + resultsPerPage);
+
+    if (numItems <= resultsPerPage) {
         $("#ArtistPagination").html("");
         return;
     }
@@ -127,8 +174,12 @@ function prettyDuration(duration) {
 function UpdateArtists() {
     if ($("#ArtistFilter").val() === "") {
         var items = [];
+
         $.each(Artists, function (key, val) {
-            items.push("<li class='nav-item'><a class='nav-link' href='#' onclick='LookupTracksForArtist(\"" + atob(val) + "\")'>" + val + "</a></li>");
+            if (val.toString().startsWith("\'")) {
+                return true;
+            }
+            items.push("<li class='nav-item'><a class='nav-link' onclick='LookupTracksForArtist(\"" + encodeString(val) + "\")'>" + val + "</a></li>");
         });
 
         $("#Artists").html(items.join(""));
@@ -139,6 +190,10 @@ function FillPlaylistResults() {
     if ($("#ArtistFilter").val() === "") {
         ArtistsViewData = Playlist;
     }
+
+    calcResultsPerPage();
+
+    resultsPerPage = Math.floor((window.innerHeight - 275) / 40)-1;
 
     var queryItems = pgFilterObjects(ArtistsViewData);
     var items = [];
@@ -158,18 +213,28 @@ function FillPlaylistResults() {
 }
 
 function LookupTracksForArtist(artist) {
-    var lookupArtist = btoa(artist).toUpperCase();
+    var lookupArtist = decodeString(artist).toUpperCase();
 
     var foundArtistsData = [];
     $.each(Playlist, function (key, val) {
         if (val.artist === "") {
-            if (val.title.toUpperCase() === lookupArtist) {
+            if ((val.title) && (val.title !== "")) {
+                if (val.title.toUpperCase().indexOf(lookupArtist) > -1) {
+                    foundArtistsData.push(val);
+                }
+            } else {
+                if (val.filename.toUpperCase().indexOf(lookupArtist) > -1) {
+                    foundArtistsData.push(val);
+                }
+            }
+        } else {
+            if (val.artist.toUpperCase().indexOf(lookupArtist) > -1) {
                 foundArtistsData.push(val);
             }
-        } else if (val.artist.toUpperCase() === lookupArtist) {
-            foundArtistsData.push(val);
         }
     });
+
+    calcResultsPerPage();
 
     pgPage = 0;
     pgIndex = 0;
@@ -184,7 +249,11 @@ function LookupTracksForArtist(artist) {
         } else {
             query = val.title;
         }
-        foundArtists.push("<tr><td>" + val.artist + "</td><td>" + val.title + "</td><td>" + val.rating + "/10, " + prettyDuration(val.duration) + "</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+        if ((val.title) && (val.title !== "")) {
+            foundArtists.push("<tr><td>" + val.artist + "</td><td>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+        } else {
+            foundArtists.push("<tr><td>" + val.artist + "</td><td>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+        }
     });
 
     $("#ArtistResults").html(foundArtists.join(""));
@@ -198,6 +267,11 @@ function RequestTrack(query) {
     var request = {"i": lastRequest++, "o": WS_REQUEST, "d": encodeURI(query)};
     socket.send(JSON.stringify(request));
     return true;
+}
+
+function NavScrollToTop() {
+    $('.sidebar').animate({scrollTop:0},'slow');
+    return false;
 }
 
 function UpdateNowPlaying(data) {
@@ -222,21 +296,22 @@ function UpdateNowPlaying(data) {
     $("#trackSlider").slider("setValue", data.Elapsed);
 
     var queueTable = [];
-    var nItems = 0;
-
+    numQueued = 0;
     queueTable.push("<h4>Upcoming requests</h4>");
     queueTable.push("<table class='table table-striped table-condensed'><tbody>");
     $.each(data.RequestQueue, function (key, val) {
         queueTable.push("<tr><td>" + key + "</td><td>" + val + "</td></tr>");
-        nItems += 1;
+        numQueued += 1;
     });
     queueTable.push("</tbody></table>");
 
-    if (nItems > 0) {
+    if (numQueued > 0) {
         $("#PlayQueue").html(queueTable.join(""));
     } else {
         $("#PlayQueue").html("<h4>Queue is empty</h4>");
     }
+
+    console.log("q: " + window.numQueued);
 }
 
 function ShowView(viewId) {
@@ -341,6 +416,12 @@ function WebSocketMuxer() {
                     break;
                 case WS_NOWPLAYING:
                     UpdateNowPlaying(response.d);
+
+                    if (curResultsPerPage !== resultsPerPage) {
+                        FillPlaylistResults();
+                        curResultsPerPage = resultsPerPage;
+                    }
+
                     break;
                 case WS_REQUEST:
                     break;
@@ -438,6 +519,14 @@ function runWebsite() {
         $('#volSlider').on("change", function (ev) {
             var newVolume = Math.round((ev.value.newValue / 100) * 10) / 10;
             audioControls.volume = newVolume;
+        });
+
+        $('input[type=search]').on('keyup', function() {
+            FilterArtists();
+        });
+
+        $('input[type=search]').on('search', function () {
+            FilterArtists();
         });
     });
 }
