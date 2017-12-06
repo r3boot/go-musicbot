@@ -133,15 +133,16 @@ func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
 
 func (c *IrcClient) HandleStart(channel, line string) {
 	c.mpdClient.Shuffle()
-	fileName := c.mpdClient.Play()
-	response := fmt.Sprintf("Now playing: %s", fileName)
+	np := c.mpdClient.Play()
+
+	response := fmt.Sprintf("Now playing: %s", np.Title)
 	c.conn.Privmsg(channel, response)
 }
 
 func (c *IrcClient) HandleNext(channel, line string) {
 	c.HandleDecreaseRating(channel, line)
-	fileName := c.mpdClient.Next()
-	response := fmt.Sprintf("Now playing: %s", fileName)
+	np := c.mpdClient.Next()
+	response := fmt.Sprintf("Now playing: %s", np.Title)
 	c.conn.Privmsg(channel, response)
 }
 
