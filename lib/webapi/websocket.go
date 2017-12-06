@@ -120,6 +120,8 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 		Operation: request.Operation,
 	}
 
+	log.Debugf("WebAPI.HandleRequest: Searching for %s", request.Data.(string))
+
 	query, err := url.PathUnescape(request.Data.(string))
 	if err != nil {
 		log.Warningf("WebAPI.HandleRequest url.PathUnescape: %v", err)

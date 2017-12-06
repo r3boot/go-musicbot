@@ -128,7 +128,7 @@ function UpdateArtists() {
     if ($("#ArtistFilter").val() === "") {
         var items = [];
         $.each(Artists, function (key, val) {
-            items.push("<li class='nav-item'><a class='nav-link' href='#' onclick='LookupTracksForArtist(\"" + val + "\")'>" + val + "</a></li>");
+            items.push("<li class='nav-item'><a class='nav-link' href='#' onclick='LookupTracksForArtist(\"" + atob(val) + "\")'>" + val + "</a></li>");
         });
 
         $("#Artists").html(items.join(""));
@@ -158,7 +158,7 @@ function FillPlaylistResults() {
 }
 
 function LookupTracksForArtist(artist) {
-    var lookupArtist = artist.toUpperCase();
+    var lookupArtist = btoa(artist).toUpperCase();
 
     var foundArtistsData = [];
     $.each(Playlist, function (key, val) {
