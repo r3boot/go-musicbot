@@ -26,37 +26,42 @@
     <div id="PlayerView">
         <div class="col col-md-9 main">
             <div class="row">
-                <div class="col col-md-2">
+                <div class="col col-md-3">
                     <img id="idAlbumArt" alt="No art found"/>
                 </div>
-                <div class="col col-md-7 col-md-offset-2">
+                <p/>
+                <div class="col col-md-6">
                     <div class="row">
                         <h4 id="idNowPlaying" class="display-5">Nothing playing
                             ...</h4>
                         <input id="trackSlider" data-slider-id='trackSliderData'
-                               type="text" data-slider-min="0" data-slider-max="100"
+                               type="text" data-slider-min="0"
+                               data-slider-max="100"
                                data-slider-step="1" data-slider-value="14"/>
                         &nbsp;&nbsp;&nbsp;<span id="idDuration">-1</span>
                     </div>
+                    <p/>
                     <div class="row">
-                        <button type="button" class="btn btn-default"
+                        <button type="button" class="btn btn-default btn-xs"
                                 id="idPlay"><span
-                                class="glyphicon glyphicon-pause"></span></button>
-                        <button type="button" class="btn btn-default"
+                                class="glyphicon glyphicon-pause"></span>
+                        </button>
+                        <button type="button" class="btn btn-default btn-xs"
                                 id="idNext"><span
                                 class="glyphicon glyphicon-step-forward"></span>
                         </button>
                         &nbsp;
                         <input id="volSlider" data-slider-id='volSliderData'
-                               type="text" data-slider-min="0" data-slider-max="100"
+                               type="text" data-slider-min="0"
+                               data-slider-max="100"
                                data-slider-step="1" data-slider-value="14"/>
                         &nbsp;&nbsp;&nbsp;
                         <span id="idRating" class="badge">-1/10</span>&nbsp;
-                        <button type="button" class="btn btn-default"
+                        <button type="button" class="btn btn-default btn-xs"
                                 id="idBoo"><span
                                 class="glyphicon glyphicon-thumbs-down"></span>
                         </button>
-                        <button type="button" class="btn btn-default"
+                        <button type="button" class="btn btn-default btn-xs"
                                 id="idTune"><span
                                 class="glyphicon glyphicon-thumbs-up"></span>
                         </button>
@@ -102,7 +107,8 @@
                        placeholder="Search ...">
             </div>
             <div class="row">
-                <ul id="Artists" class="nav nav-sidebar" styledata-spy="affix" data-offset-bottom="10">
+                <ul id="Artists" class="nav nav-sidebar" styledata-spy="affix"
+                    data-offset-bottom="10">
                     Loading artists ...
                 </ul>
             </div>
