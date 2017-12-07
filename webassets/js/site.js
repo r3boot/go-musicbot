@@ -22,6 +22,7 @@ var lastRequest = 0;
 var Playlist = [];
 var Artists = [];
 var NowPlaying = "";
+var oldNumQueued = 0;
 var numQueued = 0;
 
 var ArtistsViewData = [];
@@ -40,20 +41,13 @@ function toInt(value) {
 }
 
 function calcResultsPerPage() {
-    var contentHeight = window.innerHeight - 275;
-    console.log("contentHeight: " + contentHeight);
-
+    var contentHeight = window.innerHeight - 340;
     var queueHeight = 0;
     if (numQueued > 0) {
-        queueHeight = (numQueued * 40) + 40;
+        queueHeight = (numQueued * 20) + 40;
     }
-    console.log("queueHeight: " + queueHeight);
-
     var resultsHeight = (contentHeight - queueHeight);
-    console.log("resultsHeight: " + resultsHeight);
-
     resultsPerPage = Math.round((resultsHeight / 40) - 2);
-    console.log("resultsPerPage: " + resultsPerPage);
 }
 
 function encodeString(plain) {
@@ -109,8 +103,6 @@ function navItem(p) {
 function pgShowPagination(numItems) {
     var maxPages = numItems / resultsPerPage;
     var pages = [];
-
-    console.log("pg: " + resultsPerPage);
 
     if (numItems <= resultsPerPage) {
         $("#ArtistPagination").html("");
@@ -179,7 +171,7 @@ function UpdateArtists() {
             if (val.toString().startsWith("\'")) {
                 return true;
             }
-            items.push("<li class='nav-item'><a class='nav-link' onclick='LookupTracksForArtist(\"" + encodeString(val) + "\")'>" + val + "</a></li>");
+            items.push("<li class='nav-item'><a class='nav-link' onclick='LookupTracksForArtist(\"" + encodeString(val) + "\", true)'>" + val + "</a></li>");
         });
 
         $("#Artists").html(items.join(""));
@@ -192,8 +184,6 @@ function FillPlaylistResults() {
     }
 
     calcResultsPerPage();
-
-    resultsPerPage = Math.floor((window.innerHeight - 275) / 40)-1;
 
     var queryItems = pgFilterObjects(ArtistsViewData);
     var items = [];
@@ -212,8 +202,10 @@ function FillPlaylistResults() {
     pgShowPagination(ArtistsViewData.length);
 }
 
-function LookupTracksForArtist(artist) {
-    var lookupArtist = decodeString(artist).toUpperCase();
+function LookupTracksForArtist(artist, encoded) {
+    if (encoded) {
+        var lookupArtist = decodeString(artist).toUpperCase();
+    }
 
     var foundArtistsData = [];
     $.each(Playlist, function (key, val) {
@@ -311,7 +303,14 @@ function UpdateNowPlaying(data) {
         $("#PlayQueue").html("<h4>Queue is empty</h4>");
     }
 
-    console.log("q: " + window.numQueued);
+    if (oldNumQueued !== numQueued) {
+        if ($("#ArtistFilter").val() !== "") {
+            console.log("BUG!");
+        } else {
+            FillPlaylistResults();
+        }
+        oldNumQueued = numQueued
+    }
 }
 
 function ShowView(viewId) {
@@ -371,6 +370,11 @@ function WebSocketMuxer() {
         });
 
         ws.onopen = function () {
+            var nowPlayingRequest = {"i": lastRequest++, "o": WS_NOWPLAYING};
+            setInterval(function () {
+                ws.send(JSON.stringify(nowPlayingRequest));
+            }, 1000);
+
             var playlistRequest = {"i": lastRequest++, "o": WS_GET_PLAYLIST};
             setInterval(function () {
                 ws.send(JSON.stringify(playlistRequest));
@@ -381,10 +385,6 @@ function WebSocketMuxer() {
                 ws.send(JSON.stringify(artistsRequest));
             }, 1000);
 
-            var nowPlayingRequest = {"i": lastRequest++, "o": WS_NOWPLAYING};
-            setInterval(function () {
-                ws.send(JSON.stringify(nowPlayingRequest));
-            }, 1000);
         };
 
         ws.onmessage = function (e) {
@@ -416,12 +416,6 @@ function WebSocketMuxer() {
                     break;
                 case WS_NOWPLAYING:
                     UpdateNowPlaying(response.d);
-
-                    if (curResultsPerPage !== resultsPerPage) {
-                        FillPlaylistResults();
-                        curResultsPerPage = resultsPerPage;
-                    }
-
                     break;
                 case WS_REQUEST:
                     break;

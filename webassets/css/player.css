@@ -8,6 +8,13 @@ body {
 }
 
 /*
+ * Main content div
+ */
+.main {
+    padding-top: 20px;
+}
+
+/*
  * Typography
  */
 
@@ -70,8 +77,8 @@ h1 {
   background-image: url('../img/searchicon.png');
   background-position: 10px 12px;
   background-repeat: no-repeat;
-  width: 93%;
-  margin-left: 10px;
+  width: 85%;
+  margin-left: 20px;
   font-size: 16px;
   padding: 12px 20px 12px 40px;
   border: 1px solid #ddd;
@@ -175,5 +182,6 @@ input[type=search]::-webkit-search-cancel-button {
  * Navbar
  */
 .sidebar {
-  overflow-y: scroll;
+  padding-left: 10px;
+  border-left: 1px solid #464545;
 }
