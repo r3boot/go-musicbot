@@ -6,17 +6,8 @@ const WS_TUNE = 4;
 const WS_NOWPLAYING = 5;
 const WS_REQUEST = 6;
 
-const RESULTS_PER_PAGE = 10;
 const MAX_PAGES = 10;
 
-const ENC_SINGLE_QUOTE = "|s|";
-const ENC_DOUBLE_QUOTE = "|d|";
-const ENC_BACKTICK = "|b|";
-const DEC_SINGLE_QUOTE = /|s|/g;
-const DEC_DOUBLE_QUOTE = /|d|/g;
-const DEC_BACKTICK = /|b|/g;
-
-var curResultsPerPage = 0;
 var resultsPerPage = 10;
 var lastRequest = 0;
 var Playlist = [];
@@ -24,6 +15,7 @@ var Artists = [];
 var NowPlaying = "";
 var oldNumQueued = 0;
 var numQueued = 0;
+var selectedArtist = "";
 
 var ArtistsViewData = [];
 
@@ -35,19 +27,21 @@ var pgIndex = 0;
 
 var socket = null;
 
-function toInt(value) {
-    tmp = value.toString();
-    return tmp.substring(0, tmp.indexOf("."));
-}
-
 function calcResultsPerPage() {
-    var contentHeight = window.innerHeight - 340;
-    var queueHeight = 0;
-    if (numQueued > 0) {
-        queueHeight = (numQueued * 20) + 40;
-    }
-    var resultsHeight = (contentHeight - queueHeight);
-    resultsPerPage = Math.round((resultsHeight / 40) - 2);
+    var contentHeight = window.innerHeight;
+    console.log("contentHeight: " + contentHeight);
+
+    var controlsHeight = $("#idControls").height();
+    console.log("controlsHeight: " + controlsHeight);
+
+    var queueHeight = $("#idQueue").height();
+    console.log("queueHeight: " + queueHeight);
+
+    var resultsHeight = (contentHeight - (controlsHeight + queueHeight));
+    console.log("resultsHeight: " + resultsHeight);
+
+    resultsPerPage = Math.round((resultsHeight / 60) - 1);
+    console.log("resultsPerPage: " + resultsPerPage);
 }
 
 function encodeString(plain) {
@@ -66,6 +60,27 @@ function decodeString(encoded) {
     result = result.replace(/\|s\|/g, "\'");
     result = result.replace(/\|b\|/g, "\`");
     return result
+}
+
+function sortTable(id, order) {
+    var table = $("#Playlist");
+    var rows = $("tbody > tr", table);
+    rows.sort(function(a, b) {
+       var keyA = $(".artist");
+       var keyB = $(".artist");
+       console.log("keyA: ");
+       console.log(keyA);
+       console.log("keyB: ");
+       console.log(keyB);
+        if (order === 'asc') {
+            return (keyA > keyB) ? 1 : 0;
+        } else {
+            return (keyA < keyB) ? 1 : 0;
+        }
+    });
+    $.each(rows, function(index, row) {
+        table.append(row);
+    })
 }
 
 function pgFilterObjects(data) {
@@ -88,7 +103,7 @@ function pgGotoPage(page) {
 
     pgIndex = pgPage * resultsPerPage;
 
-    FillPlaylistResults();
+    RefreshPlaylist();
 }
 
 function navItem(p) {
@@ -148,7 +163,6 @@ function pgShowPagination(numItems) {
     $("#ArtistPagination").html(pages.join(""))
 }
 
-
 function prettyDuration(duration) {
     var hours = ~~(duration / 3600);
     var minutes = ~~((duration % 3600) / 60);
@@ -180,7 +194,7 @@ function UpdateArtists() {
 
 function FillPlaylistResults() {
     if ($("#ArtistFilter").val() === "") {
-        ArtistsViewData = Playlist;
+        ArtistsViewData = Playlist.sort();
     }
 
     calcResultsPerPage();
@@ -203,9 +217,13 @@ function FillPlaylistResults() {
 }
 
 function LookupTracksForArtist(artist, encoded) {
+    var lookupArtist = artist;
+
     if (encoded) {
-        var lookupArtist = decodeString(artist).toUpperCase();
+        lookupArtist = decodeString(artist).toUpperCase();
     }
+
+    selectedArtist = lookupArtist;
 
     var foundArtistsData = [];
     $.each(Playlist, function (key, val) {
@@ -242,9 +260,9 @@ function LookupTracksForArtist(artist, encoded) {
             query = val.title;
         }
         if ((val.title) && (val.title !== "")) {
-            foundArtists.push("<tr><td>" + val.artist + "</td><td>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
         } else {
-            foundArtists.push("<tr><td>" + val.artist + "</td><td>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
         }
     });
 
@@ -259,11 +277,6 @@ function RequestTrack(query) {
     var request = {"i": lastRequest++, "o": WS_REQUEST, "d": encodeURI(query)};
     socket.send(JSON.stringify(request));
     return true;
-}
-
-function NavScrollToTop() {
-    $('.sidebar').animate({scrollTop:0},'slow');
-    return false;
 }
 
 function UpdateNowPlaying(data) {
@@ -292,7 +305,12 @@ function UpdateNowPlaying(data) {
     queueTable.push("<h4>Upcoming requests</h4>");
     queueTable.push("<table class='table table-striped table-condensed'><tbody>");
     $.each(data.RequestQueue, function (key, val) {
-        queueTable.push("<tr><td>" + key + "</td><td>" + val + "</td></tr>");
+        if (val.artist !== "") {
+            queueTable.push("<tr><td>" + key + "</td><td>" + val.artist + " - " + val.title + "</td></tr>");
+        } else {
+            queueTable.push("<tr><td>" + key + "</td><td>" + val.title + "</td></tr>");
+        }
+
         numQueued += 1;
     });
     queueTable.push("</tbody></table>");
@@ -304,12 +322,16 @@ function UpdateNowPlaying(data) {
     }
 
     if (oldNumQueued !== numQueued) {
-        if ($("#ArtistFilter").val() !== "") {
-            console.log("BUG!");
-        } else {
-            FillPlaylistResults();
-        }
+        RefreshPlaylist();
         oldNumQueued = numQueued
+    }
+}
+
+function RefreshPlaylist() {
+    if (selectedArtist !== "") {
+        LookupTracksForArtist(selectedArtist, false)
+    } else {
+        FillPlaylistResults();
     }
 }
 
@@ -399,7 +421,7 @@ function WebSocketMuxer() {
 
                     Playlist = response.d;
                     if (updatePlaylist) {
-                        FillPlaylistResults();
+                        RefreshPlaylist();
                     }
                     break;
                 case WS_GET_ARTISTS:
@@ -489,7 +511,7 @@ function runWebsite() {
 
         $("#ShowPlayerView").click(function (ev) {
             ev.preventDefault();
-            FillPlaylistResults();
+            RefreshPlaylist();
             ShowView("#PlayerView");
         });
 
@@ -521,7 +543,15 @@ function runWebsite() {
 
         $('input[type=search]').on('search', function () {
             FilterArtists();
+            if ($("#ArtistFilter").val() === "") {
+                selectedArtist = "";
+                RefreshPlaylist();
+            }
         });
+
+        $(window).resize(function() {
+            RefreshPlaylist();
+        })
     });
 }
 

@@ -120,8 +120,6 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 		Operation: request.Operation,
 	}
 
-	log.Debugf("WebAPI.HandleRequest: Searching for %s", request.Data.(string))
-
 	query, err := url.PathUnescape(request.Data.(string))
 	if err != nil {
 		log.Warningf("WebAPI.HandleRequest url.PathUnescape: %v", err)
@@ -136,13 +134,15 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 
 	queueId, err := a.mpdClient.Enqueue(query)
 	if err != nil {
-		log.Warningf("WebAPI.HandleRequest: %v", err)
+		log.Debugf("WebAPI.HandleRequest: %v", err)
 		response.Status = false
 		response.Message = "failed to submit request"
 		conn.WriteMessage(msgType, response.ToJSON())
 		wsErrorResponse(r, "Request", "failed to submit request")
 		return
 	}
+
+	log.Debugf("WebAPI.HandleRequest: enqueued with id %d", queueId)
 
 	response.Status = true
 	response.Data = queueId

@@ -9,7 +9,7 @@ import (
 
 func findID(entries []mpd.Attrs, title string) int {
 	for _, entry := range entries {
-		if !strings.HasPrefix(entry["file"], title) {
+		if !strings.Contains(entry["file"], title) {
 			continue
 		}
 

@@ -259,13 +259,7 @@ func (c *IrcClient) HandleSearchAndPlay(channel, line string) {
 }
 
 func (c *IrcClient) HandleShowQueue(channel, line string) {
-	entries, err := c.mpdClient.GetPlayQueue()
-	if err != nil {
-		log.Warningf("IrcClient.HandleShowQueue: %v", err)
-		errmsg := fmt.Sprintf("Failed to get queue entries")
-		c.conn.Privmsg(channel, errmsg)
-		return
-	}
+	entries := c.mpdClient.GetPlayQueue()
 
 	if len(entries) == 0 {
 		response := fmt.Sprintf("Queue is empty")
@@ -274,8 +268,15 @@ func (c *IrcClient) HandleShowQueue(channel, line string) {
 	}
 
 	c.conn.Privmsg(channel, "Current queue:")
-	for i := 0; i < len(entries); i++ {
-		response := fmt.Sprintf("%d) %s\n", i, entries[i])
+	for idx, entry := range entries {
+		response := ""
+		if entry.Artist != "" {
+			response = fmt.Sprintf("%d) %s - %s\n", idx, entry.Artist, entry.Title)
+		} else {
+			response = fmt.Sprintf("%d) %s\n", idx, entry.Title)
+		}
 		c.conn.Privmsg(channel, response)
 	}
+
+	log.Debugf("%v", entries)
 }

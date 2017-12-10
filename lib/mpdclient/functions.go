@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/r3boot/go-musicbot/lib/albumart"
 	"gompd/mpd"
 	"path"
+	"sort"
 )
 
 func (p *Playlist) ToJSON() ([]byte, error) {
@@ -38,6 +40,15 @@ func (p *Playlist) HasFilename(fname string) bool {
 	}
 
 	return false
+}
+
+func (p *Playlist) GetEntryByPos(pos int) (*PlaylistEntry, error) {
+	for _, entry := range *p {
+		if entry.Pos == pos {
+			return entry, nil
+		}
+	}
+	return nil, fmt.Errorf("Playlist.GetEntryByPos: entry not found in playlist")
 }
 
 func (a Artists) ToJSON() ([]byte, error) {
@@ -95,6 +106,8 @@ func (m *MPDClient) MaintainMPDState() {
 	for {
 		time.Sleep(1 * time.Second)
 
+		tStart := time.Now()
+
 		curSongData := NowPlayingData{}
 
 		songAttrs, err := m.conn.CurrentSong()
@@ -110,7 +123,6 @@ func (m *MPDClient) MaintainMPDState() {
 		if m.curFile != fileName {
 			m.curFile = fileName
 			m.imageUrl = ""
-
 		}
 
 		statusAttrs, err := m.conn.Status()
@@ -141,57 +153,43 @@ func (m *MPDClient) MaintainMPDState() {
 		if m.imageUrl == "" {
 			imgUrl, err := m.art.GetAlbumArt(curSongData.Title)
 			if err != nil {
-				if imgUrl != "" {
-					m.imageUrl = imgUrl
-				}
-
 				log.Warningf("MPDClient.MaintainMPDState: %v", err)
-				continue
 			}
-			m.imageUrl = imgUrl
+
+			if imgUrl != "" {
+				m.imageUrl = imgUrl
+			} else {
+				m.imageUrl = albumart.NOTFOUND_URI
+			}
 		}
 
-		m.UpdateQueueIDs()
-
-		curSongData.RequestQueue = m.queue.Dump()
-
-		m.np = curSongData
-	}
-}
-
-func (m *MPDClient) UpdateQueueIDs() {
-	var i int
-
-	queueEntries := m.queue.Dump()
-
-	if m.queue.count > 0 && m.np.Title == queueEntries[0] {
-		m.queue.Pop()
-		queueEntries = m.queue.Dump()
-	}
-
-	playlist, err := m.conn.PlaylistInfo(-1, -1)
-	if err != nil {
-		log.Warningf("MPDClient.UpdateQueueIDs m.conn.PlaylistInfo: %v", err)
-		return
-	}
-
-	maxCount := 9
-	if m.queue.count < maxCount {
-		maxCount = m.queue.count
-	}
-
-	for i = 0; i < maxCount; i++ {
-		title := queueEntries[i]
-		id := findID(playlist, title)
-		if id == -1 {
-			log.Warningf("id for %s not found", title)
+		err = m.UpdateQueueIDs()
+		if err != nil {
+			log.Warningf("MPDClient.MaintainMPDState: %v", err)
 			continue
 		}
-		prio := 9 - i
-		err := m.conn.PrioId(prio, id)
-		if err != nil {
-			log.Warningf("MPDClient.UpdateQueueIDs m.conn.PrioId: %s: %v", title, err)
+		log.Debugf("MPDClient.MaintainMPDState curSongData.Title: %s", curSongData.Title)
+
+		log.Debugf("Queue items:")
+		entries := m.GetPlayQueue()
+		allKeys := []int{}
+		for key, _ := range m.GetPlayQueue() {
+			allKeys = append(allKeys, key)
 		}
+
+		sort.Ints(allKeys)
+
+		for _, idx := range allKeys {
+			entry := entries[idx]
+			log.Debugf("#%d: %v", idx, entry.Filename[:len(entry.Filename)-16])
+		}
+
+		curSongData.RequestQueue = m.GetPlayQueue()
+
+		tDuration := time.Since(tStart)
+		log.Debugf("MPDClient.MaintainMPDState: updated state in %v", tDuration)
+
+		m.np = curSongData
 	}
 }
 
@@ -202,8 +200,13 @@ func (m *MPDClient) NowPlaying() NowPlayingData {
 }
 
 func (m *MPDClient) Next() NowPlayingData {
-	m.conn.Next()
-	m.np.ImageUrl = m.imageUrl
+	if m.queue.Size() > 0 {
+		entries := m.GetPlayQueue().ToMap()
+		entry := entries[0]
+		m.conn.Play(entry.Pos)
+	} else {
+		m.conn.Next()
+	}
 	return m.NowPlaying()
 }
 
@@ -233,6 +236,18 @@ func (m *MPDClient) UpdateDB(fname string) error {
 func (m *MPDClient) Add(fileName string) {
 	log.Infof("Adding %s to playlist", fileName)
 	m.conn.Add(fileName)
+}
+
+func (m *MPDClient) PrioId(id, prio int) error {
+	mpdPrio := 9 - prio
+	err := m.conn.PrioId(mpdPrio, id)
+	if err != nil {
+		err = fmt.Errorf("MPDClient.UpdateQueueIDs: failed to set prio: %v", err)
+		log.Warningf("%v", err)
+		return err
+	}
+
+	return nil
 }
 
 func (m *MPDClient) GetTitle(pos int) (string, error) {
@@ -321,12 +336,24 @@ func (m *MPDClient) GetPlaylist() (Playlist, error) {
 			}
 		}
 
+		prio := 0
+		curPrio, ok := entry["Prio"]
+		if ok {
+			prio, err = strconv.Atoi(curPrio)
+			if err != nil {
+				return nil, fmt.Errorf("MPDClient.GetPlaylist: failed to convert string to int")
+			}
+			log.Debugf("MPDClient.GetPlaylist: %s has prio %d", fname[:len(fname)-16], prio)
+		}
+
 		item := &PlaylistEntry{
 			Duration: duration,
+			Title:    fname[:len(fname)-16],
 			Filename: fname,
 			Rating:   rating,
 			Pos:      pos,
 			Id:       id,
+			Prio:     prio,
 		}
 
 		entries[fname] = item
@@ -366,42 +393,4 @@ func (m *MPDClient) TracksForArtist(artist string) (Playlist, error) {
 	}
 
 	return entries, nil
-}
-
-func (m *MPDClient) Enqueue(query string) (int, error) {
-
-	pos, err := m.Search(query)
-	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
-	}
-
-	title, err := m.GetTitle(pos)
-	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
-	}
-	title = title[:len(title)-16]
-
-	if m.queue.Has(title) {
-		return -1, fmt.Errorf("MPDClient.Enqueue: already enqueued")
-	}
-
-	if m.queue.count >= MAX_QUEUE_ITEMS {
-		return -1, fmt.Errorf("MPDClient.Enqueue: queue is full")
-	}
-
-	qitem := &RequestQueueItem{
-		Title: title,
-		Pos:   pos,
-	}
-
-	ok := m.queue.Push(qitem)
-	if !ok {
-		return -1, fmt.Errorf("MPDClient.Enqueue m.queue.Push: Failed to push")
-	}
-
-	return pos, nil
-}
-
-func (m *MPDClient) GetPlayQueue() (map[int]string, error) {
-	return m.queue.Dump(), nil
 }

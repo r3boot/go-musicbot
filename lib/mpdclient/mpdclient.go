@@ -7,6 +7,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/config"
 	"github.com/r3boot/go-musicbot/lib/id3tags"
 	"github.com/r3boot/go-musicbot/lib/logger"
+	"sync"
 )
 
 var log *logger.Logger
@@ -24,7 +25,10 @@ func NewMPDClient(l *logger.Logger, cfg *config.MusicBotConfig, id3 *id3tags.ID3
 		address:  address,
 		password: cfg.MPD.Password,
 		np:       NowPlayingData{},
-		queue:    NewRequestQueue(MAX_QUEUE_ITEMS),
+		queue: &PlayQueue{
+			entries: make(PlayQueueEntries, MAX_QUEUE_ITEMS),
+			mutex:   sync.RWMutex{},
+		},
 	}
 
 	err := client.Connect()

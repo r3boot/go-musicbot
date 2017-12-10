@@ -27,13 +27,15 @@ func (a *WebAPI) UpdatePlaylist() {
 
 		playlistEntries, err := a.mpdClient.GetPlaylist()
 		if err != nil {
-			log.Fatalf("%v", err)
+			log.Warningf("WebAPI.UpdatePlaylist: %v", err)
+			continue
 		}
 		log.Debugf("WebAPI.UpdatePlaylist: Got %d playlist entries", len(playlistEntries))
 
 		id3Entries, err := a.id3Tags.GetTags()
 		if err != nil {
-			log.Fatalf("%v", err)
+			log.Warningf("%v", err)
+			continue
 		}
 		log.Debugf("WebAPI.UpdatePlaylist: Got %d entries with id3 tags", len(id3Entries))
 

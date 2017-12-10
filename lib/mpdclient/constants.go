@@ -22,7 +22,7 @@ type NowPlayingData struct {
 	Rating       int
 	ImageUrl     string
 	Filename     string
-	RequestQueue map[int]string
+	RequestQueue PlayQueueEntries
 }
 
 type RequestQueueItem struct {
@@ -45,9 +45,18 @@ type PlaylistEntry struct {
 	Duration int    `json:"duration"`
 	Pos      int    `json:"pos"`
 	Id       int    `json:"id"`
+	Prio     int    `json:"prio"`
 }
 
 type Playlist map[string]*PlaylistEntry
+type PlayQueueEntries map[int]*PlaylistEntry
+
+type PlayQueue struct {
+	max     int
+	length  int
+	entries PlayQueueEntries
+	mutex   sync.RWMutex
+}
 
 type Artists []string
 
@@ -62,5 +71,5 @@ type MPDClient struct {
 	np       NowPlayingData
 	curFile  string
 	imageUrl string
-	queue    *RequestQueue
+	queue    *PlayQueue
 }
