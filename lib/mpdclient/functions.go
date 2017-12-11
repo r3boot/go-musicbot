@@ -349,7 +349,7 @@ func (m *MPDClient) GetPlaylist() (Playlist, error) {
 			if err != nil {
 				return nil, fmt.Errorf("MPDClient.GetPlaylist: failed to convert string to int")
 			}
-			log.Debugf("MPDClient.GetPlaylist: %s has prio %d", fname[:len(fname)-16], prio)
+			log.Debugf("MPDClient.GetPlaylist: %s has prio %d, id %d", fname[:len(fname)-16], prio, id)
 		}
 
 		item := &PlaylistEntry{
