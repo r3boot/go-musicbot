@@ -139,8 +139,10 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 		response.Status = false
 		if strings.Contains(err.Error(), "queue is full") {
 			response.Message = "The queue is full"
+		} else if strings.Contains(err.Error(), "no songs found") {
+			response.Message = "Did not find any songs"
 		} else {
-			response.Message = "failed to submit request"
+			response.Message = fmt.Sprintf("failed to submit request: %v", err)
 		}
 		conn.WriteMessage(msgType, response.ToJSON())
 		wsErrorResponse(r, "Request", "failed to submit request")

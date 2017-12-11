@@ -17,6 +17,12 @@ const ALERT_INFO    = "alert-info";
 const ALERT_WARNING = "alert-warning";
 const ALERT_ERROR   = "alert-danger";
 
+const SORT_ARTIST = 0;
+const SORT_TITLE = 1;
+const SORT_DURATION = 2;
+const SORT_RATING = 3;
+const SORT_FILENAME = 4;
+
 var resultsPerPage = 10;
 var lastRequest = 0;
 var Playlist = [];
@@ -25,6 +31,7 @@ var NowPlaying = "";
 var oldNumQueued = 0;
 var numQueued = 0;
 var selectedArtist = "";
+var sortColumn = SORT_FILENAME;
 
 var ArtistsViewData = [];
 
@@ -38,19 +45,11 @@ var socket = null;
 
 function calcResultsPerPage() {
     var contentHeight = window.innerHeight;
-    console.log("contentHeight: " + contentHeight);
-
     var controlsHeight = $("#idControls").height();
-    console.log("controlsHeight: " + controlsHeight);
 
     var queueHeight = $("#idQueue").height();
-    console.log("queueHeight: " + queueHeight);
-
     var resultsHeight = (contentHeight - (controlsHeight + queueHeight));
-    console.log("resultsHeight: " + resultsHeight);
-
     resultsPerPage = Math.round((resultsHeight / 60) - 1);
-    console.log("resultsPerPage: " + resultsPerPage);
 }
 
 function encodeString(plain) {
@@ -71,25 +70,68 @@ function decodeString(encoded) {
     return result
 }
 
-function sortTable(id, order) {
-    var table = $("#Playlist");
-    var rows = $("tbody > tr", table);
-    rows.sort(function(a, b) {
-       var keyA = $(".artist");
-       var keyB = $(".artist");
-       console.log("keyA: ");
-       console.log(keyA);
-       console.log("keyB: ");
-       console.log(keyB);
-        if (order === 'asc') {
-            return (keyA > keyB) ? 1 : 0;
+function sortDictByArtist(playlist) {
+    return playlist.sort(function compare(kv1, kv2) {
+        if (kv1.artist < kv2.artist) {
+            return -1;
+        } else if (kv1.artist > kv2.artist) {
+            return 1;
         } else {
-            return (keyA < keyB) ? 1 : 0;
+            return 0;
         }
     });
-    $.each(rows, function(index, row) {
-        table.append(row);
-    })
+}
+
+function sortDictByTitle(playlist) {
+    return playlist.sort(function compare(kv1, kv2) {
+        if (kv1.title < kv2.title) {
+            return -1;
+        } else if (kv1.title > kv2.title) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+}
+
+function sortDictByDuration(playlist) {
+    return playlist.sort(function compare(kv1, kv2) {
+        if (kv1.duration < kv2.duration) {
+            return 1;
+        } else if (kv1.duration > kv2.duration) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+}
+
+function sortDictByRating(playlist) {
+    return playlist.sort(function compare(kv1, kv2) {
+        if (kv1.rating < kv2.rating) {
+            return 1;
+        } else if (kv1.rating > kv2.rating) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+}
+function sortDictByFilename(playlist) {
+    return playlist.sort(function compare(kv1, kv2) {
+       if (kv1.filename < kv2.filename) {
+           return -1;
+       } else if (kv1.filename > kv2.filename) {
+           return 1;
+       } else {
+           return 0;
+       }
+    });
+}
+
+function SortBy(filter) {
+    sortColumn = filter;
+    RefreshPlaylist();
 }
 
 function pgFilterObjects(data) {
@@ -206,6 +248,24 @@ function FillPlaylistResults() {
         ArtistsViewData = Playlist.sort();
     }
 
+    switch (sortColumn) {
+        case SORT_ARTIST:
+            ArtistsViewData = sortDictByArtist(ArtistsViewData);
+            break;
+        case SORT_TITLE:
+            ArtistsViewData = sortDictByTitle(ArtistsViewData);
+            break;
+        case SORT_DURATION:
+            ArtistsViewData = sortDictByDuration(ArtistsViewData);
+            break;
+        case SORT_RATING:
+            ArtistsViewData = sortDictByRating(ArtistsViewData);
+            break;
+        default:
+            ArtistsViewData = sortDictByFilename(ArtistsViewData);
+    }
+
+
     calcResultsPerPage();
 
     var queryItems = pgFilterObjects(ArtistsViewData);
@@ -218,7 +278,7 @@ function FillPlaylistResults() {
             query = val.title;
         }
 
-        items.push("<tr><td>" + val.artist + "</td><td>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+        items.push("<tr><td>" + val.artist + "</td><td>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
     });
     $("#ArtistResults").html(items.join(""));
 
@@ -269,9 +329,9 @@ function LookupTracksForArtist(artist, encoded) {
             query = val.title;
         }
         if ((val.title) && (val.title !== "")) {
-            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
         } else {
-            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + query + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
         }
     });
 
@@ -282,7 +342,9 @@ function LookupTracksForArtist(artist, encoded) {
     pgShowPagination(foundArtistsData.length);
 }
 
-function RequestTrack(query) {
+function RequestTrack(rawQuery) {
+    var query = decodeString(rawQuery);
+
     var request = {"i": lastRequest++, "o": WS_REQUEST, "d": encodeURI(query)};
     socket.send(JSON.stringify(request));
     return true;
@@ -569,7 +631,9 @@ function ShowNotification(type, message) {
 
     $("#Alert").removeClass("hidden");
 
-    setTimeout(HideNotification, MAX_NOTIF_DISPLAY_TIME);
+    if (type !== NOTIF_ERROR) {
+        setTimeout(HideNotification, MAX_NOTIF_DISPLAY_TIME);
+    }
 }
 
 function HideNotification() {
@@ -578,7 +642,6 @@ function HideNotification() {
     $("#AlertMessage").html("");
 
     var allClasses = $('#Alert').attr("class").split(' ');
-    console.log(allClasses);
 
     $.each(allClasses, function(idx, value) {
         switch (value) {

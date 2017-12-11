@@ -47,6 +47,8 @@ func (q PlayQueue) GetAll() PlayQueueEntries {
 }
 
 func (q PlayQueue) Size() int {
+	q.mutex.RLock()
+	defer q.mutex.RUnlock()
 	return len(q.entries)
 }
 
