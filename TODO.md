@@ -8,7 +8,6 @@
 - Make ratings drift back to the starting point over time
 - Add duplicate check
 - Keep playlist prio + play queue in sync
-- Introspect playqueue on startup based on mpd playlist
 
 # liquidsoap
 - Make sure its clear which program is playing
@@ -18,14 +17,8 @@
 
 # webui/api
 - Add auditing for various actions
-- Add attribution for next function in webapi
-- Add scroller for keeping track of webapi commands
-- Auto reload when websocket is closed
+- Add attribution for functions in webapi
 - Make api process dedicated per stream
-- Send back valid JSON when TA search is less then 3 chars
-- Add error messages in ui
-- Make entries in playlist sortable
-- Make entries with quotes in title/artist queueable
 - Fix height calculation of pagination
 
 # Stream
