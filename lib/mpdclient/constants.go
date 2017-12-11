@@ -22,6 +22,7 @@ type NowPlayingData struct {
 	Rating       int
 	ImageUrl     string
 	Filename     string
+	Id           int
 	RequestQueue PlayQueueEntries
 }
 

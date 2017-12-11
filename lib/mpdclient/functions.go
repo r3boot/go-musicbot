@@ -125,6 +125,12 @@ func (m *MPDClient) MaintainMPDState() {
 			m.imageUrl = ""
 		}
 
+		curSongData.Id, err = strconv.Atoi(songAttrs["Id"])
+		if err != nil {
+			log.Warningf("MPDClient.MaintainMPDState strconv.Atoi: %v", err)
+			continue
+		}
+
 		statusAttrs, err := m.conn.Status()
 		if err != nil {
 			log.Warningf("MPDClient.MaintainMPDState m.conn.Status: %v", err)

@@ -3,7 +3,6 @@ package mpdclient
 import (
 	"fmt"
 	"sort"
-	"strconv"
 )
 
 var (
@@ -113,39 +112,13 @@ func (m *MPDClient) FirstFreeQueueSlot(startIdx int) int {
 
 func (m *MPDClient) UpdateQueueIDs() error {
 	for _, entry := range m.queue.GetAll() {
-		attrs, err := m.conn.PlaylistId(entry.Id)
-		if err != nil {
-			return fmt.Errorf("MPDClient.UpdateQueueIDs m.conn.PlaylistId: %v", err)
-		}
-
-		for _, entry := range m.queue.entries {
-			err = m.conn.PrioId(entry.Prio, entry.Id)
-			if err != nil {
-				return fmt.Errorf("MPDClient.UpdateQueueIDs m.conn.PrioId: %v", err)
-			}
-		}
-
-		// Prio is 0 after adding file with prio??
-		prio := 0
-		hasPrioField := false
-		for _, attr := range attrs {
-			tmp, ok := attr["Prio"]
-			if !ok {
-				continue
-			}
-			hasPrioField = true
-			prio, err = strconv.Atoi(tmp)
-			if err != nil {
-				return fmt.Errorf("MPDClient.UpdateQueueIDs strconv.Atoi: %v", err)
-			}
-			break
-		}
-
-		if hasPrioField && prio == 0 {
-			err = m.queue.Delete(entry.Id)
+		if entry.Id == m.np.Id {
+			err := m.queue.Delete(entry.Id)
 			if err != nil {
 				return fmt.Errorf("MPDClient.UpdateQueueIDs: %v", err)
 			}
+			log.Debugf("MPDClient.UpdateQueueIDs: removed %d from queue", entry.Id)
+			continue
 		}
 	}
 
