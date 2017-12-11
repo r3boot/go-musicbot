@@ -86,6 +86,7 @@ func (q PlayQueue) Delete(id int) error {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
+	q.conn.PrioId(0, id)
 	delete(q.entries, id)
 
 	for id, _ := range q.entries {
