@@ -2,6 +2,8 @@ package mpdclient
 
 import (
 	"fmt"
+	"golang.org/x/text/encoding/charmap"
+	"sort"
 	"strconv"
 )
 
@@ -17,6 +19,16 @@ func (q PlayQueueEntries) ToMap() PlayQueueEntries {
 	}
 
 	return entries
+}
+
+func (q PlayQueueEntries) Keys() []int {
+	allEntries := []int{}
+	for idx, _ := range q {
+		allEntries = append(allEntries, idx)
+	}
+
+	sort.Ints(allEntries)
+	return allEntries
 }
 
 func (q PlayQueueEntries) Has(title string) bool {

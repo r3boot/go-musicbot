@@ -38,14 +38,15 @@ type RequestQueue struct {
 }
 
 type PlaylistEntry struct {
-	Artist   string `json:"artist"`
-	Title    string `json:"title"`
-	Rating   int    `json:"rating"`
-	Filename string `json:"filename"`
-	Duration int    `json:"duration"`
-	Pos      int    `json:"pos"`
-	Id       int    `json:"id"`
-	Prio     int    `json:"prio"`
+	Artist    string `json:"artist"`
+	Title     string `json:"title"`
+	Rating    int    `json:"rating"`
+	Filename  string `json:"filename"`
+	Duration  int    `json:"duration"`
+	Pos       int    `json:"pos"`
+	Id        int    `json:"id"`
+	Prio      int    `json:"prio"`
+	confirmed bool
 }
 
 type Playlist map[string]*PlaylistEntry

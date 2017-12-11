@@ -268,7 +268,12 @@ func (c *IrcClient) HandleShowQueue(channel, line string) {
 	}
 
 	c.conn.Privmsg(channel, "Current queue:")
-	for idx, entry := range entries {
+
+	for idx := 0; idx < len(entries); idx++ {
+	}
+
+	for _, idx := range entries.Keys() {
+		entry := entries[idx]
 		response := ""
 		if entry.Artist != "" {
 			response = fmt.Sprintf("%d) %s - %s\n", idx, entry.Artist, entry.Title)
