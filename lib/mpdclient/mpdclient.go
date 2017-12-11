@@ -36,7 +36,11 @@ func NewMPDClient(l *logger.Logger, cfg *config.MusicBotConfig, id3 *id3tags.ID3
 		return nil, fmt.Errorf("NewMPDClient: %v", err)
 	}
 
+	client.queue.conn = client.conn
+
 	go client.MaintainMPDState()
+
+	client.PreLoadPlayQueue()
 
 	return client, nil
 }

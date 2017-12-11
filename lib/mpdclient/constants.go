@@ -54,6 +54,7 @@ type PlayQueueEntries map[int]*PlaylistEntry
 type PlayQueue struct {
 	max     int
 	length  int
+	conn    *mpd.Client
 	entries PlayQueueEntries
 	mutex   sync.RWMutex
 }

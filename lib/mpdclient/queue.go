@@ -75,10 +75,15 @@ func (q PlayQueue) Delete(id int) error {
 
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
+
 	delete(q.entries, id)
 
 	for id, _ := range q.entries {
-		q.entries[id].Prio -= 1
+		if q.entries[id].Prio > 0 {
+			q.entries[id].Prio -= 1
+		}
+		mpdPrio := 9 - q.entries[id].Prio
+		q.conn.PrioId(mpdPrio, id)
 	}
 
 	return nil
@@ -102,12 +107,22 @@ func (m *MPDClient) UpdateQueueIDs() error {
 			return fmt.Errorf("MPDClient.UpdateQueueIDs m.conn.PlaylistId: %v", err)
 		}
 
+		for _, entry := range m.queue.entries {
+			err = m.conn.PrioId(entry.Prio, entry.Id)
+			if err != nil {
+				return fmt.Errorf("MPDClient.UpdateQueueIDs m.conn.PrioId: %v", err)
+			}
+		}
+
+		// Prio is 0 after adding file with prio??
 		prio := 0
+		hasPrioField := false
 		for _, attr := range attrs {
 			tmp, ok := attr["Prio"]
 			if !ok {
 				continue
 			}
+			hasPrioField = true
 			prio, err = strconv.Atoi(tmp)
 			if err != nil {
 				return fmt.Errorf("MPDClient.UpdateQueueIDs strconv.Atoi: %v", err)
@@ -115,7 +130,7 @@ func (m *MPDClient) UpdateQueueIDs() error {
 			break
 		}
 
-		if prio == 0 {
+		if hasPrioField && prio == 0 {
 			err = m.queue.Delete(entry.Id)
 			if err != nil {
 				return fmt.Errorf("MPDClient.UpdateQueueIDs: %v", err)
@@ -167,20 +182,20 @@ func (m *MPDClient) Enqueue(query string) (int, error) {
 
 	entry.Prio = m.queue.Size()
 
-	err = m.queue.Add(entry.Id, entry)
-	if err != nil {
-		err = fmt.Errorf("MPDClient.UpdateQueueIDs: %v", err)
-		log.Warningf("%v", err)
-		return -1, err
-	}
-
 	err = m.PrioId(entry.Id, entry.Prio)
 	if err != nil {
 		err = fmt.Errorf("MPDClient.UpdateQueueIDs: failed to set prio: %v", err)
 		log.Warningf("%v", err)
 		return -1, err
 	}
-	log.Debugf("MPDClient.UpdateQueueIDs: prio for trackId %d set to %d", entry.Id, entry.Prio)
+	log.Debugf("MPDClient.UpdateQueueIDs: prio for trackId %d set to %d", entry.Id, 9-entry.Prio)
+
+	err = m.queue.Add(entry.Id, entry)
+	if err != nil {
+		err = fmt.Errorf("MPDClient.UpdateQueueIDs: %v", err)
+		log.Warningf("%v", err)
+		return -1, err
+	}
 
 	return entry.Prio, nil
 }

@@ -394,3 +394,25 @@ func (m *MPDClient) TracksForArtist(artist string) (Playlist, error) {
 
 	return entries, nil
 }
+
+func (m *MPDClient) PreLoadPlayQueue() error {
+	playlist, err := m.GetPlaylist()
+	if err != nil {
+		return fmt.Errorf("MPDClient.PreLoadPlayQueue: %v", err)
+	}
+
+	preloadQueue := PlayQueueEntries{}
+
+	for _, entry := range playlist {
+		if entry.Prio > 0 {
+			preloadQueue[entry.Id] = entry
+		}
+	}
+
+	m.queue.entries = preloadQueue
+	m.np.RequestQueue = preloadQueue
+
+	log.Debugf("MPDClient.PreLoadPlayQueue: preloaded %d items from mpd playlist", len(preloadQueue))
+
+	return nil
+}
