@@ -2,7 +2,6 @@ package mpdclient
 
 import (
 	"fmt"
-	"golang.org/x/text/encoding/charmap"
 	"sort"
 	"strconv"
 )
