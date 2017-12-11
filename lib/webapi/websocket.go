@@ -132,7 +132,7 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 
 	log.Debugf("WebAPI.HandleRequest: searching for %s", query)
 
-	queueId, err := a.mpdClient.Enqueue(query)
+	entry, err := a.mpdClient.Enqueue(query)
 	if err != nil {
 		log.Debugf("WebAPI.HandleRequest: %v", err)
 		response.Status = false
@@ -142,10 +142,10 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 		return
 	}
 
-	log.Debugf("WebAPI.HandleRequest: enqueued with id %d", queueId)
+	log.Debugf("WebAPI.HandleRequest: enqueued with id %d", entry.QPrio)
 
 	response.Status = true
-	response.Data = queueId
+	response.Data = entry
 	conn.WriteMessage(msgType, response.ToJSON())
 	wsOkResponse(r, "Request", "submitted request to queue")
 }

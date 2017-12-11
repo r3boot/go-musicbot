@@ -70,6 +70,12 @@
             </div>
             <div id="idQueue" class="row">
                 <div class="col">
+                    <div id="Alert" class="alert alert-warning alert-dismissible hidden" role="alert">
+                        <button type="button" class="close"
+                                aria-label="Close" onclick="HideNotification();"><span aria-hidden="true">&times;</span>
+                        </button>
+                        <span id="AlertMessage"></span>
+                    </div>
                     <div id="PlayQueue">
                         <h4>Queue is empty</h4>
                     </div>
@@ -129,7 +135,7 @@
 <script src="/js/jquery-3.2.1.min.js"></script>
 <script src="/js/bootstrap-slider.min.js"></script>
 <script src="/js/bootstrap.min.js"></script>
-<script src="/js/site.js"></script>
+<script src="/js/player.js"></script>
 <script>
     function FilterArtists() {
         var input, filter, ul, li, a, i;

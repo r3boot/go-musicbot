@@ -8,6 +8,14 @@ const WS_REQUEST = 6;
 
 const MAX_PAGES = 10;
 
+const NOTIF_INFO = 0;
+const NOTIF_WARNING = 1;
+const NOTIF_ERROR = 2;
+
+const ALERT_INFO    = "alert-info";
+const ALERT_WARNING = "alert-warning";
+const ALERT_ERROR   = "alert-danger";
+
 var resultsPerPage = 10;
 var lastRequest = 0;
 var Playlist = [];
@@ -440,6 +448,20 @@ function WebSocketMuxer() {
                     UpdateNowPlaying(response.d);
                     break;
                 case WS_REQUEST:
+                    var Track = response.d;
+                    console.log(response.d);
+                    var title = "";
+                    if ((Track.artist !== "") && (Track.title !== "")) {
+                        title = Track.artist + " - " + Track.title;
+                    } else if (Track.title !== "") {
+                        title = Track.title;
+                    } else {
+                        title = Track.filename;
+                    }
+
+                    var msg = "Added " + title + " to the queue at position " + Track.prio;
+                    ShowNotification(NOTIF_INFO, msg);
+
                     break;
                 default:
                     console.log("Received unknown websocket packet: " + response.o);
@@ -489,7 +511,7 @@ function ToggleStream() {
         if (promise !== undefined) {
             promise.then(function () {
             }).catch(function (error) {
-                console.log("Failed to open stream: " + error);
+                ShowNotification(NOTIF_ERROR, "Failed to start stream: " + error);
             });
         }
 
@@ -498,9 +520,54 @@ function ToggleStream() {
     }
 }
 
+function ShowNotification(type, message) {
+    if (!$("#Alert").hasClass("hidden")) {
+        HideNotification();
+    }
+
+    $("#AlertMessage").html(message);
+
+    switch (type) {
+        case NOTIF_INFO:
+            $("#Alert").addClass(ALERT_INFO);
+            break;
+        case NOTIF_WARNING:
+            $("#Alert").addClass(ALERT_WARNING);
+            break;
+        case NOTIF_ERROR:
+            $("#Alert").addClass(ALERT_ERROR);
+    }
+
+    $("#Alert").removeClass("hidden");
+}
+
+function HideNotification() {
+    $("#Alert").addClass("hidden");
+
+    $("#AlertMessage").html("");
+
+    var allClasses = $('#Alert').attr("class").split(' ');
+    console.log(allClasses);
+
+    $.each(allClasses, function(idx, value) {
+        switch (value) {
+            case ALERT_INFO:
+                $("#Alert").removeClass(ALERT_INFO);
+                break;
+            case ALERT_WARNING:
+                $("#Alert").removeClass(ALERT_WARNING);
+                break;
+            case ALERT_ERROR:
+                $("#Alert").removeClass(ALERT_ERROR);
+                break;
+        }
+    });
+}
+
 function runWebsite() {
     $(document).ready(function () {
         var audioControls = document.getElementById("audioControls");
+        HideNotification();
 
         socket = WebSocketMuxer();
         ToggleStream();
@@ -525,7 +592,7 @@ function runWebsite() {
             enabled: false,
             formatter: function (value) {
                 return prettyDuration(value);
-            },
+            }
         });
 
         $('#volSlider').slider({

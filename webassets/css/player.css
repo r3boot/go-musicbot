@@ -186,3 +186,10 @@ input[type=search]::-webkit-search-cancel-button {
   padding-left: 10px;
   border-left: 1px solid #464545;
 }
+
+/*
+ * Alert bar
+ */
+#Alert {
+  margin-top: 10px;
+}

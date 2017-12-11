@@ -359,7 +359,7 @@ func (m *MPDClient) GetPlaylist() (Playlist, error) {
 			Rating:   rating,
 			Pos:      pos,
 			Id:       id,
-			Prio:     prio,
+			prio:     prio,
 		}
 
 		entries[fname] = item
@@ -410,7 +410,8 @@ func (m *MPDClient) PreLoadPlayQueue() error {
 	preloadQueue := PlayQueueEntries{}
 
 	for _, entry := range playlist {
-		if entry.Prio > 0 {
+		if entry.prio > 0 {
+			entry.QPrio = 9 - entry.prio
 			preloadQueue[entry.Id] = entry
 		}
 	}

@@ -13,7 +13,7 @@ func (q PlayQueueEntries) ToMap() PlayQueueEntries {
 	entries := PlayQueueEntries{}
 
 	for _, entry := range q {
-		entries[entry.Prio] = entry
+		entries[entry.QPrio] = entry
 	}
 
 	return entries
@@ -90,10 +90,10 @@ func (q PlayQueue) Delete(id int) error {
 	delete(q.entries, id)
 
 	for id, _ := range q.entries {
-		if q.entries[id].Prio > 0 {
-			q.entries[id].Prio -= 1
+		if q.entries[id].QPrio > 0 {
+			q.entries[id].QPrio -= 1
 		}
-		mpdPrio := 9 - q.entries[id].Prio
+		mpdPrio := 9 - q.entries[id].QPrio
 		q.conn.PrioId(mpdPrio, id)
 	}
 
@@ -127,34 +127,34 @@ func (m *MPDClient) UpdateQueueIDs() error {
 	return nil
 }
 
-func (m *MPDClient) Enqueue(query string) (int, error) {
+func (m *MPDClient) Enqueue(query string) (*PlaylistEntry, error) {
 	if len(m.queue.entries) >= MAX_QUEUE_ITEMS-1 {
-		return -1, fmt.Errorf("MPDClient.Enqueue: queue is full")
+		return nil, fmt.Errorf("MPDClient.Enqueue: queue is full")
 	}
 
 	pos, err := m.Search(query)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
 	fname, err := m.GetTitle(pos)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
 	playList, err := m.GetPlaylist()
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
 	entry, err := playList.GetEntryByPos(pos)
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
 	allTags, err := m.id3.GetTags()
 	if err != nil {
-		return -1, fmt.Errorf("MPDClient.Enqueue: %v", err)
+		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
 
 	for tagFname, meta := range allTags {
@@ -165,24 +165,24 @@ func (m *MPDClient) Enqueue(query string) (int, error) {
 		entry.Title = meta.Title
 	}
 
-	entry.Prio = m.queue.Size()
+	entry.QPrio = m.queue.Size()
 
-	err = m.PrioId(entry.Id, entry.Prio)
+	err = m.PrioId(entry.Id, entry.QPrio)
 	if err != nil {
 		err = fmt.Errorf("MPDClient.UpdateQueueIDs: failed to set prio: %v", err)
 		log.Warningf("%v", err)
-		return -1, err
+		return nil, err
 	}
-	log.Debugf("MPDClient.UpdateQueueIDs: prio for trackId %d set to %d", entry.Id, 9-entry.Prio)
+	log.Debugf("MPDClient.UpdateQueueIDs: prio for trackId %d set to %d", entry.Id, 9-entry.QPrio)
 
 	err = m.queue.Add(entry.Id, entry)
 	if err != nil {
 		err = fmt.Errorf("MPDClient.UpdateQueueIDs: %v", err)
 		log.Warningf("%v", err)
-		return -1, err
+		return nil, err
 	}
 
-	return entry.Prio, nil
+	return entry, nil
 }
 
 func (m *MPDClient) GetPlayQueue() PlayQueueEntries {
