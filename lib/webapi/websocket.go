@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/gorilla/websocket"
+	"strings"
 )
 
 var upgrader = websocket.Upgrader{
@@ -136,7 +137,11 @@ func (a *WebAPI) HandleRequest(r *http.Request, conn *websocket.Conn, msgType in
 	if err != nil {
 		log.Debugf("WebAPI.HandleRequest: %v", err)
 		response.Status = false
-		response.Message = "failed to submit request"
+		if strings.Contains(err.Error(), "queue is full") {
+			response.Message = "The queue is full"
+		} else {
+			response.Message = "failed to submit request"
+		}
 		conn.WriteMessage(msgType, response.ToJSON())
 		wsErrorResponse(r, "Request", "failed to submit request")
 		return

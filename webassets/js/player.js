@@ -8,6 +8,7 @@ const WS_REQUEST = 6;
 
 const MAX_PAGES = 10;
 
+const MAX_NOTIF_DISPLAY_TIME = 10 * 1000;
 const NOTIF_INFO = 0;
 const NOTIF_WARNING = 1;
 const NOTIF_ERROR = 2;
@@ -408,13 +409,16 @@ function WebSocketMuxer() {
             var playlistRequest = {"i": lastRequest++, "o": WS_GET_PLAYLIST};
             setInterval(function () {
                 ws.send(JSON.stringify(playlistRequest));
-            }, 1000);
+            }, 5000);
 
             var artistsRequest = {"i": lastRequest++, "o": WS_GET_ARTISTS};
             setInterval(function () {
                 ws.send(JSON.stringify(artistsRequest));
-            }, 1000);
+            }, 5000);
 
+            if ($("#AlertMessage").html() === "Websocket connection closed") {
+                HideNotification();
+            }
         };
 
         ws.onmessage = function (e) {
@@ -422,46 +426,70 @@ function WebSocketMuxer() {
 
             switch (response.o) {
                 case WS_GET_PLAYLIST:
-                    var updatePlaylist = false;
-                    if (Playlist.length === 0) {
-                        updatePlaylist = true;
-                    }
+                    if (response.s === true) {
+                        var updatePlaylist = false;
+                        if (Playlist.length === 0) {
+                            updatePlaylist = true;
+                        }
 
-                    Playlist = response.d;
-                    if (updatePlaylist) {
-                        RefreshPlaylist();
+                        Playlist = response.d;
+                        if (updatePlaylist) {
+                            RefreshPlaylist();
+                        }
+                    } else {
+                        ShowNotification(NOTIF_WARNING, response.m);
                     }
                     break;
                 case WS_GET_ARTISTS:
-                    var updateArtists = false;
-                    if (Artists.length === 0) {
-                        updateArtists = true;
-                    }
-                    Artists = response.d;
-                    if (updateArtists) {
-                        UpdateArtists();
+                    if (response.s === true) {
+                        var updateArtists = false;
+                        if (Artists.length === 0) {
+                            updateArtists = true;
+                        }
+                        Artists = response.d;
+                        if (updateArtists) {
+                            UpdateArtists();
+                        }
+                    } else {
+                        ShowNotification(NOTIF_WARNING, response.m);
                     }
                     break;
                 case WS_NEXT:
+                    if (response.s !== true) {
+                        ShowNotification(NOTIF_WARNING, response.m);
+                    }
                     break;
                 case WS_NOWPLAYING:
-                    UpdateNowPlaying(response.d);
+                    if (response.s === true) {
+                        UpdateNowPlaying(response.d);
+                    } else {
+                        ShowNotification(NOTIF_WARNING, response.m);
+                    }
                     break;
                 case WS_REQUEST:
-                    var Track = response.d;
-                    console.log(response.d);
-                    var title = "";
-                    if ((Track.artist !== "") && (Track.title !== "")) {
-                        title = Track.artist + " - " + Track.title;
-                    } else if (Track.title !== "") {
-                        title = Track.title;
+                    if (response.s === true) {
+                        var Track = response.d;
+
+                        if (Track === null) {
+                            var msg = "Got no result from server";
+                            ShowNotification(NOTIF_WARNING, msg);
+                        } else {
+                            console.log(response.d);
+                            var title = "";
+                            if ((Track.artist !== "") && (Track.title !== "")) {
+                                title = Track.artist + " - " + Track.title;
+                            } else if (Track.title !== "") {
+                                title = Track.title;
+                            } else {
+                                title = Track.filename;
+                            }
+
+                            var msg = "Added " + title + " to the queue at position " + Track.prio;
+                            ShowNotification(NOTIF_INFO, msg);
+                        }
                     } else {
-                        title = Track.filename;
+                        ShowNotification(NOTIF_WARNING, response.m);
                     }
-
-                    var msg = "Added " + title + " to the queue at position " + Track.prio;
-                    ShowNotification(NOTIF_INFO, msg);
-
                     break;
                 default:
                     console.log("Received unknown websocket packet: " + response.o);
@@ -469,6 +497,7 @@ function WebSocketMuxer() {
         };
 
         ws.onclose = function () {
+            ShowNotification(NOTIF_ERROR, "Websocket connection closed");
             check();
         };
     }
@@ -539,6 +568,8 @@ function ShowNotification(type, message) {
     }
 
     $("#Alert").removeClass("hidden");
+
+    setTimeout(HideNotification, MAX_NOTIF_DISPLAY_TIME);
 }
 
 function HideNotification() {
