@@ -5,6 +5,10 @@ import (
 	"sort"
 )
 
+const (
+	MAX_QUEUE_ITEMS = 8
+)
+
 var (
 	queueSize = 0
 )
@@ -190,4 +194,27 @@ func (m *MPDClient) Enqueue(query string) (*PlaylistEntry, error) {
 func (m *MPDClient) GetPlayQueue() PlayQueueEntries {
 	allEntries := m.queue.GetAll().ToMap()
 	return allEntries
+}
+
+func (m *MPDClient) PreLoadPlayQueue() error {
+	playlist, err := m.GetPlaylist()
+	if err != nil {
+		return fmt.Errorf("MPDClient.PreLoadPlayQueue: %v", err)
+	}
+
+	preloadQueue := PlayQueueEntries{}
+
+	for _, entry := range playlist {
+		if entry.prio > 0 {
+			entry.QPrio = 9 - entry.prio
+			preloadQueue[entry.Id] = entry
+		}
+	}
+
+	m.queue.entries = preloadQueue
+	m.np.RequestQueue = preloadQueue
+
+	log.Debugf("MPDClient.PreLoadPlayQueue: preloaded %d items from mpd playlist", len(preloadQueue))
+
+	return nil
 }
