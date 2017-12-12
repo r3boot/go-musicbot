@@ -41,7 +41,7 @@ func (i *ID3Tags) SetRating(fname string, rating int) (int, error) {
 	rating_s := strconv.Itoa(rating)
 
 	params := []string{"-T", rating_s, fullPath}
-	_, err = i.runId3v2(params)
+	_, err = i.RunId3v2(params)
 	if err != nil {
 		return RATING_UNKNOWN, fmt.Errorf("ID3Tags.SetRating: %v", err)
 	}
@@ -186,7 +186,7 @@ func (i *ID3Tags) UpdateTags() error {
 
 		params := []string{"-l"}
 		params = append(params, filteredEntries...)
-		output, err := i.runId3v2(params)
+		output, err := i.RunId3v2(params)
 		if err != nil {
 			return fmt.Errorf("ID3Tags.GetTags: %v", err)
 		}
@@ -256,10 +256,11 @@ func (i *ID3Tags) GetAllFiles() ([]string, error) {
 	tmpList := make([]string, len(files))
 	totItems := 0
 	for _, fs := range files {
-		if fs.Name() == "" {
+		if fs.IsDir() {
 			continue
-		}
-		if !strings.HasSuffix(fs.Name(), ".mp3") {
+		} else if fs.Name() == "" {
+			continue
+		} else if !strings.HasSuffix(fs.Name(), ".mp3") {
 			continue
 		}
 
@@ -388,7 +389,7 @@ func (i *ID3Tags) SetMetadata(fname string) error {
 		}
 	}
 
-	_, err = i.runId3v2(params)
+	_, err = i.RunId3v2(params)
 	if err != nil {
 		fmt.Errorf("ID3Tags.SetMetadata: %v", err)
 	}

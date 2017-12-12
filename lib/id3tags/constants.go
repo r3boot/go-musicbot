@@ -17,6 +17,12 @@ const (
 	TITLE  string = "TIT2"
 )
 
+type Tags struct {
+	Artist string
+	Title  string
+	Rating int
+}
+
 type TrackTags struct {
 	Artist string
 	Title  string
@@ -38,6 +44,8 @@ var (
 
 	// TIT2 (Title/songname/content description): In The Waiting Line
 	RE_TITLE = regexp.MustCompile("^TIT2 .*: (.*)$")
+
+	RE_TRCK = regexp.MustCompile("^TRCK .*: (.*)$")
 
 	tagListMutex sync.RWMutex
 )

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ func (i *ID3Tags) expandFullPath(fname string) (string, error) {
 	return fullPath, nil
 }
 
-func (i *ID3Tags) runId3v2(params []string) (string, error) {
+func (i *ID3Tags) RunId3v2(params []string) (string, error) {
 	var stdout, stderr bytes.Buffer
 
 	cmd := exec.Command("id3v2", params...)
@@ -33,16 +34,16 @@ func (i *ID3Tags) runId3v2(params []string) (string, error) {
 	// log.Debugf("Running %s %s\n", "id3v2", strings.Join(params, " "))
 
 	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("ID3Tags.runId3v2 cmd.Start: %v", err)
+		return "", fmt.Errorf("ID3Tags.RunId3v2 cmd.Start: %v", err)
 	}
 
 	if err := cmd.Wait(); err != nil {
-		msg := fmt.Sprintf("ID3Tags.runId3v2 cmd.Wait: %v\nStdout: %s\nStderr: %s", err, stdout.String(), stderr.String())
+		msg := fmt.Sprintf("ID3Tags.RunId3v2 cmd.Wait: %v\nStdout: %s\nStderr: %s", err, stdout.String(), stderr.String())
 		return "", fmt.Errorf(msg)
 	}
 
 	if stderr.Len() > 0 {
-		msg := fmt.Sprintf("ID3Tags.runId3v2: failed to run: %v\n", stderr.String())
+		msg := fmt.Sprintf("ID3Tags.RunId3v2: failed to run: %v\n", stderr.String())
 		return "", fmt.Errorf(msg)
 	}
 
@@ -57,7 +58,7 @@ func (i *ID3Tags) ReadFrame(fname, frame string) (string, error) {
 
 	params := []string{"-l", fullPath}
 
-	output, err := i.runId3v2(params)
+	output, err := i.RunId3v2(params)
 	if err != nil {
 		return "", fmt.Errorf("ID3Tags.ReadField: %v", err)
 	}
@@ -76,4 +77,61 @@ func (i *ID3Tags) ReadFrame(fname, frame string) (string, error) {
 	}
 
 	return "", fmt.Errorf("ID3Tags.ReadField: no %s frame found", frame)
+}
+
+func (i *ID3Tags) GetId3Tags(fname string) (*Tags, error) {
+	fullPath, err := i.expandFullPath(fname)
+	if err != nil {
+		return nil, fmt.Errorf("ID3Tags.GetId3Tags: %v", err)
+	}
+
+	params := []string{"-l", fullPath}
+
+	output, err := i.RunId3v2(params)
+	if err != nil {
+		return nil, fmt.Errorf("ID3Tags.GetId3Tags: %v", err)
+	}
+
+	wantedFrames := []string{ARTIST, TITLE, TRACK}
+	tags := &Tags{}
+
+	for _, line := range strings.Split(output, "\n") {
+		if !strings.HasPrefix(line, "T") {
+			continue
+		}
+
+		for _, frame := range wantedFrames {
+			switch frame {
+			case ARTIST:
+				{
+					result := RE_ARTIST.FindAllStringSubmatch(line, -1)
+					if len(result) == 0 {
+						continue
+					}
+					tags.Artist = result[0][1]
+				}
+			case TITLE:
+				{
+					result := RE_TITLE.FindAllStringSubmatch(line, -1)
+					if len(result) == 0 {
+						continue
+					}
+					tags.Title = result[0][1]
+				}
+			case TRACK:
+				{
+					result := RE_TRCK.FindAllStringSubmatch(line, -1)
+					if len(result) == 0 {
+						continue
+					}
+					tags.Rating, err = strconv.Atoi(result[0][1])
+					if err != nil {
+						return nil, fmt.Errorf("ID3Tags.GetId3Tags strconv.Atoi: %v", err)
+					}
+				}
+			}
+		}
+	}
+
+	return tags, nil
 }
