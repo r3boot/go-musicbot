@@ -3,7 +3,7 @@
 #snow{
 	background: none;
 	font-family: Androgyne;
-	background-image: url('/img/snow/s1.png'), url('/img/snow/s2.png'), url('/img/img/s3.png');
+	background-image: url('/img/snow/s1.png'), url('/img/snow/s2.png'), url('/img/snow/s3.png');
 	height: 100%;
 	left: 0;
 	position: absolute;

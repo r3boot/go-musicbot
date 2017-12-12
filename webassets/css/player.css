@@ -201,3 +201,17 @@ table a:not(.btn), .table a:not(.btn) {
   cursor: pointer;
   text-decoration: none;
 }
+
+/*
+ * Class used to ident an element
+ */
+.ident {
+  margin-left: 15px;
+}
+
+/*
+ * Pagination
+ */
+#idPagination {
+
+}
