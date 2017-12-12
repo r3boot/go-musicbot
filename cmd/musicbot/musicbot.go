@@ -61,7 +61,7 @@ func main() {
 
 	AlbumArt := albumart.NewAlbumArt(Logger, Config.Api.Assets)
 
-	Id3Tags := id3tags.NewID3Tags(Logger, musicDir)
+	Id3Tags := id3tags.NewID3Tags(Logger, musicDir, true)
 
 	MPDClient, err := mpdclient.NewMPDClient(Logger, Config, Id3Tags, AlbumArt, musicDir)
 	if err != nil {

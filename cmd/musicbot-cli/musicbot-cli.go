@@ -198,7 +198,7 @@ func init() {
 		Logger.Fatalf("config.LoadConfig: %v", err)
 	}
 
-	Id3Tags = id3tags.NewID3Tags(Logger, *baseDir)
+	Id3Tags = id3tags.NewID3Tags(Logger, *baseDir, false)
 	YoutubeClient = youtubeclient.NewYoutubeClient(Logger, Config, nil, Id3Tags, *baseDir)
 }
 
