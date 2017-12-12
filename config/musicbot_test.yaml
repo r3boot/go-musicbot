@@ -1,0 +1,59 @@
+---
+application:
+  ircbot: true
+  api: true
+  webui: true
+  daemonize: false
+  debug: true
+
+irc:
+  nickname: "IrcBot"
+  server: "irc.mononoke.nl"
+  port: 6697
+  channel: "#bot-test"
+  tls: true
+  tls_verify: true
+
+bot:
+  command_character: "!"
+  valid_commands:
+    - "dj+"
+    - "djlist"
+    - "start"
+    - "next"
+    - "np"
+    - "radio"
+    - "boo"
+    - "like"
+    - "request"
+    - "queue"
+    - "help"
+  stream_url: "http://radio.as65342.net:8000/2600nl.ogg.m3u"
+  radio_messages:
+    - "Tired of waiting for DJShuffle?"
+    - "Fed up with the youtube links of an unnamed individual?"
+    - "Cant wait till friday?"
+    - "Gaat de meet nog door?"
+    - "Feeling lonely?"
+    - "Are you missing DJShuffle?"
+    - "Did you miss Sjaak?"
+
+youtube:
+  music_basedir: "/net/motoko/music"
+  downloader: "/usr/local/bin/youtube-dl"
+  seen_file: "/var/spool/fetch_youtube.seen"
+  url: "https://www.youtube.com/watch?v="
+  num_workers: 1
+
+mpd:
+  address: "10.42.2.11"
+  port: 6600
+  password: ""
+
+api:
+  address: "127.0.0.1"
+  port: 8666
+  title: "2600nl radio"
+  ogg_stream_url: "https://radio.as65342.net/stream/2600nl.ogg"
+  mp3_stream_url: "https://radio.as65342.net/stream/2600nl.mp3"
+  assets: "./webassets"
