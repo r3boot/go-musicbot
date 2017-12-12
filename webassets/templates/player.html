@@ -30,16 +30,16 @@
 </head>
 
 <body>
-<div id="ViewPort" class="container-fluid">
+<div id="ViewPort" class="container">
     <div id="PlayerView">
         <div id="snow">
-            <div id="idPlayerColumn" class="col col-md-9 main">
+            <div id="idPlayerColumn" class="col col-md-9 col-xs-12 main">
                 <div id="idControls" class="row">
-                    <div class="col col-md-3">
+                    <div class="col col-md-3 col-md-offset-0 col-xs-12 col-xs-offset-3">
                         <img id="idAlbumArt" alt="No art found"/>
                     </div>
                     <p/>
-                    <div class="col col-md-6">
+                    <div class="col col-md-7 col-xs-12">
                         <div class="row">
                             <h4 id="idNowPlaying" class="display-5">Nothing
                                 playing
@@ -98,13 +98,13 @@
                 </div>
                 <div id="idPlaylistControls" class="row">
                     <hr/>
-                    <div class="col-md-1">
+                    <div class="col-md-1 col-xs-1">
                         <input id="idPlaylistMode" type="checkbox" checked
                                data-toggle="toggle" data-on="Playlist"
                                data-off="Random" data-onstyle="success"
                                data-offstyle="success" data-size="small">
                     </div>
-                    <div class="col-md-9 col-md-offset-1">
+                    <div class="col-md-9 col-md-offset-1 col-xs-9 col-xs-offset-2">
                         <div id="idRandomControls">
                             <button class="btn btn-sm btn-success"
                                     onclick="RefreshPlaylist()">
@@ -123,6 +123,7 @@
                         <table id="Playlist" class="table table-striped">
                             <thead>
                             <tr>
+                                <th>&nbsp;</th>
                                 <th><a class="sort"
                                        onclick="SortBy(0);">Artist</a></th>
                                 <th><a class="sort"
@@ -139,7 +140,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col col-md-3 col-md-offset-9 bg-default sidebar">
+            <div class="desktop-only col col-md-3 col-md-offset-9 col-xs-3 col-xs-offset-9 bg-default sidebar">
                 <div class="row">
                     <input type="search" id="ArtistFilter"
                            onchange="FilterArtists()"

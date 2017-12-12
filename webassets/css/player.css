@@ -1,12 +1,60 @@
 /*
- * Base structure
+ * Create classes for desktop/mobile displaying
  */
+@media (min-width:992px) {
+    /* Desktops */
+    body {
+        overflow-y: hidden;
+        font-size: 14px;
+    }
 
-/* Move down content because we have a fixed navbar that is 3.5rem tall */
-body {
-  /* padding-top: 3.5rem;*/
-  overflow-y: hidden;
-  font-size: 14px;
+    .desktop-only {
+		display:block !important;
+	}
+
+    .ident {
+        margin-left: 15px;
+    }
+
+    #trackSliderData.slider-horizontal {
+        width:250px !important;
+    }
+
+    #volSliderData.slider-horizontal {
+        width:200px !important;
+    }
+
+    #Playlist {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 991px) {
+    /* Mobile */
+    body {
+        font-size: 10px;
+    }
+
+	.mobile-only {
+		display:block !important;
+	}
+
+	.desktop-only {
+		display:none !important;
+        visibility: hidden !important;
+	}
+
+    #trackSliderData.slider-horizontal {
+        width:390px !important;
+    }
+
+    #volSliderData.slider-horizontal {
+        width:250px !important;
+    }
+
+    #Playlist {
+        font-size: 10px;
+    }
 }
 
 /*
@@ -113,9 +161,6 @@ input[type=search]::-webkit-search-cancel-button {
 #trackSliderData .slider-selection {
   background: #BABABA;
 }
-#trackSliderData.slider-horizontal {
-  width:330px !important;
-}
 
 /*
  * Volume Slider
@@ -123,9 +168,7 @@ input[type=search]::-webkit-search-cancel-button {
 #volSliderData .slider-selection {
 	background: #BABABA;
 }
-#volSliderData.slider-horizontal {
-    width:200px !important;
-}
+
 
 /*
  * Audio player controls container
@@ -206,16 +249,11 @@ table a:not(.btn), .table a:not(.btn) {
 /*
  * Class used to ident an element
  */
-.ident {
-  margin-left: 15px;
-}
 
 /*
  * Playlist
  */
-#Playlist {
-  font-size: 13px;
-}
+
 
 /*
  * Playlist Controls

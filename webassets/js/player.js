@@ -189,9 +189,9 @@ function pgGotoPage(page) {
 function navItem(p) {
     var pDec = Math.floor(p);
     if (pDec === pgPage) {
-        return "<li class='page-item active'><a class='page-link' href='#'>" + pDec + "</a></li>";
+        return "<li class='desktop-only page-item active'><a class='page-link' href='#'>" + pDec + "</a></li>";
     } else {
-        return "<li class='page-item'><a class='page-link' onclick='pgGotoPage(" + pDec + ")' href='#'>" + p + "</a></li>";
+        return "<li class='desktop-only page-item'><a class='page-link' onclick='pgGotoPage(" + pDec + ")' href='#'>" + p + "</a></li>";
     }
 }
 
@@ -212,6 +212,7 @@ function pgShowPagination(numItems) {
         pages.push("<li class='page-item'><a class='page-link' onclick='pgGotoPage(-1)' href=#' tabindex=-1'>back</a>");
     }
 
+    /*
     if (maxPages > MAX_PAGES) {
         if (pgPage < 5) {
             for (p = 0; p < MAX_PAGES; p++) {
@@ -231,6 +232,7 @@ function pgShowPagination(numItems) {
             pages.push(navItem(p));
         }
     }
+    */
 
     if (pgPage == maxPages) {
         pages.push("<li class='page-item disabled'><a class='page-link' href=#' tabindex=-1'>next</a>");
@@ -305,7 +307,7 @@ function FillPlaylistResults() {
     $.each(queryItems, function (key, val) {
         var query = val.name;
 
-        items.push("<tr><td>" + val.artist + "</td><td>" + formatTitle(val) + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
+        items.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td>" + val.artist + "</td><td>" + formatTitle(val) + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
     });
     $("#ArtistResults").html(items.join(""));
 
@@ -374,9 +376,9 @@ function LookupTracksForArtist(artist, encoded) {
             query = val.title;
         }
         if ((val.title) && (val.title !== "")) {
-            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
         } else {
-            foundArtists.push("<tr><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td></tr>");
+            foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
         }
     });
 
