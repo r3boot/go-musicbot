@@ -5,7 +5,7 @@ MBFIXTAGS = mbfixtags
 BUILD_DIR = ./build
 PREFIX = /usr/local
 
-all: ${TARGET} ${CLI}
+all: ${TARGET} ${CLI} ${MBFIXTAGS}
 
 deps:
 	go get -v ./...
@@ -21,7 +21,6 @@ ${CLI}: ${BUILD_DIR}
 
 ${MBFIXTAGS}: ${BUILD_DIR}
 	go build -v -o ${BUILD_DIR}/${MBFIXTAGS} cmd/${MBFIXTAGS}/${MBFIXTAGS}.go
-
 
 install:
 	strip -v ${BUILD_DIR}/${TARGET}
