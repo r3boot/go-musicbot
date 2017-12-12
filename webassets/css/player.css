@@ -6,6 +6,7 @@
 body {
   /* padding-top: 3.5rem;*/
   overflow-y: hidden;
+  font-size: 14px;
 }
 
 /*
@@ -210,8 +211,22 @@ table a:not(.btn), .table a:not(.btn) {
 }
 
 /*
- * Pagination
+ * Playlist
  */
-#idPagination {
+#Playlist {
+  font-size: 13px;
+}
 
+/*
+ * Playlist Controls
+ */
+#idPlaylistControls {
+  margin-bottom: 5px;
+}
+
+/*
+ * Pagination Controls
+ */
+.pagination {
+  margin: 0px !important;
 }

@@ -23,6 +23,9 @@ const SORT_DURATION = 2;
 const SORT_RATING = 3;
 const SORT_FILENAME = 4;
 
+const SORT_ALPHANUM = 0;
+const SORT_RANDOM = 1;
+
 var resultsPerPage = 10;
 var lastRequest = 0;
 var Playlist = [];
@@ -32,6 +35,7 @@ var oldNumQueued = 0;
 var numQueued = 0;
 var selectedArtist = "";
 var sortColumn = SORT_FILENAME;
+var randomMode = false;
 
 var ArtistsViewData = [];
 
@@ -78,6 +82,21 @@ function formatTitle(kv) {
     } else {
         return kv.name;
     }
+}
+
+function randomizeArray(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+  return array;
 }
 
 function sortDictByArtist(playlist) {
@@ -193,9 +212,6 @@ function pgShowPagination(numItems) {
         pages.push("<li class='page-item'><a class='page-link' onclick='pgGotoPage(-1)' href=#' tabindex=-1'>back</a>");
     }
 
-    console.log("pgPage: " + pgPage);
-    console.log("maxPages: " + maxPages);
-
     if (maxPages > MAX_PAGES) {
         if (pgPage < 5) {
             for (p = 0; p < MAX_PAGES; p++) {
@@ -261,23 +277,26 @@ function FillPlaylistResults() {
         ArtistsViewData = Playlist.sort();
     }
 
-    switch (sortColumn) {
-        case SORT_ARTIST:
-            ArtistsViewData = sortDictByArtist(ArtistsViewData);
-            break;
-        case SORT_TITLE:
-            ArtistsViewData = sortDictByTitle(ArtistsViewData);
-            break;
-        case SORT_DURATION:
-            ArtistsViewData = sortDictByDuration(ArtistsViewData);
-            break;
-        case SORT_RATING:
-            ArtistsViewData = sortDictByRating(ArtistsViewData);
-            break;
-        default:
-            ArtistsViewData = sortDictByFilename(ArtistsViewData);
+    if (!randomMode) {
+        switch (sortColumn) {
+            case SORT_ARTIST:
+                ArtistsViewData = sortDictByArtist(ArtistsViewData);
+                break;
+            case SORT_TITLE:
+                ArtistsViewData = sortDictByTitle(ArtistsViewData);
+                break;
+            case SORT_DURATION:
+                ArtistsViewData = sortDictByDuration(ArtistsViewData);
+                break;
+            case SORT_RATING:
+                ArtistsViewData = sortDictByRating(ArtistsViewData);
+                break;
+            default:
+                ArtistsViewData = sortDictByFilename(ArtistsViewData);
+        }
+    } else {
+        ArtistsViewData = randomizeArray(Playlist);
     }
-
 
     calcResultsPerPage();
 
@@ -432,6 +451,22 @@ function RefreshPlaylist() {
     }
 }
 
+function PlaylistViewMode(mode) {
+    switch (mode) {
+        case SORT_ALPHANUM:
+            $("#idRandomControls").addClass("hidden");
+            $("#idPaginationControls").removeClass("hidden");
+            randomMode = false;
+            break;
+        case SORT_RANDOM:
+            $("#idPaginationControls").addClass("hidden");
+            $("#idRandomControls").removeClass("hidden");
+            randomMode = true;
+            break;
+    }
+    RefreshPlaylist();
+}
+
 function ShowView(viewId) {
     allViews = ["#PlayerView"];
     allButtons = ["#NavPlayerView"];
@@ -520,7 +555,7 @@ function WebSocketMuxer() {
                             updatePlaylist = true;
                         }
 
-                        Playlist = response.d;
+                        Playlist = randomizeArray(response.d);
                         if (updatePlaylist) {
                             RefreshPlaylist();
                         }
@@ -562,7 +597,6 @@ function WebSocketMuxer() {
                             var msg = "Got no result from server";
                             ShowNotification(NOTIF_WARNING, msg);
                         } else {
-                            console.log(response.d);
                             var title = "";
                             if ((Track.artist !== "") && (Track.title !== "")) {
                                 title = Track.artist + " - " + Track.title;
@@ -688,6 +722,7 @@ function runWebsite() {
     $(document).ready(function () {
         var audioControls = document.getElementById("audioControls");
         HideNotification();
+        PlaylistViewMode(SORT_ALPHANUM);
 
         socket = WebSocketMuxer();
         ToggleStream();
@@ -700,6 +735,18 @@ function runWebsite() {
             ev.preventDefault();
             RefreshPlaylist();
             ShowView("#PlayerView");
+        });
+
+        $("#idPlaylistMode").on("change", function(ev) {
+            ev.preventDefault();
+
+            var mode = $("#idPlaylistMode").prop("checked");
+
+            if (mode) {
+                PlaylistViewMode(SORT_ALPHANUM);
+            } else {
+                PlaylistViewMode(SORT_RANDOM);
+            }
         });
 
         $("#idPlay").click(function (ev) {
