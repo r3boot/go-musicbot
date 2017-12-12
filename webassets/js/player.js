@@ -313,6 +313,24 @@ function LookupTracksForArtist(artist, encoded) {
         }
     });
 
+    switch (sortColumn) {
+        case SORT_ARTIST:
+            foundArtistsData = sortDictByArtist(foundArtistsData);
+            break;
+        case SORT_TITLE:
+            foundArtistsData = sortDictByTitle(foundArtistsData);
+            break;
+        case SORT_DURATION:
+            foundArtistsData = sortDictByDuration(foundArtistsData);
+            break;
+        case SORT_RATING:
+            foundArtistsData = sortDictByRating(foundArtistsData);
+            break;
+        default:
+            foundArtistsData = sortDictByFilename(foundArtistsData);
+    }
+
+
     calcResultsPerPage();
 
     pgPage = 0;
