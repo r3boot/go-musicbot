@@ -86,7 +86,7 @@ function formatTitle(kv) {
     }
 
     if (result.match(kv.artist)) {
-        result = result.replace(kv.artist, "");
+        result = result.replace(kv.artist + " - ", "");
     }
 
     return result;
