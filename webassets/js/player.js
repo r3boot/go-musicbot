@@ -375,11 +375,7 @@ function LookupTracksForArtist(artist, encoded) {
         } else {
             query = val.title;
         }
-        if ((val.title) && (val.title !== "")) {
-            foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
-        } else {
-            foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.filename + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
-        }
+        foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
     });
 
     $("#ArtistResults").html(foundArtists.join(""));
