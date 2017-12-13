@@ -44,12 +44,17 @@
         visibility: hidden !important;
 	}
 
-    #trackSliderData.slider-horizontal {
-        width:390px !important;
+    .btn {
+        padding:12px;
     }
 
-    #volSliderData.slider-horizontal {
-        width:250px !important;
+    #trackSliderData.slider-horizontal {
+        width:240px !important;
+    }
+
+    #idVolSlider {
+        display: none !important;
+        visibility: hidden !important;
     }
 
     #Playlist {

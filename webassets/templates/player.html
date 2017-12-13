@@ -61,13 +61,15 @@
                                     id="idNext"><span
                                     class="glyphicon glyphicon-step-forward"></span>
                             </button>
-                            &nbsp;
-                            <input id="volSlider" data-slider-id='volSliderData'
+                            <span id="idVolSlider" class="hidden-xs">
+                                &nbsp;
+                                <input id="volSlider"
+                                   data-slider-id='volSliderData'
                                    type="text" data-slider-min="0"
-                                   data-slider-max="100"
-                                   data-slider-step="1" data-slider-value="14"/>
-                            &nbsp;&nbsp;&nbsp;
-                            <span id="idRating" class="badge">-1/10</span>&nbsp;
+                                   data-slider-max="100" data-slider-step="1"
+                                   data-slider-value="14"/>
+                                &nbsp;
+                            </span>
                             <button type="button" class="btn btn-default btn-xs"
                                     id="idBoo"><span
                                     class="glyphicon glyphicon-thumbs-down"></span>
@@ -76,6 +78,8 @@
                                     id="idTune"><span
                                     class="glyphicon glyphicon-thumbs-up"></span>
                             </button>
+                            &nbsp;
+                            <span id="idRating" class="badge">-1/10</span>
                         </div>
                     </div>
                 </div>
