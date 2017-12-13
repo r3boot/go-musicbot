@@ -220,28 +220,6 @@ function pgShowPagination(numItems) {
         pages.push("<li class='page-item'><a class='page-link' onclick='pgGotoPage(-1)' href=#' tabindex=-1'>back</a>");
     }
 
-    /*
-    if (maxPages > MAX_PAGES) {
-        if (pgPage < 5) {
-            for (p = 0; p < MAX_PAGES; p++) {
-                pages.push(navItem(p));
-            }
-        } else if ((maxPages - pgPage) < 5) {
-            for (p = maxPages - 10; p < maxPages; p++) {
-                pages.push(navItem(p));
-            }
-        } else {
-            for (p = pgPage - 5; p < pgPage + 5; p++) {
-                pages.push(navItem(p));
-            }
-        }
-    } else {
-        for (p = 0; p <= maxPages; p++) {
-            pages.push(navItem(p));
-        }
-    }
-    */
-
     if (pgPage == maxPages) {
         pages.push("<li class='page-item disabled'><a class='page-link' href=#' tabindex=-1'>next</a>");
         pages.push("<li class='page-item disabled'><a class='page-link' href=#' tabindex=-1>last</a>");
@@ -350,48 +328,9 @@ function LookupTracksForArtist(artist, encoded) {
         }
     });
 
-    switch (sortColumn) {
-        case SORT_ARTIST:
-            foundArtistsData = sortDictByArtist(foundArtistsData);
-            break;
-        case SORT_TITLE:
-            foundArtistsData = sortDictByTitle(foundArtistsData);
-            break;
-        case SORT_DURATION:
-            foundArtistsData = sortDictByDuration(foundArtistsData);
-            break;
-        case SORT_RATING:
-            foundArtistsData = sortDictByRating(foundArtistsData);
-            break;
-        default:
-            foundArtistsData = sortDictByFilename(foundArtistsData);
-    }
-
-
-    calcResultsPerPage();
-
-    pgPage = 0;
-    pgIndex = 0;
-
-    var queryItems = pgFilterObjects(foundArtistsData);
-
-    var foundArtists = [];
-    $.each(queryItems, function (key, val) {
-        var query = "";
-        if (val.artist !== "") {
-            query = val.artist + " - " + val.title;
-        } else {
-            query = val.title;
-        }
-
-        foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
-    });
-
-    $("#ArtistResults").html(foundArtists.join(""));
-
     ArtistsViewData = foundArtistsData;
 
-    pgShowPagination(foundArtistsData.length);
+    RefreshPlaylist();
 }
 
 function RequestTrack(rawQuery) {
@@ -451,11 +390,7 @@ function UpdateNowPlaying(data) {
 }
 
 function RefreshPlaylist() {
-    if (selectedArtist !== "") {
-        LookupTracksForArtist(selectedArtist, false)
-    } else {
-        FillPlaylistResults();
-    }
+    FillPlaylistResults();
 }
 
 function PlaylistViewMode(mode) {

@@ -1,8 +1,8 @@
 ---
 application:
   ircbot: true
-  api: false
-  webui: false
+  api: true
+  webui: true
   daemonize: false
   debug: true
 
