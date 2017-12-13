@@ -22,6 +22,7 @@ type BotConfig struct {
 	ValidCommands []string `yaml:"valid_commands"`
 	StreamURL     string   `yaml:"stream_url"`
 	RadioMsgs     []string `yaml:"radio_messages"`
+	Ch00nMsgs     []string `yaml:"ch00n_messages"`
 }
 
 type YoutubeConfig struct {

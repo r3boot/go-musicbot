@@ -57,6 +57,10 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	}
 
 	command := cmdResult[0][1]
+	user := e.User
+	if len(user) > 0 && user[0] == '~' {
+		user = user[1:]
+	}
 
 	log.Debugf("IrcClient.ParsePrivmsg: Got command %s", command)
 
@@ -79,6 +83,8 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 		c.HandleDecreaseRating(channel, line)
 	case CMD_TUNE:
 		c.HandleIncreaseRating(channel, line)
+	case CMD_CH00N:
+		c.HandleCh00n(channel, line, user)
 	case CMD_REQUEST:
 		c.HandleSearchAndPlay(channel, line)
 	case CMD_QUEUE:
@@ -218,6 +224,12 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 
 	log.Infof("Rating for %s is now %d", fname, newRating)
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fname[:len(fname)-16], newRating)
+	c.conn.Privmsg(channel, response)
+}
+
+func (c *IrcClient) HandleCh00n(channel, line, user string) {
+	response := fmt.Sprintf("%s", c.randomCh00nMessage())
+	response = fmt.Sprintf(response, user)
 	c.conn.Privmsg(channel, response)
 }
 

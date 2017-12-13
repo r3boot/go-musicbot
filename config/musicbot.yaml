@@ -24,7 +24,8 @@ bot:
     - "np"
     - "radio"
     - "boo"
-    - "like"
+    - "tune"
+    - "ch00n"
     - "request"
     - "queue"
     - "help"
@@ -37,6 +38,16 @@ bot:
     - "Feeling lonely?"
     - "Are you missing DJShuffle?"
     - "Did you miss Sjaak?"
+  ch00n_messages:
+    - "%s tunes into 2600nl radio"
+    - "%s goes wild on the dancefloor"
+    - "%s is a bit drunk, strips naked and starts to dance on the table"
+    - "%s slowly bangs his head to the tunes of 2600nl"
+    - "%s is exhausted from the dancing to the tunes, but cannot stop dancing"
+    - "%s jumps and crowdsurfs towards the channel"
+    - "%s is showing off his best disco moves on the dancefloor"
+    - "%s is raving to the tunes of 2600nl"
+    - "%s bounces his lowrider in tune with the beat"
 
 youtube:
   music_basedir: "/music"

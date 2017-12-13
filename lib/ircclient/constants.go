@@ -19,6 +19,7 @@ const (
 	CMD_RADIO     string = "!radio"
 	CMD_BOO       string = "!boo"
 	CMD_TUNE      string = "!tune"
+	CMD_CH00N     string = "!ch00n"
 	CMD_PLAYLIST  string = "!djlist"
 	CMD_REQUEST   string = "!request"
 	CMD_QUEUE     string = "!queue"
@@ -29,7 +30,7 @@ const (
 )
 
 var (
-	RE_CMD       = regexp.MustCompile("^(\\![a-z\\+\\-]{2,8})")
+	RE_CMD       = regexp.MustCompile("^(\\![a-z0-9\\+\\-]{2,8})")
 	RE_DJHANDLER = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
 	RE_DJLIST    = regexp.MustCompile("(\\!djlist) (https://www.youtube.com/watch.*list=.*)")
 	RE_SEARCH    = regexp.MustCompile("(\\!request) ([a-zA-Z0-9_\\-\\.\\ ]+)$")
