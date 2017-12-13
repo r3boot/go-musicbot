@@ -75,13 +75,21 @@ function decodeString(encoded) {
 }
 
 function formatTitle(kv) {
+    var result = "";
+
     if ((kv.artist !== "") && (kv.title !== "")) {
-        return kv.artist + " - " + kv.title;
+        result = kv.artist + " - " + kv.title;
     } else if (kv.title !== "") {
-        return kv.title;
+        result = kv.title;
     } else {
-        return kv.name;
+        result = kv.name;
     }
+
+    if (result.match(kv.artist)) {
+        result = result.replace(kv.artist, "");
+    }
+
+    return result;
 }
 
 function randomizeArray(array) {
@@ -375,6 +383,7 @@ function LookupTracksForArtist(artist, encoded) {
         } else {
             query = val.title;
         }
+
         foundArtists.push("<tr><td><span class='glyphicon glyphicon-shopping-cart' onclick='RequestTrack(\"" + encodeString(query) + "\")'></span></td><td class='artist'>" + val.artist + "</td><td class='title'>" + val.title + "</td><td>" + prettyDuration(val.duration) + "</td><td>" + val.rating + "/10</td></tr>");
     });
 
