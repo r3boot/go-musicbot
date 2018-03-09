@@ -155,6 +155,8 @@ function sortDictByRating(playlist) {
     });
 }
 function sortDictByFilename(playlist) {
+    console.log("sort.playlist:");
+    console.log(playlist);
     return playlist.sort(function compare(kv1, kv2) {
        if (kv1.filename < kv2.filename) {
            return -1;
@@ -171,7 +173,12 @@ function SortBy(filter) {
     RefreshPlaylist();
 }
 
+
+
 function pgFilterObjects(data) {
+    console.log("pgIndex: " + pgIndex);
+    console.log("data");
+    console.log(data);
     return data.slice(pgIndex, pgIndex + resultsPerPage);
 }
 
@@ -260,10 +267,17 @@ function UpdateArtists() {
     }
 }
 
-function FillPlaylistResults() {
-    if ($("#ArtistFilter").val() === "") {
+function RefreshPlaylist() {
+    if ($("#ArtistFilter").val() !== "") {
+        ArtistsViewData = LookupTracksForArtist($("#ArtistFilter").val(), false)
+    } else {
         ArtistsViewData = Playlist.sort();
     }
+    console.log("ArtistsViewData");
+    console.log(ArtistsViewData);
+
+    console.log("isArray");
+    console.log(Array.isArray(ArtistsViewData));
 
     if (!randomMode) {
         switch (sortColumn) {
@@ -289,6 +303,10 @@ function FillPlaylistResults() {
     calcResultsPerPage();
 
     var queryItems = pgFilterObjects(ArtistsViewData);
+
+    console.log("queryItems");
+    console.log(queryItems);
+
     var items = [];
     $.each(queryItems, function (key, val) {
         var query = val.name;
@@ -309,6 +327,8 @@ function LookupTracksForArtist(artist, encoded) {
 
     selectedArtist = lookupArtist;
 
+    console.log("selectedArtist: " + selectedArtist);
+
     var foundArtistsData = [];
     $.each(Playlist, function (key, val) {
         if (val.artist === "") {
@@ -328,9 +348,7 @@ function LookupTracksForArtist(artist, encoded) {
         }
     });
 
-    ArtistsViewData = foundArtistsData;
-
-    RefreshPlaylist();
+    return foundArtistsData;
 }
 
 function RequestTrack(rawQuery) {
@@ -387,10 +405,6 @@ function UpdateNowPlaying(data) {
         RefreshPlaylist();
         oldNumQueued = numQueued
     }
-}
-
-function RefreshPlaylist() {
-    FillPlaylistResults();
 }
 
 function PlaylistViewMode(mode) {

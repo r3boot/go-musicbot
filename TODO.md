@@ -8,6 +8,8 @@
 - Make ratings drift back to the starting point over time
 - Add duplicate check
 - Keep playlist prio + play queue in sync
+- Check running track @ enqueue
+- Download non-existing track on !request
 
 # liquidsoap
 - Make sure its clear which program is playing
