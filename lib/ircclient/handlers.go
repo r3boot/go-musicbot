@@ -8,6 +8,7 @@ import (
 	"go-ircevent"
 
 	"github.com/r3boot/go-musicbot/lib/id3tags"
+	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
 
 func (c *IrcClient) initCallbacks() {
@@ -68,9 +69,7 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	case CMD_HELP:
 		c.HandleHelp(channel, line)
 	case CMD_DJPLUS:
-		c.HandleYidDownload(channel, line)
-	case CMD_PLAYLIST:
-		c.HandlePlaylistDownload(channel, line)
+		c.HandleYidDownload(channel, line, e.Nick)
 	case CMD_START:
 		c.HandleStart(channel, line)
 	case CMD_NEXT:
@@ -98,14 +97,43 @@ func (c *IrcClient) HandleHelp(channel, line string) {
 	c.conn.Privmsg(channel, RESPONSE_HELP)
 }
 
-func (c *IrcClient) HandleYidDownload(channel, line string) {
+func (c *IrcClient) HandleYidDownload(channel, line, nick string) {
 	result := RE_DJHANDLER.FindAllStringSubmatch(line, -1)
 
 	response := "Undefined"
 
 	if len(result) == 1 {
 		yid := result[0][2]
-		c.ytClient.DownloadChan <- yid
+
+		if c.ytClient.HasYID(yid) {
+			if !c.Online[NICK_SJAAK] {
+				response = fmt.Sprintf("%s has already been downloaded", yid)
+				c.conn.Privmsg(channel, response)
+			}
+		}
+
+		isAllowedLength, err := c.ytClient.IsAllowedLength(yid)
+		if err != nil {
+			log.Warningf("%v", err)
+			response = fmt.Sprintf("Failed to retrieve song length")
+			c.conn.Privmsg(channel, response)
+			return
+		}
+
+		if !isAllowedLength {
+			duration := time.Duration(youtubeclient.MaxSongLength * time.Second)
+
+			response = fmt.Sprintf("Wont download, max song length is %v", duration)
+			c.conn.Privmsg(channel, response)
+			return
+		}
+
+		c.ytClient.DownloadChan <- youtubeclient.DownloadMeta{
+			Yid:       yid,
+			Nickname:  nick,
+			IsRequest: false,
+		}
+
 		log.Infof("Added %s to download queue", yid)
 		if !c.Online[NICK_SJAAK] {
 			response = fmt.Sprintf("Added %s%s to the download queue", c.config.Youtube.BaseUrl, yid)
@@ -117,22 +145,6 @@ func (c *IrcClient) HandleYidDownload(channel, line string) {
 	} else {
 		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
 		log.Warningf("IrcClient.HandleYidDownload: no results found")
-		c.conn.Privmsg(channel, response)
-	}
-}
-
-func (c *IrcClient) HandlePlaylistDownload(channel, line string) {
-	result := RE_DJLIST.FindAllStringSubmatch(line, -1)
-
-	if len(result) == 1 {
-		playlistUrl := result[0][2]
-		c.ytClient.PlaylistChan <- playlistUrl
-		log.Infof("Added playlist %s to download queue", playlistUrl)
-		response := fmt.Sprintf("Added playlist to download queue")
-		c.conn.Privmsg(channel, response)
-	} else {
-		log.Warningf("IrcClient.HandlePlaylistDownload: no playlist found")
-		response := fmt.Sprintf("Did not find any playlist")
 		c.conn.Privmsg(channel, response)
 	}
 }

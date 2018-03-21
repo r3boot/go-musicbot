@@ -58,7 +58,7 @@ func (i *ID3Tags) GetRating(fname string) (int, error) {
 	}
 
 	rating = RATING_UNKNOWN
-	result, _ := i.ReadFrame(fullPath, TRACK)
+	result, _ := i.ReadFrame(fullPath, id3Track)
 
 	if result != "" {
 		rating, err = strconv.Atoi(result)
@@ -133,7 +133,7 @@ func (i *ID3Tags) IncreaseRating(name string) (int, error) {
 }
 
 func isTrack(line string) (string, bool) {
-	result := RE_TRACK.FindAllStringSubmatch(line, -1)
+	result := reTrack.FindAllStringSubmatch(line, -1)
 
 	if len(result) == 0 {
 		return "", false
@@ -143,7 +143,7 @@ func isTrack(line string) (string, bool) {
 }
 
 func isArtist(line string) (string, bool) {
-	result := RE_ARTIST.FindAllStringSubmatch(line, -1)
+	result := reArtist.FindAllStringSubmatch(line, -1)
 
 	if len(result) == 0 {
 		return "", false
@@ -153,7 +153,7 @@ func isArtist(line string) (string, bool) {
 }
 
 func isTitle(line string) (string, bool) {
-	result := RE_TITLE.FindAllStringSubmatch(line, -1)
+	result := reTitle.FindAllStringSubmatch(line, -1)
 
 	if len(result) == 0 {
 		return "", false
@@ -315,7 +315,7 @@ func (i *ID3Tags) GetAuthor(fname string) (string, error) {
 		return "", fmt.Errorf("ID3Tags.GetAuthor: %v", err)
 	}
 
-	result, err := i.ReadFrame(fullPath, ARTIST)
+	result, err := i.ReadFrame(fullPath, id3Artist)
 	if err != nil {
 		return "", fmt.Errorf("ID3Tags.GetAuthor: %v", err)
 	}
@@ -329,8 +329,53 @@ func (i *ID3Tags) GetTitle(fname string) (string, error) {
 		return "", fmt.Errorf("ID3Tags.GetTitle: %v", err)
 	}
 
-	result, _ := i.ReadFrame(fullPath, TITLE)
+	result, _ := i.ReadFrame(fullPath, id3Title)
 	return result, nil
+}
+
+func (i *ID3Tags) GetSubmitter(fname string) (string, error) {
+	fullPath, err := i.expandFullPath(fname)
+	if err != nil {
+		return "", fmt.Errorf("ID3Tags.SetSubmitter: %v", err)
+	}
+
+	submitter, _ := i.ReadFrame(fullPath, id3Comment)
+
+	return submitter, nil
+}
+
+func (i *ID3Tags) HasSubmitter(fname string) (bool, error) {
+	result, err := i.GetSubmitter(fname)
+	if err != nil {
+		return false, fmt.Errorf("ID3Tags.HasSubmitter: %v", err)
+	}
+
+	return len(result) > 0, nil
+}
+
+func (i *ID3Tags) SetSubmitter(fname, nickname string) error {
+	hasSubmitter, err := i.HasSubmitter(fname)
+	if err != nil {
+		return fmt.Errorf("ID3Tags.SetSubmitter: %v", err)
+	}
+
+	if hasSubmitter {
+		return fmt.Errorf("ID3Tags.SetSubmitter: track already has a submitter")
+	}
+
+	fullPath, err := i.expandFullPath(fname)
+	if err != nil {
+		return fmt.Errorf("ID3Tags.SetSubmitter: %v", err)
+	}
+
+	nickname = strings.TrimSpace(nickname)
+
+	_, err = i.RunId3v2([]string{"-c", nickname, fullPath})
+	if err != nil {
+		return fmt.Errorf("ID3Tags.SetSubmitter: %v", err)
+	}
+
+	return nil
 }
 
 func (i *ID3Tags) SetMetadata(fname string) error {

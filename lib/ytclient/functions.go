@@ -3,38 +3,32 @@ package youtubeclient
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 
 	"bytes"
-	"strings"
 
 	"github.com/r3boot/go-musicbot/lib/id3tags"
 )
 
-func (yt *YoutubeClient) DownloadWorker(id int, yids <-chan string) {
-	for yid := range yids {
-		log.Infof("Downloading new YID: %s", yid)
-		fileName, err := yt.DownloadYID(yid)
+func (yt *YoutubeClient) DownloadWorker(id int, downloadMetas <-chan DownloadMeta) {
+	for meta := range downloadMetas {
+		log.Infof("Downloading new YID: %s (submitted by %s)", meta.Yid, meta.Nickname)
+		fileName, err := yt.DownloadYID(meta)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v", err)
 			continue
 		}
-		yt.SetMetadataForNewSong(yid, fileName)
+		yt.SetMetadataForNewSong(meta, fileName)
 	}
 }
 
-func (yt *YoutubeClient) PlaylistSerializer() {
-	for {
-		newPlaylistUrl := <-yt.PlaylistChan
-		log.Infof("Downloading playlist: %s", newPlaylistUrl)
-		yt.DownloadPlaylist(newPlaylistUrl)
-	}
-}
-
-func (yt *YoutubeClient) SetMetadataForNewSong(yid, fileName string) error {
-	if err := yt.addYID(yid); err != nil {
+func (yt *YoutubeClient) SetMetadataForNewSong(meta DownloadMeta, fileName string) error {
+	if err := yt.addYID(meta.Yid); err != nil {
 		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
 	}
 
@@ -52,16 +46,21 @@ func (yt *YoutubeClient) SetMetadataForNewSong(yid, fileName string) error {
 		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
 	}
 
+	err = yt.id3.SetSubmitter(fileName, meta.Nickname)
+	if err != nil {
+		return fmt.Errorf("YoutubeClient.SetMetadataForNewSong: %v", err)
+	}
+
 	return nil
 }
 
-func (yt *YoutubeClient) hasYID(yid string) bool {
+func (yt *YoutubeClient) HasYID(yid string) bool {
 	yt.seenFileMutex.RLock()
 	defer yt.seenFileMutex.RUnlock()
 
 	fd, err := os.Open(yt.config.Youtube.SeenFile)
 	if err != nil {
-		log.Warningf("YoutubeClient.hasYID os.Open: %v", err)
+		log.Warningf("YoutubeClient.HasYID os.Open: %v", err)
 		return false
 	}
 
@@ -92,7 +91,38 @@ func (yt *YoutubeClient) addYID(yid string) error {
 	return nil
 }
 
-func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
+func (yt *YoutubeClient) IsAllowedLength(yid string) (bool, error) {
+	url := fmt.Sprintf("https://www.youtube.com/watch?v=%s", yid)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return false, fmt.Errorf("YoutubeClient.IsAllowedLength http.Get: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf("YoutubeClient.IsAllowedLength ioutil.ReadAll: %v", err)
+	}
+
+	results := reSongLength.FindAllStringSubmatch(string(body), -1)
+
+	duration := -1
+	if len(results) == 0 {
+		return false, fmt.Errorf("YoutubeClient.IsAllowedLength: No results found for %s", yid)
+	}
+
+	duration, err = strconv.Atoi(results[0][1])
+	if err != nil {
+		return false, fmt.Errorf("YoutubeClient.IsAllowedLength strconv.Atoi: %v", err)
+	}
+
+	log.Infof("Duration: %d", duration)
+
+	return duration <= MaxSongLength, nil
+}
+
+func (yt *YoutubeClient) DownloadYID(meta DownloadMeta) (string, error) {
 	var stdout, stderr bytes.Buffer
 
 	if yt.config.Youtube.NumWorkers <= 1 {
@@ -100,12 +130,21 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		defer yt.downloadMutex.Unlock()
 	}
 
-	if yt.hasYID(yid) {
-		return "", fmt.Errorf("YoutubeClient.DownloadYID: YID %s has already been downloaded", yid)
+	if yt.HasYID(meta.Yid) {
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: YID %s has already been downloaded", meta.Yid)
+	}
+
+	isAllowedLength, err := yt.IsAllowedLength(meta.Yid)
+	if err != nil {
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: %v", err)
+	}
+
+	if !isAllowedLength {
+		return "", fmt.Errorf("YoutubeClient.DownloadYID: Song too lengthy")
 	}
 
 	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
-	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, yid)
+	url := fmt.Sprintf("%s%s", yt.config.Youtube.BaseUrl, meta.Yid)
 	cmd := exec.Command(
 		yt.config.Youtube.Downloader,
 		"-x",
@@ -127,7 +166,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 		return "", fmt.Errorf(msg)
 	}
 
-	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.MusicDir, yid)
+	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.MusicDir, meta.Yid)
 
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
@@ -140,7 +179,7 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 
 	fileName := results[0]
 
-	yt.SetMetadataForNewSong(yid, fileName)
+	yt.SetMetadataForNewSong(meta, fileName)
 
 	if yt.mpdClient != nil {
 		yt.mpdMutex.Lock()
@@ -151,54 +190,4 @@ func (yt *YoutubeClient) DownloadYID(yid string) (string, error) {
 	}
 
 	return results[0], nil
-}
-
-func (yt *YoutubeClient) DownloadPlaylist(url string) error {
-	var stdout, stderr bytes.Buffer
-
-	yt.downloadMutex.Lock()
-	defer yt.downloadMutex.Unlock()
-
-	output := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.MusicDir)
-	cmd := exec.Command(yt.config.Youtube.Downloader, "-x", "-i", "--audio-format", "mp3", "-o", output, url)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	log.Debugf("Running command: %v", cmd)
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("YoutubeClient.DownloadPlaylist cmd.Start: %v", yt.config.Youtube.Downloader, err)
-	}
-
-	if err := cmd.Wait(); err != nil {
-		msg := fmt.Sprintf("youtube-dl returned non-zero exit code\nStdout: %s\nStderr: %s\n", stdout.String(), stderr.String())
-		return fmt.Errorf(msg)
-	}
-
-	for _, line := range strings.Split(stdout.String(), "\n") {
-
-		if !strings.Contains(line, "Destination:") {
-			continue
-		}
-
-		result := RE_DESTINATION.FindAllStringSubmatch(line, -1)
-
-		if len(result) != 1 {
-			continue
-		}
-
-		yid := result[0][2]
-		fileName := result[0][1] + "-" + yid + ".mp3"
-
-		yt.SetMetadataForNewSong(yid, fileName)
-
-		if yt.mpdClient != nil {
-			yt.mpdMutex.Lock()
-			defer yt.mpdMutex.Unlock()
-			if err := yt.mpdClient.UpdateDB(filepath.Base(fileName)); err != nil {
-				return fmt.Errorf("YoutubeClient.DownloadPlaylist: %v", err)
-			}
-		}
-	}
-
-	return nil
 }

@@ -21,8 +21,7 @@ func NewYoutubeClient(l *logger.Logger, config *config.MusicBotConfig, mpdclient
 		mpdClient:     mpdclient,
 		id3:           id3,
 		MusicDir:      musicDir,
-		DownloadChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
-		PlaylistChan:  make(chan string, MAX_DOWNLOAD_QUEUE_SIZE),
+		DownloadChan:  make(chan DownloadMeta, maxDownloadQueueSize),
 	}
 
 	// Start download workers
@@ -33,8 +32,6 @@ func NewYoutubeClient(l *logger.Logger, config *config.MusicBotConfig, mpdclient
 	}
 
 	log.Debugf("NewYoutubeClient: Started %d download workers", num)
-
-	go yt.PlaylistSerializer()
 
 	return yt
 }

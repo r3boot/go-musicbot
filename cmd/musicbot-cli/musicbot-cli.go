@@ -19,7 +19,7 @@ import (
 
 const (
 	D_DEBUG         = false
-	D_GET_RATING    = true
+	D_GET_RATING    = false
 	D_SET_RATING    = -1
 	D_BASEDIR       = "/music/2600nl"
 	D_CFGFILE       = "/etc/musicbot.yaml"
@@ -29,6 +29,8 @@ const (
 	D_FETCH_MISSING = ""
 	D_RECURSE       = true
 	D_USE_TIMESTAMP = false
+	D_GET_SUBMITTER = false
+	D_SET_SUBMITTER = ""
 )
 
 var (
@@ -36,6 +38,8 @@ var (
 	cfgFile            = flag.String("f", D_CFGFILE, "Path to configuration file")
 	getRating          = flag.Bool("lr", D_GET_RATING, "Show current rating")
 	setRating          = flag.Int("sr", D_SET_RATING, "Set the rating")
+	getSubmitter       = flag.Bool("gs", D_GET_SUBMITTER, "Get the submitter for a track")
+	setSubmitter       = flag.String("ss", D_SET_SUBMITTER, "Set the submitter of a track")
 	baseDir            = flag.String("d", D_BASEDIR, "Music directory")
 	playlistFavourites = flag.Bool("pf", D_PL_FAVOURITES, "Generate playlist for 6 or higher rating")
 	playlistElite      = flag.Bool("pe", D_PL_ELITE, "Generate playlist for tracks with rating 9 or higher")
@@ -47,6 +51,22 @@ var (
 	Config             *config.MusicBotConfig
 	Logger             *logger.Logger
 )
+
+func GetSubmitter(fname string) {
+	result, err := Id3Tags.GetSubmitter(fname)
+	if err != nil {
+		Logger.Fatalf("GetSubmitter: %v", err)
+	}
+
+	Logger.Infof("Submitter: %s", result)
+}
+
+func SetSubmitter(fname, nickname string) {
+	err := Id3Tags.SetSubmitter(fname, nickname)
+	if err != nil {
+		Logger.Fatalf("GetSubmitter: %v", err)
+	}
+}
 
 func SetRating(fname string, newRating int) {
 	fullPath, err := filepath.Abs(fname)
@@ -175,7 +195,11 @@ func FetchMissing(inputFile string) {
 	}
 
 	for _, yid := range toFetchYid {
-		YoutubeClient.DownloadChan <- yid
+		YoutubeClient.DownloadChan <- youtubeclient.DownloadMeta{
+			Yid:       yid,
+			Nickname:  "musicbot",
+			IsRequest: false,
+		}
 		Logger.Infof("Added %v to download queue", yid)
 	}
 
@@ -233,5 +257,9 @@ func main() {
 		} else {
 			ShowRating(target)
 		}
+	} else if *getSubmitter {
+		GetSubmitter(target)
+	} else if *setSubmitter != "" {
+		SetSubmitter(target, *setSubmitter)
 	}
 }

@@ -10,6 +10,7 @@
 - Keep playlist prio + play queue in sync
 - Check running track @ enqueue
 - Download non-existing track on !request
+- Add option to de-queue track
 
 # liquidsoap
 - Make sure its clear which program is playing
