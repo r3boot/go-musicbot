@@ -229,7 +229,7 @@ func (c *IrcClient) HandleDecreaseRating(channel, line, user string) {
 		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fname[:len(fname)-16], newRating)
 		c.conn.Privmsg(channel, response)
 
-		if submitter != "" && submitter != c.config.IRC.Nickname && submitter != user {
+		if submitter != "" && submitter != UNKNOWN_SUBMITTER && submitter != user {
 			submitterResponse := fmt.Sprintf("%s--", submitter)
 			c.conn.Privmsg(channel, submitterResponse)
 		}
@@ -259,7 +259,7 @@ func (c *IrcClient) HandleIncreaseRating(channel, line, user string) {
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fname[:len(fname)-16], newRating)
 	c.conn.Privmsg(channel, response)
 
-	if submitter != "" && submitter != c.config.IRC.Nickname && submitter != user {
+	if submitter != "" && submitter != UNKNOWN_SUBMITTER && submitter != user {
 		submitterResponse := fmt.Sprintf("%s++", submitter)
 		c.conn.Privmsg(channel, submitterResponse)
 	}

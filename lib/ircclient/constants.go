@@ -12,20 +12,21 @@ import (
 )
 
 const (
-	CMD_DJPLUS    string = "!dj+"
-	CMD_START     string = "!start"
-	CMD_NEXT      string = "!next"
-	CMD_PLAYING   string = "!np"
-	CMD_RADIO     string = "!radio"
-	CMD_BOO       string = "!boo"
-	CMD_TUNE      string = "!tune"
-	CMD_CH00N     string = "!ch00n"
-	CMD_REQUEST   string = "!request"
-	CMD_QUEUE     string = "!queue"
-	CMD_HELP      string = "!help"
-	NICK_SJAAK    string = "Sjaak"
-	NICK_FLUNK    string = "flunk"
-	RESPONSE_HELP string = "Available commands: dj+ <yt vid id>, request <query>, query, np, next, tune, boo, start, radio"
+	CMD_DJPLUS        = "!dj+"
+	CMD_START         = "!start"
+	CMD_NEXT          = "!next"
+	CMD_PLAYING       = "!np"
+	CMD_RADIO         = "!radio"
+	CMD_BOO           = "!boo"
+	CMD_TUNE          = "!tune"
+	CMD_CH00N         = "!ch00n"
+	CMD_REQUEST       = "!request"
+	CMD_QUEUE         = "!queue"
+	CMD_HELP          = "!help"
+	NICK_SJAAK        = "Sjaak"
+	NICK_FLUNK        = "flunk"
+	RESPONSE_HELP     = "Available commands: dj+ <yt vid id>, request <query>, query, np, next, tune, boo, start, radio"
+	UNKNOWN_SUBMITTER = "musicbot"
 )
 
 var (
