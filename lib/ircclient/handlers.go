@@ -180,11 +180,18 @@ func (c *IrcClient) HandleNowPlaying(channel, line string) {
 		return
 	}
 
+	submitter, err := c.id3.GetSubmitter(fname)
+	if err != nil {
+		log.Warningf("IrcClient.HandleNowPlaying: %v", err)
+		submitter = "unknown"
+		return
+	}
+
 	durationFormat := fmt.Sprintf("%ds", int(duration))
 	d, _ := time.ParseDuration(durationFormat)
 	formattedDuration := d.String()
 
-	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10)", fname[:len(fname)-16], formattedDuration, rating)
+	response := fmt.Sprintf("Now playing: %s (duration: %s; rating: %d/10; submitter: %s)", fname[:len(fname)-16], formattedDuration, rating, submitter)
 	c.conn.Privmsg(channel, response)
 }
 
