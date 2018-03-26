@@ -22,6 +22,7 @@ type NowPlayingData struct {
 	Elapsed      float64
 	Remaining    float64
 	Rating       int
+	Submitter    string
 	ImageUrl     string
 	Filename     string
 	Id           int
@@ -131,6 +132,12 @@ func (m *MPDClient) MaintainMPDState() {
 		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
 
 		curSongData.Rating, err = m.id3.GetRating(fileName)
+		if err != nil {
+			log.Warningf("MPDClient.MaintainMPDState: %v", err)
+			continue
+		}
+
+		curSongData.Submitter, err = m.id3.GetSubmitter(fileName)
 		if err != nil {
 			log.Warningf("MPDClient.MaintainMPDState: %v", err)
 			continue

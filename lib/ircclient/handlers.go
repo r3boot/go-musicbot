@@ -204,6 +204,14 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 		return
 	}
 
+	submitter, err := c.id3.GetSubmitter(fname)
+	if err != nil {
+		log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
+		response := "Failed to decrease rating"
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
 	log.Infof("Rating for %s is now %d", fname, newRating)
 	if newRating == id3tags.RATING_ZERO {
 		c.mpdClient.Next()
@@ -220,6 +228,11 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 	} else {
 		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fname[:len(fname)-16], newRating)
 		c.conn.Privmsg(channel, response)
+
+		if submitter != "" && submitter != c.config.IRC.Nickname {
+			submitterResponse := fmt.Sprintf("%s--", submitter)
+			c.conn.Privmsg(channel, submitterResponse)
+		}
 	}
 }
 
@@ -234,9 +247,22 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 		return
 	}
 
+	submitter, err := c.id3.GetSubmitter(fname)
+	if err != nil {
+		log.Warningf("IrcClient.HandleDecreaseRating: %v", err)
+		response := "Failed to decrease rating"
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
 	log.Infof("Rating for %s is now %d", fname, newRating)
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fname[:len(fname)-16], newRating)
 	c.conn.Privmsg(channel, response)
+
+	if submitter != "" && submitter != c.config.IRC.Nickname {
+		submitterResponse := fmt.Sprintf("%s++", submitter)
+		c.conn.Privmsg(channel, submitterResponse)
+	}
 }
 
 func (c *IrcClient) HandleCh00n(channel, line, user string) {
