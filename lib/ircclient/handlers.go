@@ -73,15 +73,15 @@ func (c *IrcClient) ParsePrivmsg(e *irc.Event) {
 	case CMD_START:
 		c.HandleStart(channel, line)
 	case CMD_NEXT:
-		c.HandleNext(channel, line)
+		c.HandleNext(channel, line, user)
 	case CMD_PLAYING:
 		c.HandleNowPlaying(channel, line)
 	case CMD_RADIO:
 		c.HandleRadioUrl(channel, line)
 	case CMD_BOO:
-		c.HandleDecreaseRating(channel, line)
+		c.HandleDecreaseRating(channel, line, user)
 	case CMD_TUNE:
-		c.HandleIncreaseRating(channel, line)
+		c.HandleIncreaseRating(channel, line, user)
 	case CMD_CH00N:
 		c.HandleCh00n(channel, line, user)
 	case CMD_REQUEST:
@@ -157,8 +157,8 @@ func (c *IrcClient) HandleStart(channel, line string) {
 	c.conn.Privmsg(channel, response)
 }
 
-func (c *IrcClient) HandleNext(channel, line string) {
-	c.HandleDecreaseRating(channel, line)
+func (c *IrcClient) HandleNext(channel, line, user string) {
+	c.HandleDecreaseRating(channel, line, user)
 	np := c.mpdClient.Next()
 	response := fmt.Sprintf("Now playing: %s", np.Title)
 	c.conn.Privmsg(channel, response)
@@ -193,7 +193,7 @@ func (c *IrcClient) HandleRadioUrl(channel, line string) {
 	c.conn.Privmsg(channel, response)
 }
 
-func (c *IrcClient) HandleDecreaseRating(channel, line string) {
+func (c *IrcClient) HandleDecreaseRating(channel, line, user string) {
 	np := c.mpdClient.NowPlaying()
 	fname := np.Filename
 	newRating, err := c.id3.DecreaseRating(fname)
@@ -229,14 +229,14 @@ func (c *IrcClient) HandleDecreaseRating(channel, line string) {
 		response := fmt.Sprintf("Rating for %s is %d/10 .. BOOO!!!!", fname[:len(fname)-16], newRating)
 		c.conn.Privmsg(channel, response)
 
-		if submitter != "" && submitter != c.config.IRC.Nickname {
+		if submitter != "" && submitter != c.config.IRC.Nickname && submitter != user {
 			submitterResponse := fmt.Sprintf("%s--", submitter)
 			c.conn.Privmsg(channel, submitterResponse)
 		}
 	}
 }
 
-func (c *IrcClient) HandleIncreaseRating(channel, line string) {
+func (c *IrcClient) HandleIncreaseRating(channel, line, user string) {
 	np := c.mpdClient.NowPlaying()
 	fname := np.Filename
 	newRating, err := c.id3.IncreaseRating(fname)
@@ -259,7 +259,7 @@ func (c *IrcClient) HandleIncreaseRating(channel, line string) {
 	response := fmt.Sprintf("Rating for %s is %d/10 .. Party on!!!!", fname[:len(fname)-16], newRating)
 	c.conn.Privmsg(channel, response)
 
-	if submitter != "" && submitter != c.config.IRC.Nickname {
+	if submitter != "" && submitter != c.config.IRC.Nickname && submitter != user {
 		submitterResponse := fmt.Sprintf("%s++", submitter)
 		c.conn.Privmsg(channel, submitterResponse)
 	}
