@@ -15,7 +15,13 @@ func (m *MPDClient) Next() NowPlayingData {
 	} else {
 		m.conn.Next()
 	}
-	return m.NowPlaying()
+
+	nextTrackInfo, err := m.GetNowPlayingData()
+	if err != nil {
+		return NowPlayingData{}
+	}
+
+	return *nextTrackInfo
 }
 
 func (m *MPDClient) Play() NowPlayingData {

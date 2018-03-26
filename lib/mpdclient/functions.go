@@ -83,65 +83,69 @@ func (m *MPDClient) Close() error {
 	return nil
 }
 
+func (m *MPDClient) GetNowPlayingData() (*NowPlayingData, error) {
+	curSongData := &NowPlayingData{}
+
+	songAttrs, err := m.conn.CurrentSong()
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState m.conn.CurrentSong: %v", err)
+	}
+
+	fileName := songAttrs["file"]
+	curSongData.Filename = fileName
+	curSongData.Title = fileName[:len(fileName)-16]
+
+	if m.curFile != fileName {
+		m.curFile = fileName
+		m.imageUrl = ""
+	}
+
+	curSongData.Id, err = strconv.Atoi(songAttrs["Id"])
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState strconv.Atoi: %v", err)
+	}
+
+	statusAttrs, err := m.conn.Status()
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState m.conn.Status: %v", err)
+	}
+	curSongData.Elapsed, err = strconv.ParseFloat(statusAttrs["elapsed"], 32)
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
+	}
+
+	curSongData.Duration, err = strconv.ParseFloat(statusAttrs["duration"], 32)
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
+	}
+
+	curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
+
+	curSongData.Rating, err = m.id3.GetRating(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState: %v", err)
+	}
+
+	curSongData.Submitter, err = m.id3.GetSubmitter(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("MPDClient.MaintainMPDState: %v", err)
+	}
+
+	return curSongData, nil
+}
+
 func (m *MPDClient) MaintainMPDState() {
 	for {
 		time.Sleep(1 * time.Second)
 
 		tStart := time.Now()
 
-		curSongData := NowPlayingData{}
-
-		songAttrs, err := m.conn.CurrentSong()
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState m.conn.CurrentSong: %v", err)
-			continue
-		}
-
-		fileName := songAttrs["file"]
-		curSongData.Filename = fileName
-		curSongData.Title = fileName[:len(fileName)-16]
-
-		if m.curFile != fileName {
-			m.curFile = fileName
-			m.imageUrl = ""
-		}
-
-		curSongData.Id, err = strconv.Atoi(songAttrs["Id"])
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState strconv.Atoi: %v", err)
-			continue
-		}
-
-		statusAttrs, err := m.conn.Status()
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState m.conn.Status: %v", err)
-			continue
-		}
-		curSongData.Elapsed, err = strconv.ParseFloat(statusAttrs["elapsed"], 32)
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
-			continue
-		}
-
-		curSongData.Duration, err = strconv.ParseFloat(statusAttrs["duration"], 32)
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState strconv.ParseFloat: %s: %v", statusAttrs["elapsed"], err)
-			continue
-		}
-
-		curSongData.Remaining = curSongData.Duration - curSongData.Elapsed
-
-		curSongData.Rating, err = m.id3.GetRating(fileName)
+		pCurSongData, err := m.GetNowPlayingData()
 		if err != nil {
 			log.Warningf("MPDClient.MaintainMPDState: %v", err)
-			continue
 		}
 
-		curSongData.Submitter, err = m.id3.GetSubmitter(fileName)
-		if err != nil {
-			log.Warningf("MPDClient.MaintainMPDState: %v", err)
-			continue
-		}
+		curSongData := *pCurSongData
 
 		if m.imageUrl == "" {
 			imgUrl, err := m.art.GetAlbumArt(curSongData.Title)
