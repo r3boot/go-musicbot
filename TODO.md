@@ -11,6 +11,8 @@
 - Check running track @ enqueue
 - Download non-existing track on !request
 - Add option to de-queue track
+- [bug] unable to start bot when mpd is not running
+- Automatically add DJShuffle tracks to playlist
 
 # liquidsoap
 - Make sure its clear which program is playing
