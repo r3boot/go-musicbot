@@ -13,6 +13,8 @@
 - Add option to de-queue track
 - [bug] unable to start bot when mpd is not running
 - Automatically add DJShuffle tracks to playlist
+- Keep track of the last requester of a track, so that !tune also ++'s the requester
+- Fix bug in submitter being overwritten
 
 # liquidsoap
 - Make sure its clear which program is playing
