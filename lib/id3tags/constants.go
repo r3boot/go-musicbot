@@ -1,9 +1,12 @@
 package id3tags
 
 import (
+	"github.com/r3boot/go-musicbot/lib/config"
 	"math"
 	"regexp"
 	"sync"
+
+	"github.com/blevesearch/bleve"
 )
 
 const (
@@ -29,13 +32,17 @@ type Tags struct {
 type TrackTags struct {
 	Artist string
 	Title  string
+	YID string
+	Filename string
 }
 
 type TagList map[string]*TrackTags
 
 type ID3Tags struct {
-	BaseDir string
-	tagList TagList
+	Config   *config.MusicBotConfig
+	BaseDir   string
+	tagList   TagList
+	searchIdx bleve.Index
 }
 
 var (

@@ -138,6 +138,9 @@ func (m *MPDClient) Enqueue(query string) (*PlaylistEntry, error) {
 		return nil, fmt.Errorf("MPDClient.Enqueue: queue is full")
 	}
 
+
+
+	/*
 	pos, err := m.Search(query)
 	if err != nil {
 		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
@@ -147,6 +150,7 @@ func (m *MPDClient) Enqueue(query string) (*PlaylistEntry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("MPDClient.Enqueue: %v", err)
 	}
+	*/
 
 	playList, err := m.GetPlaylist()
 	if err != nil {
