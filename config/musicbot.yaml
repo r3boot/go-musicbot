@@ -3,6 +3,7 @@ application:
   ircbot: true
   api: true
   webui: true
+  bleve: true
   daemonize: false
   debug: true
 

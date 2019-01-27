@@ -4,6 +4,7 @@ type ApplicationConfig struct {
 	IrcBotEnabled bool `yaml:"ircbot"`
 	APIEnabled    bool `yaml:"api"`
 	WebUIEnabled  bool `yaml:"webui"`
+	BleveEnabled  bool `yaml:"bleve"`
 	Daemonize     bool `yaml:"daemonize"`
 	Debug         bool `yaml:"debug"`
 }
