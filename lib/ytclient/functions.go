@@ -18,12 +18,12 @@ import (
 func (yt *YoutubeClient) DownloadWorker(id int, downloadMetas <-chan DownloadMeta) {
 	for meta := range downloadMetas {
 		log.Infof("Downloading new YID: %s (submitted by %s)", meta.Yid, meta.Nickname)
-		fileName, err := yt.DownloadYID(meta)
+		_, err := yt.DownloadYID(meta)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v", err)
 			continue
 		}
-		yt.SetMetadataForNewSong(meta, fileName)
+		// yt.SetMetadataForNewSong(meta, fileName)
 	}
 }
 

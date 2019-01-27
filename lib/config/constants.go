@@ -34,6 +34,10 @@ type YoutubeConfig struct {
 	NumWorkers int    `yaml:"num_workers"`
 }
 
+type SearchConfig struct {
+	DataDirectory string `yaml:"data_directory"`
+}
+
 type MpdConfig struct {
 	Address  string `yaml:"address"`
 	Port     int    `yaml:"port"`
@@ -54,6 +58,7 @@ type MusicBotConfig struct {
 	IRC     IrcConfig         `yaml:"irc"`
 	Bot     BotConfig         `yaml:"bot"`
 	Youtube YoutubeConfig     `yaml:"youtube"`
+	Search SearchConfig `yaml:"search"`
 	MPD     MpdConfig         `yaml:"mpd"`
 	Api     ApiConfig         `yaml:"api"`
 }

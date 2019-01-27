@@ -2,6 +2,7 @@ package id3tags
 
 import (
 	"fmt"
+	"github.com/blevesearch/bleve"
 	"io/ioutil"
 	"os"
 	"path"
@@ -132,6 +133,16 @@ func (i *ID3Tags) IncreaseRating(name string) (int, error) {
 	return RATING_UNKNOWN, fmt.Errorf("ID3Tags.IncreaseRating: unknown error")
 }
 
+func getYID(filename string) (string, error) {
+	fnameLen := len(filename)
+
+	if fnameLen < 15 {
+		return "", fmt.Errorf("getYID: filename is too short")
+	}
+
+	return filename[fnameLen-15:fnameLen-4], nil
+}
+
 func isTrack(line string) (string, bool) {
 	result := reTrack.FindAllStringSubmatch(line, -1)
 
@@ -165,8 +176,6 @@ func isTitle(line string) (string, bool) {
 func (i *ID3Tags) UpdateTags() error {
 	destPath := fmt.Sprintf("%s/*.mp3", i.BaseDir)
 
-	log.Debugf("ID3Tags.UpdateTags: Glob pattern: %s", destPath)
-
 	for {
 		time.Sleep(5 * time.Second)
 
@@ -192,18 +201,29 @@ func (i *ID3Tags) UpdateTags() error {
 		}
 
 		curTrack := ""
+		numIndexed := 0
 		tagListMutex.Lock()
 		for _, line := range strings.Split(output, "\n") {
+			if line == "" {
+				continue
+			}
 			if fullTrack, ok := isTrack(line); ok {
 				curTrack = path.Base(fullTrack)
-				newTrack := &TrackTags{}
+				yid, err := getYID(curTrack)
+				if err != nil {
+					log.Warningf("ID3Tags.GetTags getYID: Failed: %v", err)
+					continue
+				}
+				newTrack := &TrackTags{
+					Filename: curTrack,
+					YID: yid,
+				}
 				i.tagList[curTrack] = newTrack
 			}
 
 			if artist, ok := isArtist(line); ok {
 				if curTrack == "" {
 					log.Warningf("ID3Tags.GetTags isArtist: Track is empty")
-					tagListMutex.Unlock()
 					continue
 				}
 
@@ -220,6 +240,15 @@ func (i *ID3Tags) UpdateTags() error {
 			}
 		}
 		tagListMutex.Unlock()
+
+		batch := i.searchIdx.NewBatch()
+		for _, track := range i.tagList {
+			batch.Index(track.YID, track)
+			numIndexed += 1
+		}
+		i.searchIdx.Batch(batch)
+
+		log.Infof("ID3Tags.GetTags: Added %d tracks to search index", numIndexed)
 	}
 
 	return nil
@@ -437,6 +466,26 @@ func (i *ID3Tags) SetMetadata(fname string) error {
 	_, err = i.RunId3v2(params)
 	if err != nil {
 		fmt.Errorf("ID3Tags.SetMetadata: %v", err)
+	}
+
+	return nil
+}
+
+func (i *ID3Tags) OpenSearchIndex(idxFile string) error {
+	mapping := bleve.NewIndexMapping()
+
+	_, err := os.Stat(idxFile)
+
+	if err != nil {
+		i.searchIdx, err = bleve.New(idxFile, mapping)
+		if err != nil {
+			return fmt.Errorf("ID3Tags.New: %v", err)
+		}
+	} else {
+		i.searchIdx, err = bleve.Open(idxFile)
+		if err != nil {
+			return fmt.Errorf("ID3Tags.New: %v", err)
+		}
 	}
 
 	return nil

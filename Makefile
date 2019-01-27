@@ -5,7 +5,7 @@ MBFIXTAGS = mbfixtags
 BUILD_DIR = ./build
 PREFIX = /usr/local
 
-all: ${TARGET} ${CLI} ${MBFIXTAGS}
+all: ${TARGET} ${CLI}
 
 deps:
 	go get -v ./...

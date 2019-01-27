@@ -213,6 +213,18 @@ func FetchMissing(inputFile string) {
 	}
 }
 
+func stripChannel(channel string) string {
+	result := ""
+	for i := 0; i < len(channel); i++ {
+		if channel[i] == '#' {
+			continue
+		}
+		result += string(channel[i])
+	}
+
+	return result
+}
+
 func init() {
 	flag.Parse()
 
@@ -222,7 +234,8 @@ func init() {
 		Logger.Fatalf("config.LoadConfig: %v", err)
 	}
 
-	Id3Tags = id3tags.NewID3Tags(Logger, *baseDir, false)
+	chanName := stripChannel(Config.IRC.Channel)
+	Id3Tags = id3tags.NewID3Tags(Logger, Config, chanName, *baseDir, false)
 	YoutubeClient = youtubeclient.NewYoutubeClient(Logger, Config, nil, Id3Tags, *baseDir)
 }
 

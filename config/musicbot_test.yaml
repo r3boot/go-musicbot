@@ -49,6 +49,9 @@ bot:
     - "%s is raving to the tunes of 2600nl"
     - "%s bounces his lowrider in tune with the beat"
 
+search:
+  data_directory: '/tmp'
+
 youtube:
   music_basedir: "/net/motoko/music"
   downloader: "/usr/local/bin/youtube-dl"
