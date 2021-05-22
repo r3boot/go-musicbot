@@ -1,7 +1,7 @@
 build/*
 .idea
 *.swp
-cmd/go-musicbot-server
+cmd.old/go-musicbot-server
 models
 restapi/operations
 restapi/doc.go

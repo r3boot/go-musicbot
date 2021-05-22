@@ -3,6 +3,7 @@ CLI = ${TARGET}-cli
 MBFIXTAGS = mbfixtags
 
 BUILD_DIR = ./build
+CONFIG_DIR = ./config
 PREFIX = /usr/local
 
 all: ${TARGET} ${CLI}
@@ -21,6 +22,19 @@ ${CLI}: ${BUILD_DIR}
 
 ${MBFIXTAGS}: ${BUILD_DIR}
 	go build -v -o ${BUILD_DIR}/${MBFIXTAGS} cmd/${MBFIXTAGS}/${MBFIXTAGS}.go
+
+clean_mpd: stop_mpd
+	rm -f ${CONFIG_DIR}/mpd.db
+	rm -f ${CONFIG_DIR}/mpdstate
+
+start_mpd: clean_mpd
+	rm -f ${CONFIG_DIR}/mpd.db
+	mpd ${CONFIG_DIR}/mpd.conf
+	sleep 1
+	mpc update
+
+stop_mpd:
+	mpd ${CONFIG_DIR}/mpd.conf --kill | true
 
 install:
 	strip -v ${BUILD_DIR}/${TARGET}

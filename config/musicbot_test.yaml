@@ -1,24 +1,32 @@
----
-application:
+features:
+  partymode: true
+  queue: true
+  download: true
+  ratings: true
   ircbot: true
   api: true
   webui: true
   daemonize: false
   debug: true
 
-irc:
+paths:
+  music: "/people/r3boot/Music"
+  tmpdir: "/var/tmp"
+  index: "/var/tmp/.musicbot"
+  youtubedl: "/usr/bin/youtube-dl"
+  id3v2: "/usr/bin/id3v2"
+
+ircbot:
   nickname: "IrcBot"
-  server: "irc.mononoke.nl"
+  server: "213.154.229.26"
   port: 6697
   channel: "#bot-test"
   tls: true
   tls_verify: true
-
-bot:
+  debug: true
   command_character: "!"
   valid_commands:
     - "dj+"
-    - "djlist"
     - "start"
     - "next"
     - "np"
@@ -49,18 +57,12 @@ bot:
     - "%s is raving to the tunes of 2600nl"
     - "%s bounces his lowrider in tune with the beat"
 
-search:
-  data_directory: '/tmp'
-
-youtube:
-  music_basedir: "/net/motoko/music"
-  downloader: "/usr/local/bin/youtube-dl"
-  seen_file: "/var/spool/fetch_youtube.seen"
+download:
+  num_workers: 4
   url: "https://www.youtube.com/watch?v="
-  num_workers: 1
 
 mpd:
-  address: "10.42.2.11"
+  address: "[::1]"
   port: 6600
   password: ""
 
