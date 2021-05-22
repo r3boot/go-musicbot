@@ -1,0 +1,76 @@
+digraph D {
+
+    label="High-level architecture";
+    labelloc=t;
+    rankdir=RL;
+
+    node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+    liquidsoap [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Liquidsoap</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Plays music</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Contains queue</font></td></tr>
+        </table>
+    > ];
+
+    postgres [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Postgresql</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Contains copy of mpd playlist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Contains submitter</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Contains rating</font></td></tr>
+        </table>
+    > ];
+
+    musicbot [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Musicbot</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">REST api for managing mpd</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Synchronizes postgres to mpd</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Provides functional endpoints</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Authenticates using token</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Authorizations per token</font></td></tr>
+        </table>
+    > ];
+
+    musicbotctl [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Musicbotctl</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Cli REST client for musicbot</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Authenticates using token</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Exposes all functionality</font></td></tr>
+        </table>
+    > ];
+
+    musicbot_webui [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Musicbot-webui</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">WebUi for musicbot</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Authenticates using token</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Exposes restricted functionality</font></td></tr>
+        </table>
+    > ];
+
+    admin_xs [ shape=diamond label="Admin access" ];
+    user_xs [ shape=diamond label="User access" ];
+
+    nginx [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Nginx</b></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Provides proxy</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Encryption</font></td></tr>
+        </table>
+    > ];
+
+    musicbot -> liquidsoap [ label="localhost:6008" fontsize=7 ];
+    musicbot -> postgres [ label="localhost:5432" fontsize=7 ];
+
+    musicbotctl -> musicbot [ label="localhost:8765" fontsize=7 ];
+    musicbot_webui -> musicbot [ label="localhost:8765" fontsize=7 ];
+
+    admin_xs -> musicbotctl [ label="shell" fontsize=7 ];
+
+    nginx -> musicbot_webui [ label="localhost:8768" fontsize=7 ];
+    user_xs -> nginx [ label="*:443" fontsize=7 ];
+}

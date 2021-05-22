@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  icecast:
+    image: 'as65342/icecast:latest'
+    volumes:
+      - './config/icecast:/var/icecast'
+    networks:
+      musicbot:
+    ports:
+      - 8000:8000
+  liquidsoap:
+    image: 'savonet/liquidsoap:v1.4.4'
+    volumes:
+      - './config/liquidsoap:/etc/liquidsoap'
+      - './data/liquidsoap:/music'
+    command: ['/usr/bin/liquidsoap', '/etc/liquidsoap/radio.liq']
+    networks:
+      musicbot:
+    ports:
+      - 2323:2323
+    depends_on:
+      - 'icecast'
+  postgres:
+    image: 'postgres:alpine'
+    networks:
+      musicbot:
+    environment:
+      POSTGRES_PASSWORD: testing
+    volumes:
+      - './data/postgresql:/var/lib/postgresql/data'
+  musicbot:
+    image: 'as65342/musicbot'
+    command: '-- -config /etc/musicbot.yml -host 0.0.0.0 -port 8080 -loglevel DEBUG'
+    depends_on:
+      - 'liquidsoap'
+      - 'postgres'
+    networks:
+      musicbot:
+    ports:
+      - '8080:8080'
+    volumes:
+      - './config/musicbot.yml:/etc/musicbot.yml'
+      - './data/liquidsoap:/music'
+
+networks:
+  musicbot:

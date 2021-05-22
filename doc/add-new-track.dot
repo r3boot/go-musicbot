@@ -1,0 +1,64 @@
+digraph D {
+
+    label="Adding a new track";
+    labelloc=t;
+
+    node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+    start [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Start</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+        </table>
+    > ];
+
+    does_track_exist [ shape=diamond label="does track exist?" ];
+    start -> does_track_exist [];
+
+    track_does_not_exist [ shape=box label="Return error message" ];
+    does_track_exist -> track_does_not_exist [ fontsize="8" label=" Yes" ];
+
+    fetch_track_length [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch song length</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Song length</font></td></tr>
+        </table>
+    > ];
+    does_track_exist -> fetch_track_length [ fontsize="8" label=" No" ];
+
+    check_song_size [ shape=diamond label="track > 30m?" ];
+    fetch_track_length -> check_song_size [ ];
+
+    track_too_long [ shape=box label="Return error message" ];
+    check_song_size -> track_too_long [ fontsize=8 label=" Yes" ];
+
+    fetch_song [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch song</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+        </table>
+    > ];
+    check_song_size -> fetch_song [ fontsize=8 label=" No" ];
+
+    succesful_download [ shape=diamond label="succesful download?" ];
+    fetch_song -> succesful_download [ ];
+
+    download_failed [ shape=box label="Return error message" ];
+    succesful_download -> download_failed [ fontsize=8 label=" No" ];
+
+    process_track [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Process track</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+        </table>
+    > ];
+    succesful_download -> process_track [ fontsize=8 label=" Yes" ];
+}

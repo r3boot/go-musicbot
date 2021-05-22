@@ -1,0 +1,105 @@
+digraph {
+    label="Search using bleve";
+    labelloc=t;
+
+    rankdir=LR;
+
+    node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+    { rank=same is_queue_full match_on_terms match_on_wildcard }
+    { rank=same return_term_results return_wildcard_results notify_user }
+    { rank=same let_user_select fetch_track_id fetch_current_queue update_priorty_for_track }
+
+    start [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Start</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Query</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+        </table>
+    > ];
+
+    is_queue_full [ shape=diamond label="queue full?" ];
+    start -> is_queue_full [ ];
+
+    queue_is_full [ shape=box label="Return error message" ];
+    is_queue_full -> queue_is_full [ fontsize=8 label=" Yes" ];
+
+    match_on_terms [ shape=diamond label="Match on terms?" ];
+    is_queue_full -> match_on_terms [ fontsize=8 label=" No" ];
+
+    return_term_results [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Return term results</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+        </table>
+    > ];
+    match_on_terms -> return_term_results [ fontsize=8 label=" Yes" ];
+
+    match_on_wildcard [ shape=diamond label="Match on wildcard terms?" ];
+    match_on_terms -> match_on_wildcard [ fontsize=8 label=" No" ];
+
+    return_wildcard_results [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Return term results</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+        </table>
+    > ];
+    match_on_wildcard -> return_wildcard_results [ fontsize=8 label=" Yes" ];
+
+    no_results_found [ shape=box label="No results found" ];
+    match_on_wildcard -> no_results_found [ fontsize=8 label=" No" ];
+
+    let_user_select [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Let user select track</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+        </table>
+    > ];
+    return_term_results -> let_user_select [ ];
+    return_wildcard_results -> let_user_select [ ];
+
+    fetch_track_id [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch track id</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    let_user_select -> fetch_track_id [ ];
+
+    fetch_current_queue [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch current queue</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Next available priority</font></td></tr>
+        </table>
+    > ];
+    fetch_track_id -> fetch_current_queue [ ];
+
+    update_priorty_for_track [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Update priority</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Priority</font></td></tr>
+        </table>
+    > ];
+    fetch_current_queue ->  update_priorty_for_track [ ];
+
+    notify_user [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Notify user</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Priority</font></td></tr>
+        </table>
+    > ];
+    update_priorty_for_track -> notify_user [ ];
+}

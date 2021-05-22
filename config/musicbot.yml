@@ -1,0 +1,18 @@
+datastore:
+  directory: "/music"
+
+mpd:
+  address: "localhost:6600"
+  password: ""
+
+liquidsoap:
+  address: "localhost:2323"
+  output: "2600nl(dot)mp3"
+  queue: "request"
+
+postgres:
+  address: "localhost:5432"
+  username: "musicbot"
+  password: "musicbot"
+  database: "musicbot"
+

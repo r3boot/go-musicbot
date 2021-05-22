@@ -1,0 +1,33 @@
+digraph {
+    label="Skip to the next track"
+    labelloc=t;
+
+    rankdir=LR;
+
+    node [ shape=plaintext fontname="Sans serif" fontsize="8" ];
+
+    start [ shape=box label="Start" ];
+
+    send_next_command [ shape=box label="Send next command to mpd" ];
+    start -> send_next_command [ ];
+
+    fetch_current [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch current song info</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Artist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Title</font></td></tr>
+        </table>
+    > ];
+    send_next_command -> fetch_current [ ];
+
+    notify_user [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Notify user</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Artist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Title</font></td></tr>
+        </table>
+    > ];
+    fetch_current -> notify_user [ ];
+}

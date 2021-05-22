@@ -1,0 +1,40 @@
+digraph {
+    label="Adding a positive rating to a track";
+    labelloc=t;
+
+    rankdir=LR;
+    node [ shape=plaintext fontname="Sans serif" fontsize="8" ];
+
+    start [ shape=box label=< <b>Start</b> > ];
+
+    fetch_current [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch current song info</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    start -> fetch_current [ ];
+
+    update_rating [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Update rating in database</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">New rating</font></td></tr>
+        </table>
+    > ];
+    fetch_current -> update_rating [ ];
+
+    notify_user [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Notify user</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="lefT">* <font color="darkgreen">New rating</font></td></tr>
+        </table>
+    > ];
+    update_rating -> notify_user [ ];
+}

@@ -1,0 +1,54 @@
+datastore:
+  directory: "/music"
+
+mpd:
+  address: "mpd:6600"
+  password: ""
+
+postgres:
+  address: "postgres:5432"
+  username: "musicbot"
+  password: "musicbot"
+  database: "musicbot"
+
+youtube:
+  base_url: "https://youtube.com/watch?v="
+  tmpdir: "/tmp"
+  max_allowed_length: 30
+
+webapi:
+  address: "0.0.0.0"
+  port: 8765
+  users:
+    - name: "musicbotctl"
+      token: "04ac98577c3323b8741ffe0f65f575e42319196b"
+      authorizations:
+        - "allowPlayerNext"
+        - "allowPlayerNowPlaying"
+        - "allowPlayerQueue"
+        - "allowRatingIncrease"
+        - "allowRatingDecrease"
+        - "allowTrackSearch"
+        - "allowTrackRequest"
+        - "allowTrackDownload"
+    - name: "musicbot-webui"
+      token: "340b7527b27544372ef52ebccde35b830e1bfe02"
+      authorizations:
+        - "allowPlayerNext"
+        - "allowPlayerNowPlaying"
+        - "allowPlayerQueue"
+        - "allowRatingIncrease"
+        - "allowRatingDecrease"
+        - "allowTrackSearch"
+        - "allowTrackRequest"
+        - "allowTrackDownload"
+
+webui:
+  address: "0.0.0.0"
+  port: 8768
+  token: "340b7527b27544372ef52ebccde35b830e1bfe02"
+
+liquidsoap:
+  address: liquidsoap:2323
+  output: 2600nl(dot)mp3
+  queue: request

@@ -1,0 +1,84 @@
+digraph {
+    label="Synchronize postgres and bleve to mpd"
+    labelloc=t;
+
+    rankdir=LR;
+
+    node [ shape=plaintext fontname="Sans serif" fontsize="8" ];
+
+    { rank=same start for_each_track }
+    { rank=same found_in_mpd is_postgres_valid }
+    { rank=same is_bleve_valid update_postgres }
+    { rank=same fetch_track_from_postgres update_bleve }
+
+    start [ shape=box label="Start" ];
+
+    for_each_track [ shape=box label="For each track" ];
+    start -> for_each_track [ ];
+
+    tracks [ shape=circle label=<
+        <table border="0" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Tracks</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+        </table>
+    > ];
+    tracks -> for_each_track [ ];
+
+    found_in_mpd [ shape=diamond label=<
+        <table border="0" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Found in mpd?</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    for_each_track -> found_in_mpd [ ];
+
+    process_track [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Process track</b></td></tr>
+            <tr><td align="left">Required:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkred">Submitter=musicbot</font></td></tr>
+        </table>
+    > ];
+    found_in_mpd -> process_track [ fontsize=8 label=" No" ];
+
+    is_postgres_valid [ shape=diamond label="is postgres valid?" ];
+    found_in_mpd -> is_postgres_valid [ fontsize=8 label=" Yes" ];
+
+    update_postgres [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Update postgres</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    is_postgres_valid -> update_postgres [ fontsize=8 label=" No" ];
+
+    is_bleve_valid [ shape=diamond label="is bleve valid?" ];
+    is_postgres_valid -> is_bleve_valid [ fontsize=8 label=" Yes" ];
+    update_postgres -> is_bleve_valid [ ];
+
+    fetch_track_from_postgres [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch track details from postgres</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Track</font></td></tr>
+        </table>
+    > ];
+    is_bleve_valid -> fetch_track_from_postgres [ fontsize=8 label=" No" ];
+
+    update_bleve [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Update bleve</b></td></tr>
+            <tr><td align="left">Requires:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Track</font></td></tr>
+        </table>
+    > ];
+    fetch_track_from_postgres -> update_bleve [ ];
+}

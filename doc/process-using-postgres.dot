@@ -1,0 +1,70 @@
+digraph D {
+    label="Process using postgres and bleve";
+    labelloc=t;
+
+    rankdir=LR;
+
+    node [ shape=plaintext fontname="Sans serif" fontsize="8" ];
+
+    start [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Start</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+        </table>
+    > ];
+
+    extract_tags [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Extract tags</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Artist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Title</font></td></tr>
+        </table>
+    > ];
+    start -> extract_tags [ ];
+
+    add_track_to_mpd [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Add to mpd</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    extract_tags -> add_track_to_mpd [ ];
+
+    add_track_to_postgres [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Add to postgres</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Artist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Title</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Rating</font></td></tr>
+        </table>
+    > ];
+    add_track_to_mpd -> add_track_to_postgres [ ];
+
+    add_track_to_bleve [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Add to bleve</b></td></tr>
+            <tr><td align="left">Required data:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Artist</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Title</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Youtube ID</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Id</font></td></tr>
+        </table>
+    > ];
+    add_track_to_mpd -> add_track_to_bleve [ ];
+}

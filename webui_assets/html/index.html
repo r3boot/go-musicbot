@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>2600nl radio</title>
+
+</head>
+
+<body>
+  <p/>
+  hier komen errors denk ik
+
+  <div>hier moet een link naar album art komen</div>
+  <div id="divNowPlaying"></div>
+  <audio id="audioControls">
+    <source id="streamSrc" src="http://localhost:8000/stream/2600nl.mp3" type="audio/mpeg"/>
+    <source id="streamSrc" src="http://localhost:8000/stream/2600nl.ogg" type="audio/ogg"/>
+    Tijd voor jou om van lynx af te stappen ...
+  </audio>
+  en een ding met daarin een slider voor de current positie in de song, gevolgt door de totale lengte als string
+  <div id="divDuration"></div>
+
+  <p/>
+  <div id="btnPlay">Play</div>
+  <div id="btnNext">Next</div>
+  <div id="btnBoo">Boo</div>
+  <div id="btnTune">Tune</div>
+  rating: <div id="divRating"></div>
+
+  <p/>Play queue:<br/>
+  <div id="divQueueEntries"></div>
+
+  <p/>
+  <form>
+    <input id="txtQuery" type="text">
+    <button id="btnSearch" type="submit">Search</button>
+  </form>
+  <div id="divSearchResults"></div>
+
+  <script src="/js/jquery-3.5.0.min.js"></script>
+  <script src="/js/player.js"></script>
+</body>
+</html>

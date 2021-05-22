@@ -1,0 +1,350 @@
+swagger: "2.0"
+
+info:
+  version: 1.0.0
+  title: musicbot
+  description: The api serving the musicbot functionality.
+
+schemes:
+  - http
+host: localhost
+basePath: /v1
+
+consumes:
+  - application/json
+  - application/vnd.api+json
+  - application/x-www-form-urlencoded
+
+produces:
+  - application/json
+  - application/vnd.api+json
+
+paths:
+  /player/next:
+    get:
+      summary: "Skip to the next track."
+      description: "Skip to the next track in the queue."
+      responses:
+        200:
+          $ref: "#/responses/NowPlayingResponse"
+        400:
+          $ref: "#/responses/FailedToAddTrackResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /player/nowplaying:
+    get:
+      summary: "Get information for current track."
+      description: "Get information about the currently playing track."
+      responses:
+        200:
+          $ref: "#/responses/NowPlayingResponse"
+        400:
+          $ref: "#/responses/NowPlayingFailedResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /player/queue:
+    get:
+      summary: "Get the play queue"
+      description: "Returns a list of the currently queued tracks"
+      responses:
+        200:
+          $ref: "#/responses/QueueResponse"
+        400:
+          $ref: "#/responses/QueueFailedResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        404:
+          $ref: "#/responses/QueueEmptyResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /rating/increase:
+    get:
+      summary: "Increase rating."
+      description: "Increases the rating for the currently playing track."
+      responses:
+        200:
+          $ref: "#/responses/NowPlayingResponse"
+        400:
+          $ref: "#/responses/FailedToIncreaseRatingResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /rating/decrease:
+    get:
+      summary: "Decrease rating."
+      description: "Decreases the rating for the currently playing track."
+      responses:
+        200:
+          $ref: "#/responses/NowPlayingResponse"
+        400:
+          $ref: "#/responses/FailedToDecreaseRatingResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /track/search:
+    post:
+      summary: "Search for a track."
+      description: "Search for a track and return a list of found items."
+      parameters:
+        - $ref: "#/parameters/Request"
+      responses:
+        200:
+          $ref: "#/responses/SearchResultsResponse"
+        400:
+          $ref: "#/responses/FailedToSearchResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        404:
+          $ref: "#/responses/NoQueryResultsFoundResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /track/request:
+    post:
+      summary: "Requests a track."
+      description: "Search for a track and add it to the play queue."
+      parameters:
+        - $ref: "#/parameters/Request"
+      responses:
+        200:
+          $ref: "#/responses/SuccesfullyRequestedTrackResponse"
+        400:
+          $ref: "#/responses/FailedToQueueTrackResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        404:
+          $ref: "#/responses/NoQueryResultsFoundResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /track/download:
+    post:
+      summary: "Add download to queue."
+      description: "Adds a new track to the download queue."
+      parameters:
+        - $ref: "#/parameters/Download"
+      responses:
+        200:
+          $ref: "#/responses/DownloadSuccesfullyAddedResponse"
+        400:
+          $ref: "#/responses/DownloadFailedResponse"
+        403:
+          $ref: "#/responses/NotAuthorizedResponse"
+        409:
+          $ref: "#/responses/YidAlreadyExistsResponse"
+        404:
+          $ref: "#/responses/YidNotFoundResponse"
+        413:
+          $ref: "#/responses/TooLargeForStreamResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+
+definitions:
+  ErrorPointer:
+    type: object
+    properties:
+      pointer:
+        type: string
+        minLength: 1
+        maxLength: 128
+  Error:
+    type: object
+    properties:
+      detail:
+        type: string
+        minLength: 1
+        maxLength: 512
+      status:
+        type: string
+        pattern: "^[2345][0-9]{2}$"
+        minLength: 3
+        maxLength: 3
+      source:
+        $ref: "#/definitions/ErrorPointer"
+  Id:
+    type: integer
+  Filename:
+    type: string
+    pattern: ".*[a-zA-Z0-9_-]{11}.mp3"
+    minLength: 16
+    maxLength: 1024
+  Rating:
+    type: integer
+    minimum: 0
+    maximum: 65535
+  Submitter:
+    type: string
+    minLength: 1
+    maxLength: 128
+  Duration:
+    type: integer
+    minimum: 1
+    maximum: 65535
+  Elapsed:
+    type: integer
+    minimum: 0
+    maximum: 65535
+  Priority:
+    type: integer
+    minimum: 0
+    maximum: 10
+  AddedOn:
+    type: string
+    minLength: 0
+    maxLength: 128
+  Yid:
+    type: string
+    pattern: "[a-zA-Z0-9_-]{11}"
+    minLength: 11
+    maxLength: 11
+  Query:
+    type: string
+    pattern: "[a-zA-Z0-9_-]{1,128}"
+    minLength: 1
+    maxLength: 128
+  Track:
+    type: object
+    required:
+      - id
+      - filename
+      - rating
+      - submitter
+      - duration
+      - addedon
+    properties:
+      id:
+        $ref: "#/definitions/Id"
+      filename:
+        $ref: "#/definitions/Filename"
+      rating:
+        $ref: "#/definitions/Rating"
+      submitter:
+        $ref: "#/definitions/Submitter"
+      duration:
+        $ref: "#/definitions/Duration"
+      elapsed:
+        $ref: "#/definitions/Elapsed"
+      addedon:
+        $ref: "#/definitions/AddedOn"
+      priority:
+        $ref: "#/definitions/Priority"
+  Tracks:
+    type: array
+    minItems: 0
+    maxItems: 16384
+    uniqueItems: true
+    items:
+      $ref: "#/definitions/Track"
+  Request:
+    type: object
+    required:
+      - query
+      - submitter
+    properties:
+      query:
+        $ref: "#/definitions/Query"
+      submitter:
+        $ref: "#/definitions/Submitter"
+  Download:
+    type: object
+    required:
+      - yid
+      - submitter
+    properties:
+      yid:
+        $ref: "#/definitions/Yid"
+      submitter:
+        $ref: "#/definitions/Submitter"
+  QueueItem:
+    type: object
+    required:
+      - track
+      - submitter
+    properties:
+      track:
+        $ref: "#/definitions/Track"
+      submitter:
+        $ref: "#/definitions/Submitter"
+
+responses:
+  Standard500ErrorResponse:
+    description: An unexpected error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  FailedToAddTrackResponse:
+    description: "Failed to skip to the next track."
+  SearchResultsResponse:
+    description: "Results for query."
+    schema:
+      $ref: "#/definitions/Tracks"
+  NowPlayingResponse:
+    description: "Succesfully fetched nowplaying info."
+    schema:
+      $ref: "#/definitions/Track"
+  QueueResponse:
+    description: "Succesfully requested a track."
+    schema:
+      $ref: "#/definitions/Tracks"
+  QueueFailedResponse:
+    description: "Failed to fetch queue"
+  QueueEmptyResponse:
+    description: "No items found for query."
+  NowPlayingFailedResponse:
+    description: "Failed fetch nowplaying info."
+  FailedToIncreaseRatingResponse:
+    description: "Failed to increase rating."
+  FailedToDecreaseRatingResponse:
+    description: "Failed to decrease rating."
+  SuccesfullyRequestedTrackResponse:
+      description: "Track succesfully added to queue."
+      schema:
+        $ref: "#/definitions/QueueItem"
+  FailedToQueueTrackResponse:
+    description: "Failed to add track to queue."
+  NoQueryResultsFoundResponse:
+    description: "No results found for your query."
+  DownloadSuccesfullyAddedResponse:
+    description: "Download succesfully added."
+    schema:
+      $ref: "#/definitions/Track"
+  YidNotFoundResponse:
+    description: "No file found at Youtube ID."
+  TooLargeForStreamResponse:
+    description: "Track is too large for stream"
+  YidAlreadyExistsResponse:
+    description: "Yid already downloaded"
+  FailedToSearchResponse:
+    description: "Failed to search"
+  DownloadFailedResponse:
+    description: "Failed to download yid"
+  NotAuthorizedResponse:
+    description: "Not authorized"
+
+parameters:
+  Request:
+    name: "request"
+    in: body
+    required: true
+    description: "The request body for the request."
+    schema:
+      $ref: "#/definitions/Request"
+  Download:
+    name: "body"
+    in: body
+    required: true
+    description: "The request body for the download."
+    schema:
+      $ref: "#/definitions/Download"
+
+securityDefinitions:
+  AccessSecurity:
+    type: apiKey
+    in: header
+    name: X-Access-Token
+
+security:
+  - AccessSecurity: []

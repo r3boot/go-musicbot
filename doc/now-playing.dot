@@ -1,0 +1,21 @@
+digraph {
+    label="Get now playing information";
+    labelloc=t;
+
+    rankdir=LR;
+    node [ shape=plaintext fontname="Sans serif" fontsize="8" ];
+
+    start [ shape=box label=< <b>start</b> > ];
+
+    fetch_current [ label=<
+        <table border="1" cellborder="0" cellspacing="1">
+            <tr><td align="left"><b>Fetch current song info</b></td></tr>
+            <tr><td align="left">Provides:</td></tr>
+            <tr><td align="left">* <font color="darkgreen">Filename</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Song length</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Rating</font></td></tr>
+            <tr><td align="left">* <font color="darkgreen">Submitter</font></td></tr>
+        </table>
+    > ];
+    start -> fetch_current [ ];
+}
