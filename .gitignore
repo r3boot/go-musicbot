@@ -2,11 +2,9 @@ build/*
 .idea
 .DS_Store
 *.swp
-cmd.old/go-musicbot-server
-models
-restapi/operations
-restapi/doc.go
-restapi/embedded_spec.go
-restapi/server.go
-webassets/img/art/*.jpg
-
+compose/data/*/*
+build
+lib/apiserver/operations
+lib/apiclient/operations
+compose/config/icecast/log
+compose/config/liquidsoap/*.ogg
