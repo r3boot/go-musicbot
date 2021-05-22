@@ -1,5 +1,6 @@
 build/*
 .idea
+.DS_Store
 *.swp
 cmd.old/go-musicbot-server
 models
@@ -8,3 +9,4 @@ restapi/doc.go
 restapi/embedded_spec.go
 restapi/server.go
 webassets/img/art/*.jpg
+
