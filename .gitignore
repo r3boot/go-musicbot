@@ -8,3 +8,6 @@ lib/apiserver/operations
 lib/apiclient/operations
 compose/config/icecast/log
 compose/config/liquidsoap/*.ogg
+docker/musicbot/files/musicbot
+docker/musicbot-webui/files/musicbot-webui
+docker/musicbot-ircbot/files/musicbot-ircbot

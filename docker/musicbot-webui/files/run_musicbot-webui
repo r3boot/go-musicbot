@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [[ -z "${DOCKER_COMPOSE}" ]]; then
+  exec /usr/bin/musicbot ${@}
+else
+  exec /usr/bin/musicbot -loglevel=debug
+fi
