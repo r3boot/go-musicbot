@@ -31,7 +31,8 @@ services:
       - './data/postgresql:/var/lib/postgresql/data'
   musicbot:
     image: 'as65342/musicbot'
-    command: '-- -config /etc/musicbot.yml -host 0.0.0.0 -port 8080 -loglevel DEBUG'
+    environment:
+      DOCKER_COMPOSE: 1
     depends_on:
       - 'liquidsoap'
       - 'postgres'

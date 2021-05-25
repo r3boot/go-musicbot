@@ -22,6 +22,7 @@ const msgError          = 2;
 
 // Leave this global
 var ws = null;
+var playing = false;
 
 function filenameToTrack(fname) {
     return fname.substring(0, fname.length - 16);
@@ -55,12 +56,23 @@ function ShowNotification(type, message) {
     }
 }
 
+function ToggleMediaPlayer() {
+    var player = document.getElementById("audioControls")
+    if (playing) {
+        player.pause();
+        playing = false;
+    } else {
+        player.play();
+        playing = true;
+    }
+}
+
 function UpdateNowPlaying(data) {
-    var track = filenameToTrack(data.filename);
+    var track = filenameToTrack(data.Filename);
 
     $("#divNowPlaying").html(track);
-    $("#divRating").html(data.rating + "/10");
-    $("#divDuration").html(prettyDuration(data.duration));
+    $("#divRating").html(data.Rating + "/10");
+    $("#divDuration").html(prettyDuration(data.Duration));
 }
 
 function RequestTrack(parent) {
@@ -227,4 +239,9 @@ function WebSocketHandler() {
 
 $(document).ready(function() {
     var socket = WebSocketHandler();
+
+    $("#btnPlay").click(function(ev) {
+        ev.preventDefault();
+        ToggleMediaPlayer();
+    });
 });

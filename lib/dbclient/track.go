@@ -7,20 +7,18 @@ import (
 )
 
 type Track struct {
-	Id        int
-	Filename  string
-	Yid       string
-	Rating    int64
-	Submitter string
-	Duration  float64
-	Elapsed   float64 `pg:"-"`
-	Priority  int     `pg:"-"`
-	AddedOn   time.Time
-	tableName struct{} `pg:",discard_unknown_columns"`
+	Yid       string        `pg:"yid,pk"`
+	Filename  string        `pg:"filename"`
+	Rating    int64         `pg:"rating"`
+	Submitter string        `pg:"submitter"`
+	Duration  float64       `pg:"duration"`
+	Elapsed   time.Duration `pg:"-"`
+	AddedOn   time.Time     `pg:"added_on"`
+	tableName struct{}      `pg:",discard_unknown_columns"`
 }
 
 func (obj *Track) String() string {
-	return fmt.Sprintf("Track<%d %s %d %s %.02f %s>", obj.Id, obj.Filename, obj.Rating, obj.Submitter, obj.Duration, obj.AddedOn)
+	return fmt.Sprintf("Track<%s %s %d %s %.02f %s>", obj.Yid, obj.Filename, obj.Rating, obj.Submitter, obj.Duration, obj.AddedOn)
 }
 
 func (obj *Track) Save() error {
@@ -59,17 +57,6 @@ func (db *DbClient) Search(q string) ([]Track, error) {
 	}
 
 	return tracks, nil
-}
-
-func (db *DbClient) GetTrackById(id int) (*Track, error) {
-	track := &Track{}
-
-	err := db.db.Model(track).Where("id = ?", id).Select()
-	if err != nil {
-		return nil, fmt.Errorf("Query: %v", err)
-	}
-
-	return track, nil
 }
 
 func (db *DbClient) GetTrackByYid(yid string) (*Track, error) {

@@ -4,16 +4,18 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
 	"io"
 	"net"
 	"strings"
 	"sync"
-
-	"github.com/r3boot/test/lib/config"
+	"time"
 )
 
 type PlaylistEntry struct {
 	Filename string
+	Elapsed  time.Duration
 }
 
 type LSClient struct {
@@ -31,7 +33,7 @@ func NewLSClient(cfg *config.LSConfig) (*LSClient, error) {
 
 	err := client.Connect()
 	if err != nil {
-		return nil, fmt.Errorf("Connect: %v", err)
+		return nil, fmt.Errorf("failed to connect")
 	}
 
 	return client, nil
@@ -42,7 +44,13 @@ func (ls *LSClient) Connect() error {
 	ls.conn, err = net.Dial("tcp", ls.cfg.Address)
 	if err != nil {
 		ls.conn = nil
-		return fmt.Errorf("net.Dial: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "Connect",
+			"call":     "net.Dial",
+			"address":  ls.cfg.Address,
+		}, err.Error())
+		return fmt.Errorf("failed to connect")
 	}
 
 	return nil
@@ -53,8 +61,14 @@ func (ls *LSClient) RunCommand(cmd string) (string, error) {
 	defer ls.mux.Unlock()
 
 	if ls.conn == nil {
-		return "", fmt.Errorf("not connected to liquidsoap")
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "RunCommand",
+			"command":  cmd,
+		}, "not connected to liquidsoap")
+		return "", fmt.Errorf("failed to run command")
 	}
+
 	fmt.Fprintf(ls.conn, cmd+"\n")
 
 	reader := bufio.NewReader(ls.conn)
@@ -90,7 +104,12 @@ func (ls *LSClient) Next() error {
 	cmd := ls.cfg.OutputName + ".skip"
 	_, err := ls.RunCommand(cmd)
 	if err != nil {
-		return fmt.Errorf("LSClient.RunCommand: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "Next",
+			"call":     "ls.RunCommand",
+		}, err.Error())
+		return fmt.Errorf("output.skip failed")
 	}
 	return nil
 }
@@ -101,19 +120,39 @@ func (ls *LSClient) NowPlaying() (*PlaylistEntry, error) {
 
 	output, err := ls.RunCommand(cmd)
 	if err != nil {
-		return nil, fmt.Errorf("LSClient.RunCommand: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "NowPlaying",
+			"call":     "ls.RunCommand",
+		}, err.Error())
+		return nil, fmt.Errorf("output.metadata failed")
 	}
 
 	// The output of metadata is a stack; Do parsing in the ugly way
 	nowPlayingFilename := ""
+	onAir := ""
 	for _, line := range strings.Split(output, "\n") {
 		if strings.HasPrefix(line, "filename=") {
 			nowPlayingFilename = strings.Split(strings.Split(line, "=")[1], "\"")[1]
 		}
+		if strings.HasPrefix(line, "on_air=") {
+			onAir = strings.Split(strings.Split(line, "=")[1], "\"")[1]
+		}
+	}
+
+	tStart, err := time.Parse("2006/01/02 15:04:05", onAir)
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":   "liquidsoap",
+			"function":  "NowPlaying",
+			"call":      "time.Parse",
+			"timestamp": onAir,
+		}, err.Error())
 	}
 
 	entry := &PlaylistEntry{
 		Filename: nowPlayingFilename,
+		Elapsed:  time.Since(tStart),
 	}
 
 	return entry, nil
@@ -134,7 +173,12 @@ func (ls *LSClient) GetQueue() ([]*PlaylistEntry, error) {
 
 	output, err := ls.RunCommand(cmd)
 	if err != nil {
-		return nil, fmt.Errorf("LSClient.RunCommand: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "NowPlaying",
+			"call":     "ls.RunCommand",
+		}, err.Error())
+		return nil, fmt.Errorf("request.queue failed")
 	}
 
 	playlistEntries := []*PlaylistEntry{}
@@ -144,7 +188,12 @@ func (ls *LSClient) GetQueue() ([]*PlaylistEntry, error) {
 		cmd := "request.metadata " + rid
 		result, err := ls.RunCommand(cmd)
 		if err != nil {
-			return nil, fmt.Errorf("LSClient.RunCommand: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "liquidsoap",
+				"function": "NowPlaying",
+				"call":     "ls.RunCommand",
+			}, err.Error())
+			return nil, fmt.Errorf("request.metadata failed")
 		}
 
 		for _, line := range strings.Split(result, "\n") {
@@ -166,7 +215,12 @@ func (ls *LSClient) Enqueue(track *PlaylistEntry) error {
 	cmd := "request.push " + track.Filename
 	_, err := ls.RunCommand(cmd)
 	if err != nil {
-		return fmt.Errorf("LSClient.RunCommand: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "liquidsoap",
+			"function": "NowPlaying",
+			"call":     "ls.RunCommand",
+		}, err.Error())
+		return fmt.Errorf("request.push failed")
 	}
 
 	return nil

@@ -5,7 +5,6 @@ RUN apk update \
     && apk upgrade \
     && apk add git go make musl-dev
 
-COPY files/build.sh /build.sh
 USER root
 ENTRYPOINT ["/build.sh"]
 CMD [""]

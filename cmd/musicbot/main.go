@@ -2,78 +2,74 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
 	"strings"
 
-	"github.com/r3boot/test/lib/webapi"
+	"github.com/r3boot/go-musicbot/lib/webapi"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/r3boot/test/lib/config"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
 )
 
 const (
 	defConfigFileValue = "/etc/musicbot.yml"
 	defHostValue       = "0.0.0.0"
 	defPortValue       = 8080
-	helpConfigFile     = "Path to the configuration file"
-	helpHost           = "Host to listen on"
-	helpPort           = "Port to listen on"
-)
+	defLogLevel        = "info"
+	defJson            = false
 
-func Error(err error) {
-	fmt.Printf("ERROR: %v\n", err)
-	os.Exit(1)
-}
+	helpConfigFile = "Path to the configuration file"
+	helpHost       = "Host to listen on"
+	helpPort       = "Port to listen on"
+	helpLogLevel   = "Log level to use (info, debug)"
+	helpJson       = "Output logging in JSON format"
+)
 
 func main() {
 	var (
 		ConfigFile = flag.String("config", defConfigFileValue, helpConfigFile)
-		LogLevel   = flag.String("loglevel", "INFO", "Log level to use (INFO, DEBUG)")
-		LogJson    = flag.Bool("json", false, "Output logging in JSON format")
+		LogLevel   = flag.String("loglevel", defLogLevel, helpLogLevel)
+		LogJson    = flag.Bool("json", defJson, helpJson)
 		Host       = flag.String("host", defHostValue, helpHost)
 		Port       = flag.Int("port", defPortValue, helpPort)
-
-		log *logrus.Entry
 	)
 	flag.Parse()
 
-	// Configure logging
-	if *LogJson {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	}
-
-	switch strings.ToUpper(*LogLevel) {
-	case "INFO":
-		{
-			logrus.SetLevel(logrus.InfoLevel)
-		}
-	case "DEBUG":
-		{
-			logrus.SetLevel(logrus.DebugLevel)
-		}
-	}
-
-	// Initialize logging
-	log = logrus.WithFields(logrus.Fields{
-		"caller": "main",
-	})
+	log.NewLogger(strings.ToUpper(*LogLevel), *LogJson)
 
 	cfg, err := config.New(*ConfigFile)
 	if err != nil {
-		log.Fatalf("config.New: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "config.New",
+			"filename": *ConfigFile,
+		}, err.Error())
 	}
 
 	api, err := webapi.NewWebApi(cfg)
 	if err != nil {
-		log.Fatalf("NewWebApi: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "webapi.NewWebApi",
+		}, err.Error())
 	}
 
-	log.Debugf("Host: %s; Port: %d; api: %v", Host, Port, api)
+	log.Debugf(log.Fields{
+		"package":  "main",
+		"function": "main",
+		"host":     *Host,
+		"port":     *Port,
+	}, "starting api")
 
 	err = api.Run(*Host, *Port)
 	if err != nil {
-		log.Fatalf("RunWebApi: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "api.Run",
+			"host":     *Host,
+			"port":     *Port,
+		}, err.Error())
 	}
 }

@@ -25,7 +25,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"github.com/r3boot/test/lib/apiserver/operations"
+	"github.com/r3boot/go-musicbot/lib/apiserver/operations"
 )
 
 const (

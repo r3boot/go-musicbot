@@ -5,21 +5,21 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/r3boot/go-musicbot/lib/dbclient"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/r3boot/test/models"
-
 	"github.com/gorilla/websocket"
 
 	"github.com/go-openapi/runtime"
-	"github.com/sirupsen/logrus"
 
-	"github.com/r3boot/test/lib/apiclient"
-	"github.com/r3boot/test/lib/apiclient/operations"
-	"github.com/r3boot/test/lib/config"
+	"github.com/r3boot/go-musicbot/lib/apiclient"
+	"github.com/r3boot/go-musicbot/lib/apiclient/operations"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
 )
 
 const (
@@ -58,7 +58,7 @@ type WebUi struct {
 	uri          string
 	token        runtime.ClientAuthInfoWriter
 	client       *apiclient.Musicbot
-	nowPlaying   *models.Track
+	nowPlaying   *dbclient.Track
 	queueEntries map[int]string
 }
 
@@ -106,26 +106,38 @@ func NewWebUi(config *config.WebUi, token runtime.ClientAuthInfoWriter, client *
 }
 
 func (ui *WebUi) fetchNowPlaying() {
-	log := logrus.WithFields(logrus.Fields{
-		"module":   "WebUi",
-		"function": "fetchNowPlaying",
-	})
 	for {
 		resp, err := ui.client.Operations.GetPlayerNowplaying(operations.NewGetPlayerNowplayingParams(), ui.token)
 		if err != nil {
-			log.Warningf("Failed to fetch nowplaying info: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "webui",
+				"function": "fetchNowPlaying",
+				"call":     "ui.client.Operations.GetPlayerNowplaying",
+			}, err.Error())
 			time.Sleep(3 * time.Second)
 			continue
 		}
-		track := models.Track{
-			Addedon:   resp.Payload.Addedon,
-			Duration:  resp.Payload.Duration,
-			Elapsed:   resp.Payload.Elapsed,
-			Filename:  resp.Payload.Filename,
-			ID:        resp.Payload.ID,
-			Priority:  resp.Payload.Priority,
-			Rating:    resp.Payload.Rating,
-			Submitter: resp.Payload.Submitter,
+
+		addedon, err := time.Parse("2006-01-02 15:04:05 +0000 MST", *resp.Payload.Addedon)
+		if err != nil {
+			log.Warningf(log.Fields{
+				"package":   "webui",
+				"function":  "fetchNowPlaying",
+				"call":      "time.Parse",
+				"timestamp": *resp.Payload.Addedon,
+			}, err.Error())
+			continue
+		}
+		duration := float64(*resp.Payload.Duration)
+		elapsed := time.Duration(*resp.Payload.Elapsed)
+
+		track := dbclient.Track{
+			AddedOn:   addedon,
+			Duration:  duration,
+			Elapsed:   elapsed,
+			Filename:  *resp.Payload.Filename,
+			Rating:    *resp.Payload.Rating,
+			Submitter: *resp.Payload.Submitter,
 		}
 
 		ui.nowPlaying = &track

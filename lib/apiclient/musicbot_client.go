@@ -9,7 +9,7 @@ import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/r3boot/test/lib/apiclient/operations"
+	"github.com/r3boot/go-musicbot/lib/apiclient/operations"
 )
 
 // Default musicbot HTTP client.

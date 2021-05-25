@@ -1,6 +1,6 @@
 # ==== General configuration ====
 # Bind address for source input
-set("harbor.bind_addr", "0.0.0.0")
+#set("harbor.bind_addr", "0.0.0.0")
 
 set("server.telnet.bind_addr", "0.0.0.0")
 set("server.telnet.port", 2323)

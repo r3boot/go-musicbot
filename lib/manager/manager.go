@@ -2,17 +2,17 @@ package manager
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/r3boot/test/lib/utils"
+	"github.com/r3boot/go-musicbot/lib/utils"
 
-	"github.com/r3boot/test/lib/liquidsoap"
+	"github.com/r3boot/go-musicbot/lib/liquidsoap"
 
-	"github.com/r3boot/test/lib/config"
-	"github.com/r3boot/test/lib/dbclient"
-	"github.com/r3boot/test/lib/tags"
-	"github.com/r3boot/test/lib/ytclient"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/dbclient"
+	"github.com/r3boot/go-musicbot/lib/log"
+	"github.com/r3boot/go-musicbot/lib/tags"
+	"github.com/r3boot/go-musicbot/lib/ytclient"
 )
 
 const (
@@ -25,7 +25,6 @@ type Manager struct {
 	ls  *liquidsoap.LSClient
 	db  *dbclient.DbClient
 	yt  *ytclient.YoutubeClient
-	// playQueue *PlayQueue
 }
 
 func NewManager(cfg *config.Config) (*Manager, error) {
@@ -36,29 +35,46 @@ func NewManager(cfg *config.Config) (*Manager, error) {
 	}
 
 	if cfg == nil {
-		return nil, fmt.Errorf("cfg == nil")
+		log.Fatalf(log.Fields{
+			"package":  "manager",
+			"function": "NewManager",
+		}, "unable to initialize: cfg == nil")
 	}
 
 	mgr.ls, err = liquidsoap.NewLSClient(cfg.Liquidsoap)
 	if err != nil {
-		return nil, fmt.Errorf("NewLSClient: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "manager",
+			"function": "NewManager",
+			"call":     "liquidsoap.NewLSClient",
+		}, err.Error())
 	}
 
 	mgr.db, err = dbclient.NewDbClient(cfg.Postgres)
 	if err != nil {
-		return nil, fmt.Errorf("NewDbClient: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "manager",
+			"function": "NewManager",
+			"call":     "dbclient.NewDbClient",
+		}, err.Error())
 	}
 
 	mgr.yt, err = ytclient.NewYoutubeClient(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("NewYoutubeClient: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "manager",
+			"function": "NewManager",
+			"call":     "ytclient.NewYoutubeClient",
+		}, err.Error())
 	}
-
-	// mgr.playQueue = NewPlayQueue(mgr.ls)
 
 	_, err = mgr.Synchronize()
 	if err != nil {
-		return nil, fmt.Errorf("Synchronize: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "manager",
+			"function": "NewManager",
+			"call":     "mgr.Synchronize",
+		}, err.Error())
 	}
 
 	return mgr, nil
@@ -86,12 +102,26 @@ func (m *Manager) AddTrack(yid, submitter string) (*dbclient.Track, error) {
 		Submitter: submitter,
 	})
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "AddTrack",
+			"call":      "m.yt.Download",
+			"yid":       yid,
+			"submitter": submitter,
+		}, err.Error())
 		return nil, fmt.Errorf("yt.Download: %v", err)
 	}
 
 	duration, err := tags.GetDuration(m.cfg.Datastore.Directory + "/" + fname)
 	if err != nil {
-		return nil, fmt.Errorf("GetDuration: %v", err)
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "AddTrack",
+			"call":      "tags.GetDuration",
+			"yid":       yid,
+			"submitter": submitter,
+		}, err.Error())
+		return nil, fmt.Errorf("tags.GetDuration: %v", err)
 	}
 
 	track := &dbclient.Track{
@@ -105,6 +135,13 @@ func (m *Manager) AddTrack(yid, submitter string) (*dbclient.Track, error) {
 
 	err = track.Add()
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "AddTrack",
+			"call":      "track.Add",
+			"yid":       yid,
+			"submitter": submitter,
+		}, err.Error())
 		return nil, fmt.Errorf("track.Add: %v", err)
 	}
 
@@ -114,7 +151,14 @@ func (m *Manager) AddTrack(yid, submitter string) (*dbclient.Track, error) {
 func (m *Manager) Search(query, submitter string) ([]dbclient.Track, error) {
 	tracks, err := m.db.Search(query)
 	if err != nil {
-		return nil, fmt.Errorf("Search: %v", err)
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "Search",
+			"call":      "m.db.Search",
+			"query":     query,
+			"submitter": submitter,
+		}, err.Error())
+		return nil, fmt.Errorf("db.Search: %v", err)
 	}
 
 	return tracks, nil
@@ -123,6 +167,13 @@ func (m *Manager) Search(query, submitter string) ([]dbclient.Track, error) {
 func (m *Manager) Request(query, submitter string) (dbclient.Track, error) {
 	tracks, err := m.db.Search(query)
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "Request",
+			"call":      "m.db.Search",
+			"query":     query,
+			"submitter": submitter,
+		}, err.Error())
 		return dbclient.Track{}, fmt.Errorf("Search: %v", err)
 	}
 	if len(tracks) == 0 {
@@ -135,72 +186,164 @@ func (m *Manager) Request(query, submitter string) (dbclient.Track, error) {
 	}
 	m.ls.Enqueue(&entry)
 
+	log.Infof(log.Fields{
+		"package":   "manager",
+		"function":  "Request",
+		"filename":  track.Filename,
+		"query":     query,
+		"submitter": submitter,
+	}, "track added to queue")
+
 	return track, nil
 }
 
 func (m *Manager) IncreaseRating() error {
 	track, err := m.NowPlaying()
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "IncreaseRating",
+			"call":     "m.NowPlaying",
+		}, err.Error())
 		return fmt.Errorf("NowPlaying: %v", err)
 	}
 
 	track.Rating += 1
 	track.Save()
+
+	log.Infof(log.Fields{
+		"package":  "manager",
+		"function": "IncreaseRating",
+		"filename": track.Filename,
+		"rating":   track.Rating,
+	}, "rating increased")
+
 	return nil
 }
 
 func (m *Manager) DecreaseRating() error {
 	track, err := m.NowPlaying()
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "DecreaseRating",
+			"call":     "m.NowPlaying",
+		}, err.Error())
 		return fmt.Errorf("NowPlaying: %v", err)
 	}
 
 	track.Rating -= 1
 	track.Save()
 
+	// TODO: Handle track delete on rating == 0
+
+	log.Infof(log.Fields{
+		"package":  "manager",
+		"function": "DecreaseRating",
+		"filename": track.Filename,
+		"rating":   track.Rating,
+	}, "rating decreased")
+
 	return nil
 }
 
 func (m *Manager) Next() error {
 	err := m.ls.Next()
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "Next",
+			"call":     "m.ls.Next",
+		}, err.Error())
+	}
+
 	return err
 }
 
 func (m *Manager) NowPlaying() (*dbclient.Track, error) {
 	nowPlaying, err := m.ls.NowPlaying()
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "NowPlaying",
+			"call":     "m.ls.NowPlaying",
+		}, err.Error())
 		return nil, fmt.Errorf("NowPlaying: %v", err)
 	}
 
 	yid, err := utils.GetYidFromFilename(nowPlaying.Filename)
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "NowPlaying",
+			"call":     "utils.GetYidFromFilename",
+			"filename": nowPlaying.Filename,
+		}, err.Error())
 		return nil, fmt.Errorf("GetYidFromFilename: %v", err)
 	}
 
 	track, err := m.db.GetTrackByYid(yid)
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "NowPlaying",
+			"call":     "m.db.GetTrackByYid",
+			"yid":      yid,
+		}, err.Error())
 		return nil, fmt.Errorf("GetTrackByYid: %v", err)
 	}
+	track.Elapsed = nowPlaying.Elapsed
 
 	return track, nil
 }
 
 func (m *Manager) GetQueue() ([]*dbclient.Track, error) {
+	nowPlaying, err := m.NowPlaying()
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "GetQueue",
+			"call":     "m.NowPlaying",
+		}, err.Error())
+		return nil, fmt.Errorf("failed to fetch nowplaying info")
+	}
+
 	queueEntries := []*dbclient.Track{}
 
 	foundEntries, err := m.ls.GetQueue()
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "GetQueue",
+			"call":     "m.ls.GetQueue",
+		}, err.Error())
 		return nil, fmt.Errorf("GetQueue: %v", err)
 	}
 
 	for _, foundEntry := range foundEntries {
+		if foundEntry.Filename == nowPlaying.Filename {
+			continue
+		}
+
 		yid, err := utils.GetYidFromFilename(foundEntry.Filename)
 		if err != nil {
-			log.Printf("GetYidFromFilename: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":  "manager",
+				"function": "GetQueue",
+				"call":     "utils.GetYidFromFilename",
+				"filename": foundEntry.Filename,
+			}, err.Error())
+			continue
 		}
 		track, err := m.db.GetTrackByYid(yid)
 		if err != nil {
-			return nil, fmt.Errorf("GetTrackById: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "manager",
+				"function": "GetQueue",
+				"call":     "m.db.GetTrackByYid",
+				"filename": yid,
+			}, err.Error())
+			return nil, fmt.Errorf("GetTrackByYid: %v", err)
 		}
 
 		queueEntries = append(queueEntries, track)
@@ -213,25 +356,42 @@ func (m *Manager) Synchronize() (int, error) {
 	trackPattern := m.cfg.Datastore.Directory + "/*.mp3"
 	tracks, err := tags.ReadTagsFrom(trackPattern)
 	if err != nil {
+		log.Warningf(log.Fields{
+			"package":       "manager",
+			"function":      "Synchronize",
+			"call":          "tags.ReadTagsFrom",
+			"track_pattern": trackPattern,
+		}, err.Error())
 		return -1, fmt.Errorf("ReadTagsFrom: %v", err)
 	}
 
 	numSynchronized := 0
 	for _, track := range tracks {
-		tmp, err := m.db.GetTrackByYid(track.Yid)
+		_, err := m.db.GetTrackByYid(track.Yid)
 		if err == nil {
-			tmp.Yid = track.Yid
-			err = tmp.Save()
-			if err != nil {
-				return -1, fmt.Errorf("track.Update: %v", err)
-			}
-		} else {
-			err = track.Add()
-			if err != nil {
-				return -1, fmt.Errorf("track.Add: %v", err)
-			}
+			continue
+		}
+
+		err = track.Add()
+		if err != nil {
+			log.Warningf(log.Fields{
+				"package":   "manager",
+				"function":  "Synchronize",
+				"call":      "track.Add",
+				"filename":  track.Filename,
+				"submitter": track.Submitter,
+			}, err.Error())
+			continue
 		}
 		numSynchronized += 1
+	}
+
+	if numSynchronized > 0 {
+		log.Infof(log.Fields{
+			"package":   "manager",
+			"function":  "Synchronize",
+			"num_added": numSynchronized,
+		}, "added tracks to the database")
 	}
 
 	return numSynchronized, nil

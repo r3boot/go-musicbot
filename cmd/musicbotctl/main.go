@@ -10,8 +10,8 @@ import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/r3boot/test/lib/apiclient"
-	"github.com/r3boot/test/lib/apiclient/operations"
+	"github.com/r3boot/go-musicbot/lib/apiclient"
+	"github.com/r3boot/go-musicbot/lib/apiclient/operations"
 	"github.com/sirupsen/logrus"
 )
 
@@ -113,7 +113,7 @@ func HandleNowPlaying(client *apiclient.Musicbot, token runtime.ClientAuthInfoWr
 
 	fmt.Printf("> Currently playing:\n")
 	fmt.Printf("File:      %s\n", *track.Filename)
-	fmt.Printf("Elapsed:   %ds\n", track.Elapsed)
+	fmt.Printf("Elapsed:   %ds\n", *track.Elapsed)
 	fmt.Printf("Duration:  %ds\n", *track.Duration)
 	fmt.Printf("Rating     %d/10\n", *track.Rating)
 	fmt.Printf("Submitter: %s\n", *track.Submitter)

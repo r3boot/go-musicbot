@@ -7,8 +7,8 @@ RUN apk update \
     && addgroup -S -g 836 git \
     && adduser -S -G git -u 836 git -s /bin/sh
 
-COPY files/run_musicbot /run_musicbot
-COPY musicbot/files/musicbot /usr/bin/musicbot
+COPY files/run_musicbot-webui /run_musicbot-webui
+COPY files/musicbot-webui /usr/bin/musicbot-webui
 
-ENTRYPOINT ["/run_musicbot"]
+ENTRYPOINT ["/run_musicbot-webui"]
 CMD [""]

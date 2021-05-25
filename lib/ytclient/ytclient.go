@@ -13,16 +13,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"github.com/r3boot/test/lib/config"
-)
-
-const (
-	downloadQueueMaxLength = 100
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
 )
 
 var (
-	// \"approxDurationMs\":\"464046\"
 	reAllowedSongLength = regexp.MustCompile("approxDurationMs..:..([0-9]{4,10})..")
 )
 
@@ -45,10 +40,21 @@ func NewYoutubeClient(cfg *config.Config) (*YoutubeClient, error) {
 	if client.cfg.Binary == "" {
 		binary, err := client.FindBinary()
 		if err != nil {
+			log.Fatalf(log.Fields{
+				"package":  "ytclient",
+				"function": "NewYoutubeClient",
+				"call":     "client.FindBinary",
+			}, err.Error())
 			return nil, fmt.Errorf("%v", err)
 		}
 		client.cfg.Binary = binary
 	}
+
+	log.Debugf(log.Fields{
+		"package":  "ytclient",
+		"function": "NewYoutubeClient",
+		"binary":   client.cfg.Binary,
+	}, "found binary")
 
 	return client, nil
 }
@@ -68,7 +74,7 @@ func (yt *YoutubeClient) FindBinary() (string, error) {
 		return fullPath, nil
 	}
 
-	return "", fmt.Errorf("FindBinary: youtube-dl not found")
+	return "", fmt.Errorf("youtube-dl not found")
 }
 
 func (yt *YoutubeClient) IsAllowedLength(yid string) error {
@@ -76,52 +82,94 @@ func (yt *YoutubeClient) IsAllowedLength(yid string) error {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("isAllowedLength: http.Get: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "IsAllowedLength",
+			"call":     "http.Get",
+			"yid":      yid,
+		}, err.Error())
+		return fmt.Errorf("failed to get url")
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("isAllowedLength: ioutil.ReadAll: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "IsAllowedLength",
+			"call":     "ioutil.ReadAll",
+			"yid":      yid,
+		}, err.Error())
+		return fmt.Errorf("failed to read url")
 	}
 
 	results := reAllowedSongLength.FindAllStringSubmatch(string(body), -1)
 
 	duration := -1
 	if len(results) == 0 {
-		return fmt.Errorf("isAllowedLength: YID not found")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "IsAllowedLength",
+			"yid":      yid,
+		}, "no results found")
+		return fmt.Errorf("no results found")
 	}
 
 	duration, err = strconv.Atoi(results[0][1])
 	if err != nil {
-		return fmt.Errorf("isAllowedLength: strconv.Atoi: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "IsAllowedLength",
+			"call":     "strconv.Atoi",
+			"duration": duration,
+			"yid":      yid,
+		}, "failed to convert duration")
+		return fmt.Errorf("failed to convert duration")
 	}
 
 	if ((duration / 1000) / 60) > yt.cfg.MaxAllowedLength {
-		return fmt.Errorf("isAllowedLength: song too long")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "IsAllowedLength",
+			"duration": duration,
+			"yid":      yid,
+		}, "track too long")
+		return fmt.Errorf("track too long")
 	}
 
 	return nil
 }
 
 func (yt *YoutubeClient) copyFile(src, dst string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"module":   "YoutubeClient",
-		"function": "copyFile",
-		"src":      src,
-		"dst":      dst,
-	})
 	input, err := ioutil.ReadFile(src)
 	if err != nil {
-		return fmt.Errorf("ioutil.ReadFile: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "copyFile",
+			"call":     "ioutil.ReadFile",
+			"src":      src,
+		}, err.Error())
+		return fmt.Errorf("failed to read file")
 	}
 
 	err = ioutil.WriteFile(dst, input, 0644)
 	if err != nil {
-		return fmt.Errorf("ioutil.WriteFile: %v", err)
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "copyFile",
+			"call":     "ioutil.WriteFile",
+			"dst":      dst,
+		}, err.Error())
+		return fmt.Errorf("failed to write file")
 	}
 
-	log.Printf("File copied")
+	log.Debugf(log.Fields{
+		"package":  "ytclient",
+		"function": "copyFile",
+		"call":     "ioutil.WriteFile",
+		"src":      src,
+		"dst":      dst,
+	}, "file copied")
 
 	return nil
 }
@@ -130,13 +178,6 @@ func (yt *YoutubeClient) Download(job *DownloadJob) (string, error) {
 	var (
 		stdout, stderr bytes.Buffer
 	)
-
-	log := logrus.WithFields(logrus.Fields{
-		"module":    "YoutubeClient",
-		"function":  "Download",
-		"yid":       job.Yid,
-		"submitter": job.Submitter,
-	})
 
 	outputFile := fmt.Sprintf("%s/%%(title)s-%%(id)s.%%(ext)s", yt.cfg.TmpDir)
 	url := fmt.Sprintf("%s%s", yt.cfg.BaseUrl, job.Yid)
@@ -150,23 +191,44 @@ func (yt *YoutubeClient) Download(job *DownloadJob) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	log.Printf("Running %s", strings.Join(cmd.Args, " "))
+	command := strings.Join(cmd.Args, " ")
+
+	log.Debugf(log.Fields{
+		"package":  "ytclient",
+		"function": "Download",
+		"command":  command,
+	}, "running command")
 
 	if err := cmd.Start(); err != nil {
-		log.Printf("cmd.Start: %v", err)
-		return "", fmt.Errorf("Failed to start youtube-dl")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "Download",
+			"call":     "cmd.Start",
+			"command":  command,
+		}, err.Error())
+		return "", fmt.Errorf("failed to start youtube-dl")
 	}
 
 	if err := cmd.Wait(); err != nil {
-		log.Printf("cmd.Wait: %v", err)
-		return "", fmt.Errorf("Youtube-dl did not complete")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "Download",
+			"call":     "cmd.Wait",
+			"command":  command,
+		}, err.Error())
+		return "", fmt.Errorf("youtube-dl did not complete")
 	}
 
 	globPattern := fmt.Sprintf("%s/*-%s.mp3", yt.cfg.TmpDir, job.Yid)
 	results, err := filepath.Glob(globPattern)
 	if err != nil {
-		log.Printf("Failed to find downloaded file")
-		return "", fmt.Errorf("Youtube-dl failed to download file")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "Download",
+			"call":     "filepath.Glob",
+			"pattern":  globPattern,
+		}, err.Error())
+		return "", fmt.Errorf("youtube-dl failed to download file")
 	}
 	fname := results[0]
 
@@ -175,16 +237,26 @@ func (yt *YoutubeClient) Download(job *DownloadJob) (string, error) {
 
 	err = yt.copyFile(fname, dest)
 	if err != nil {
-		log.Printf("copyFile: %v", err)
-		return "", fmt.Errorf("Failed to copy file")
+		return "", fmt.Errorf("failed to copy file")
 	}
 
 	if err := os.Remove(fname); err != nil {
-		log.Printf("Remove: %v", err)
-		return "", fmt.Errorf("Failed to remove tmpfile")
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "Download",
+			"call":     "os.Remove",
+			"filename": fname,
+		}, err.Error())
+		return "", fmt.Errorf("failed to remove tmpfile")
 	}
 
-	log.Printf("Track downloaded succesfully")
+	log.Debugf(log.Fields{
+		"package":   "ytclient",
+		"function":  "Download",
+		"yid":       job.Yid,
+		"submitter": job.Submitter,
+		"filename":  dest,
+	}, "file downloaded succesfully")
 
 	return name, nil
 }

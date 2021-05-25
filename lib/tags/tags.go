@@ -2,18 +2,19 @@ package tags
 
 import (
 	"fmt"
+	"github.com/r3boot/go-musicbot/lib/log"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/tcolgate/mp3"
 
-	"github.com/r3boot/test/lib/dbclient"
-
 	"github.com/dhowden/tag"
+	"github.com/r3boot/go-musicbot/lib/dbclient"
 )
 
 var (
@@ -50,33 +51,62 @@ func GetDuration(fname string) (float64, error) {
 func ReadTagsFrom(pattern string) (result []dbclient.Track, err error) {
 	files, err := filepath.Glob(pattern)
 	if err != nil {
+		log.Fatalf(log.Fields{
+			"package":  "tags",
+			"function": "ReadTagsFrom",
+			"call":     "filepath.Glob",
+			"pattern":  pattern,
+		}, err.Error())
 		return nil, fmt.Errorf("filepath.Glob: %v\n", err)
 	}
 
-	fmt.Printf("Indexing files: ")
+	log.Debugf(log.Fields{
+		"package":  "tags",
+		"function": "ReadTagsFrom",
+	}, "scanning files")
 
-	ctr := 0
+	tStart := time.Now()
 	for _, fname := range files {
 		results := reYid.FindAllStringSubmatch(fname, -1)
 		if len(results) == 0 {
-			fmt.Printf("no yid found for %s\n", fname)
+			log.Warningf(log.Fields{
+				"package":  "tags",
+				"function": "ReadTagsFrom",
+				"call":     "reYid.FindAllStringSubmatch",
+				"filename": fname,
+			}, err.Error())
 			continue
 		}
 		yid := results[0][1]
 
 		fs, err := os.Stat(fname)
 		if err != nil {
-			fmt.Printf("os.Stat: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":  "tags",
+				"function": "ReadTagsFrom",
+				"call":     "os.Stat",
+				"filename": fname,
+			}, err.Error())
 			continue
 		}
 		fd, err := os.Open(fname)
 		if err != nil {
-			fmt.Printf("os.Open: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":  "tags",
+				"function": "ReadTagsFrom",
+				"call":     "os.Open",
+				"filename": fname,
+			}, err.Error())
 			continue
 		}
 		m, err := tag.ReadFrom(fd)
 		if err != nil {
-			fmt.Printf("tag.ReadFrom: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":  "tags",
+				"function": "ReadTagsFrom",
+				"call":     "tag.ReadFrom",
+				"filename": fname,
+			}, err.Error())
 			continue
 		}
 
@@ -86,19 +116,31 @@ func ReadTagsFrom(pattern string) (result []dbclient.Track, err error) {
 			comment = raw["COMM"].(*tag.Comm).Text
 		}
 
+		rating, _ := m.Track()
+
 		_, ok := raw["TLEN"]
 		duration := 0.0
 		if ok {
 			rawDuration := raw["TLEN"].(string)
 			duration, err = strconv.ParseFloat(rawDuration, 10)
 			if err != nil {
-				fmt.Printf("strconv.ParseFloat: %v\n", err)
+				log.Warningf(log.Fields{
+					"package":  "tags",
+					"function": "ReadTagsFrom",
+					"call":     "strconv.ParseFloat",
+					"duration": rawDuration,
+				}, err.Error())
 				continue
 			}
 		} else {
 			duration, err = GetDuration(fname)
 			if err != nil {
-				fmt.Printf("GetDuration: %v\n", err)
+				log.Warningf(log.Fields{
+					"package":  "tags",
+					"function": "ReadTagsFrom",
+					"call":     "GetDuration",
+					"filename": fname,
+				}, err.Error())
 				continue
 			}
 		}
@@ -108,21 +150,24 @@ func ReadTagsFrom(pattern string) (result []dbclient.Track, err error) {
 			Yid:       yid,
 			Submitter: comment,
 			Duration:  duration,
+			Rating:    int64(rating),
 			AddedOn:   fs.ModTime(),
 		}
 
 		fd.Close()
 
 		result = append(result, track)
-
-		ctr += 1
-		if ctr > 10 {
-			fmt.Printf(".")
-			ctr = 0
-		}
 	}
 
-	fmt.Printf("\nFound %d tracks\n", len(result))
+	tEnd := time.Since(tStart)
+	duration := fmt.Sprintf("%s", tEnd)
+
+	log.Debugf(log.Fields{
+		"package":   "tags",
+		"function":  "ReadTagsFrom",
+		"num_found": len(result),
+		"duration":  duration,
+	}, "scanning finished")
 
 	return result, nil
 }

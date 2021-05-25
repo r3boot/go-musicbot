@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/r3boot/go-musicbot/lib/log"
+	"github.com/r3boot/go-musicbot/lib/utils"
 	"os"
-	"strings"
+	"strconv"
 	"time"
 
-	"github.com/r3boot/test/lib/config"
-	"github.com/r3boot/test/lib/webui"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/webui"
 
 	"github.com/go-openapi/runtime"
 
@@ -16,9 +18,7 @@ import (
 
 	httptransport "github.com/go-openapi/runtime/client"
 
-	"github.com/r3boot/test/lib/apiclient"
-
-	"github.com/sirupsen/logrus"
+	"github.com/r3boot/go-musicbot/lib/apiclient"
 )
 
 const (
@@ -61,57 +61,46 @@ func main() {
 		ConfigFile = flag.String("config", defConfigFileValue, helpConfigFile)
 
 		Token = flag.String("token", "", "Authentication token to use")
-
-		log *logrus.Entry
 	)
 	flag.Parse()
 
-	// Configure logging
-	if *LogJson {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	}
+	log.NewLogger(*LogLevel, *LogJson)
 
-	switch strings.ToUpper(*LogLevel) {
-	case "INFO":
-		{
-			logrus.SetLevel(logrus.InfoLevel)
-		}
-	case "DEBUG":
-		{
-			logrus.SetLevel(logrus.DebugLevel)
-		}
-	}
-
-	// Initialize logging
-	log = logrus.WithFields(logrus.Fields{
-		"module": "main",
-	})
-
-	host, err := argOrEnvVar(*Host, envVarHost)
+	cfg, err := config.New(*ConfigFile)
 	if err != nil {
-		log := logrus.WithFields(logrus.Fields{
-			"module": "main",
-			"key":    "host",
-		})
-		log.Fatalf("No value set, please pass -host or set %s", envVarHost)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "config.New",
+			"cfgfile":  *ConfigFile,
+		}, err.Error())
 	}
 
-	port, err := argOrEnvVar(*Port, envVarPort)
+	host, err := utils.ArgOrEnvVar(*Host, envVarHost, cfg.WebApi.Address)
 	if err != nil {
-		log := logrus.WithFields(logrus.Fields{
-			"module": "main",
-			"key":    "port",
-		})
-		log.Fatalf("No value set, please pass -port or set %s", envVarPort)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "utils.ArgOrEnvVar",
+		}, "no value set, please pass -host or set %s", envVarHost)
 	}
 
-	token, err := argOrEnvVar(*Token, envVarToken)
+	port, err := utils.ArgOrEnvVar(*Port, envVarPort, strconv.Itoa(cfg.WebApi.Port))
 	if err != nil {
-		log := logrus.WithFields(logrus.Fields{
-			"module": "main",
-			"key":    "token",
-		})
-		log.Fatalf("No value set, please pass -token or set %s", envVarToken)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "utils.ArgOrEnvVar",
+		}, "no value set, please pass -port or set %s", envVarPort)
+	}
+
+	token, err := utils.ArgOrEnvVar(*Token, envVarToken, cfg.WebUi.Token)
+	if err != nil {
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "utils.ArgOrEnvVar",
+		}, "no value set, please pass -token or set %s", envVarToken)
 	}
 
 	uri := fmt.Sprintf("%s:%d", host, port)
@@ -125,15 +114,21 @@ func main() {
 	transport.Consumers["application/vnd.api+json"] = runtime.JSONConsumer()
 	client := apiclient.New(transport, strfmt.Default)
 
-	cfg, err := config.New(*ConfigFile)
-	if err != nil {
-		log.Fatalf("config.New: %v", err)
-	}
-
 	ui, err := webui.NewWebUi(cfg.WebUi, apiToken, client)
+	if err != nil {
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "webui.NewWebUi",
+		}, err.Error())
+	}
 
 	err = ui.Run()
 	if err != nil {
-		log.Fatalf("ui.Run: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "main",
+			"function": "main",
+			"call":     "ui.Run",
+		}, err.Error())
 	}
 }

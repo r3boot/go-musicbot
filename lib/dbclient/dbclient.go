@@ -2,21 +2,15 @@ package dbclient
 
 import (
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"github.com/r3boot/test/lib/config"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
 )
 
 /*
 TODO: create extension pg_trgm;
 */
-
-const (
-	T_BLACKLIST = "blacklist"
-)
 
 type DbClient struct {
 	cfg *config.PostgresConfig
@@ -32,12 +26,19 @@ func NewDbClient(cfg *config.PostgresConfig) (*DbClient, error) {
 		cfg: cfg,
 	}
 
+	/* TODO
 	log := log.New(os.Stdout, "go-pg: ", log.Lshortfile)
-	pg.SetLogger(log)
+	pg.SetLogger(log.GetLogger())
+	*/
 
 	err := client.Connect()
 	if err != nil {
-		return nil, fmt.Errorf("localDbClient.New: %v", err)
+		log.Fatalf(log.Fields{
+			"package":  "dbclient",
+			"function": "NewDbClient",
+			"call":     "client.Connect",
+		}, err.Error())
+		return nil, fmt.Errorf("DbClient.New: %v", err)
 	}
 
 	return client, nil
@@ -52,18 +53,42 @@ func (o *DbClient) Connect() error {
 	})
 
 	if o.db == nil {
-		return fmt.Errorf("DbClient.Connect: Failed to connect to database")
+		log.Fatalf(log.Fields{
+			"package":  "dbclient",
+			"function": "Connect",
+			"call":     "pg.Connect",
+			"address":  o.cfg.Address,
+			"username": o.cfg.Username,
+			"database": o.cfg.Database,
+		}, "failed to connect")
+		return fmt.Errorf("failed to connect")
 	}
-	// o.log.Debugf("DbClient.Connect: Connected to pg://%s:***@%s/%s", o.cfg.Username, o.cfg.Address, o.cfg.Database)
+	log.Debugf(log.Fields{
+		"package":  "dbclient",
+		"function": "Connect",
+		"address":  o.cfg.Address,
+		"username": o.cfg.Username,
+		"database": o.cfg.Database,
+	}, "connected to database")
 
-	for _, model := range []interface{}{&Track{}} {
+	models := []interface{}{
+		&Track{},
+	}
+	for _, model := range models {
 		err := o.db.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists: true,
 		})
 		if err != nil {
-			return fmt.Errorf("DbClient.Connect db.CreateTable: %v", err)
+			log.Fatalf(log.Fields{
+				"package":  "dbclient",
+				"function": "Connect",
+				"call":     "o.db.CreateTable",
+				"address":  o.cfg.Address,
+				"username": o.cfg.Username,
+				"database": o.cfg.Database,
+			}, err.Error())
+			return fmt.Errorf("failed to create table")
 		}
-
 	}
 
 	return nil

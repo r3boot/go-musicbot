@@ -5,19 +5,18 @@ package apiserver
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/http"
+	"time"
 
-	"github.com/r3boot/test/lib/manager"
-	"github.com/sirupsen/logrus"
-
-	"github.com/r3boot/test/lib/config"
+	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/log"
+	"github.com/r3boot/go-musicbot/lib/manager"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/r3boot/test/lib/apiserver/operations"
+	"github.com/r3boot/go-musicbot/lib/apiserver/operations"
 )
 
 //go:generate swagger generate server --target ../../../test --name Musicbot --spec ../../swagger.yaml --server-package ./lib/apiserver --principal interface{} --exclude-main
@@ -39,7 +38,7 @@ func validateToken(token string) (*config.ApiUser, error) {
 		return &userInfo, nil
 	}
 
-	return nil, fmt.Errorf("Authentication failed")
+	return nil, fmt.Errorf("authentication failed")
 }
 
 func isAuthorized(principal interface{}, role string) error {
@@ -61,15 +60,27 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
+	api.Logger = func(msg string, args ...interface{}) {
+		log.Infof(log.Fields{
+			"package": "apiserver",
+		}, msg, args...)
+	}
+
 	if Config == nil {
-		log.Printf("Config is nil\n")
+		log.Fatalf(log.Fields{
+			"package":  "apiserver",
+			"function": "configureAPI",
+		}, "no configuration found")
 	}
 
 	// Setup Manager
 	mgr, err := manager.NewManager(Config)
 	if err != nil {
-		log.Printf("NewManager: %v", err)
-		return nil
+		log.Fatalf(log.Fields{
+			"package":  "apiserver",
+			"function": "configureAPI",
+			"call":     "manager.NewManager",
+		}, err.Error())
 	}
 
 	api.UseSwaggerUI()
@@ -83,18 +94,23 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 
 	// Applies when the "X-Access-Token" header is set
 	api.AccessSecurityAuth = func(token string) (interface{}, error) {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "AccessSecurityAuth",
-		})
 		principal, err := validateToken(token)
 		if err != nil {
-			return nil, fmt.Errorf("validateToken: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "AccessSecurityAuth",
+				"call":     "validateToken",
+				"token":    token,
+			}, err.Error())
+			return nil, fmt.Errorf("authentication failed")
 		}
 		if principal == nil {
-			return nil, fmt.Errorf("validateToken: principal is nil")
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "AccessSecurityAuth",
+			}, "principal == nil")
+			return nil, fmt.Errorf("authentication failed")
 		}
-		log.Infof("authenticated as %s", principal.Name)
 		return principal, nil
 	}
 
@@ -105,26 +121,35 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 	// api.APIAuthorizer = security.Authorized()
 
 	api.GetPlayerNextHandler = operations.GetPlayerNextHandlerFunc(func(params operations.GetPlayerNextParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "GetPlayerNextHandler",
-		})
-
 		err := isAuthorized(principal, "allowPlayerNext")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "GetPlayerNextHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewGetPlayerNextForbidden()
 		}
 
 		err = mgr.Next()
 		if err != nil {
-			log.Warnf("mgr.Next: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetPlayerNextHandler",
+				"call":      "mgr.Next",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetPlayerNextBadRequest()
 		}
 
 		track, err := mgr.NowPlaying()
 		if err != nil {
-			log.Warnf("mgr.NowPlaying: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetPlayerNextHandler",
+				"call":      "mgr.NowPlaying",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetPlayerNowplayingBadRequest()
 		}
 
@@ -139,60 +164,81 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			Submitter: &track.Submitter,
 		}
 
-		log.Infof("Skipped to %v", track.Filename)
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "GetPlayerNextHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"filename":  track.Filename,
+		}, "skipped to track")
 
 		return operations.NewGetPlayerNextOK().WithPayload(&response)
 	})
 
 	api.GetPlayerNowplayingHandler = operations.GetPlayerNowplayingHandlerFunc(func(params operations.GetPlayerNowplayingParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "GetPlayerNowplayingHandler",
-		})
-
 		err := isAuthorized(principal, "allowPlayerNowPlaying")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetPlayerNowplayingHandler",
+				"call":      "isAuthorized",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetPlayerNowplayingForbidden()
 		}
 
 		track, err := mgr.NowPlaying()
 		if err != nil {
-			log.Warnf("mgr.NowPlaying: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetPlayerNowplayingHandler",
+				"call":      "mgr.NowPlaying",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetPlayerNowplayingBadRequest()
 		}
 
 		addedOnTs := track.AddedOn.String()
 		duration := int64(track.Duration)
+		elapsed := int64(track.Elapsed / time.Second)
 
 		response := operations.GetPlayerNowplayingOKBody{
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
+			Elapsed:   &elapsed,
 			Rating:    &track.Rating,
 			Submitter: &track.Submitter,
 		}
 
-		log.Infof("Now playing %v", track.Filename)
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "GetPlayerNowplayingHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"filename":  track.Filename,
+		}, "currently playing")
 
 		return operations.NewGetPlayerNowplayingOK().WithPayload(&response)
 	})
 
 	api.GetPlayerQueueHandler = operations.GetPlayerQueueHandlerFunc(func(params operations.GetPlayerQueueParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "GetPlayerQueueHandler",
-		})
-
 		err := isAuthorized(principal, "allowPlayerQueue")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "GetPlayerQueueHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewGetPlayerQueueForbidden()
 		}
 
 		entries, err := mgr.GetQueue()
 		if err != nil {
-			log.Printf("mgr.GetQueue: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetPlayerQueueHandler",
+				"call":      "mgr.GetQueue",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetPlayerNextBadRequest()
 		}
 
@@ -216,32 +262,46 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			foundTracks = append(foundTracks, &responseTrack)
 		}
 
-		log.Infof("Sending queue request")
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "GetPlayerQueueHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"qsize":     len(foundTracks),
+		}, "Returning current queue")
 
 		return operations.NewGetPlayerQueueOK().WithPayload(foundTracks)
 	})
 
 	api.GetRatingDecreaseHandler = operations.GetRatingDecreaseHandlerFunc(func(params operations.GetRatingDecreaseParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "GetRatingDecreaseHandler",
-		})
-
 		err := isAuthorized(principal, "allowRatingDecrease")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "GetRatingDecreaseHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewGetRatingDecreaseForbidden()
 		}
 
 		err = mgr.DecreaseRating()
 		if err != nil {
-			log.Warnf("mgr.DecreaseRating: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetRatingDecreaseHandler",
+				"call":      "mgr.DecreaseRating",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetRatingDecreaseBadRequest()
 		}
 
 		track, err := mgr.NowPlaying()
 		if err != nil {
-			log.Warnf("mgr.NowPlaying: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetRatingDecreaseHandler",
+				"call":      "mgr.NowPlaying",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetRatingDecreaseBadRequest()
 		}
 
@@ -256,32 +316,47 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			Submitter: &track.Submitter,
 		}
 
-		log.Infof("Decreased rating for %s to %d", track.Filename, track.Rating)
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "GetRatingDecreaseHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"filename":  track.Filename,
+			"rating":    track.Rating,
+		}, "rating decreased")
 
 		return operations.NewGetRatingDecreaseOK().WithPayload(&response)
 	})
 
 	api.GetRatingIncreaseHandler = operations.GetRatingIncreaseHandlerFunc(func(params operations.GetRatingIncreaseParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "GetRatingIncreaseHandler",
-		})
-
 		err := isAuthorized(principal, "allowRatingIncrease")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "GetRatingIncreaseHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewGetRatingIncreaseForbidden()
 		}
 
 		err = mgr.IncreaseRating()
 		if err != nil {
-			log.Warnf("mgr.IncreaseRating: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetRatingIncreaseHandler",
+				"call":      "mgr.IncreaseRating",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetRatingIncreaseBadRequest()
 		}
 
 		track, err := mgr.NowPlaying()
 		if err != nil {
-			log.Warnf("mgr.NowPlaying: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "GetRatingIncreaseHandler",
+				"call":      "mgr.NowPlaying",
+				"principal": principal.(*config.ApiUser).Name,
+			}, err.Error())
 			return operations.NewGetRatingIncreaseBadRequest()
 		}
 
@@ -296,26 +371,38 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			Submitter: &track.Submitter,
 		}
 
-		log.Infof("Decreased rating for %s to %d", track.Filename, track.Rating)
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "GetRatingIncreaseHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"filename":  track.Filename,
+			"rating":    track.Rating,
+		}, "rating increased")
 
 		return operations.NewGetRatingIncreaseOK().WithPayload(&response)
 	})
 
 	api.PostTrackDownloadHandler = operations.PostTrackDownloadHandlerFunc(func(params operations.PostTrackDownloadParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":   "apiserver",
-			"function": "PostTrackDownloadHandler",
-		})
-
 		err := isAuthorized(principal, "allowTrackDownload")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "PostTrackDownloadHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewPostTrackDownloadForbidden()
 		}
 
 		track, err := mgr.AddTrack(*params.Body.Yid, *params.Body.Submitter)
 		if err != nil {
-			log.Warnf("AddTrack: %v\n", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackDownloadHandler",
+				"call":      "mgr.AddTrack",
+				"principal": principal.(*config.ApiUser).Name,
+				"yid":       *params.Body.Yid,
+				"submitter": *params.Body.Submitter,
+			}, err.Error())
 			return operations.NewPostTrackDownloadBadRequest()
 		}
 
@@ -330,33 +417,51 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			Submitter: &track.Submitter,
 		}
 
-		log.Infof("Downloaded %s", track.Filename)
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackDownloadHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"yid":       *params.Body.Yid,
+			"submitter": *params.Body.Submitter,
+			"filename":  track.Filename,
+		}, "track added succesfully")
 
 		return operations.NewPostTrackDownloadOK().WithPayload(&response)
 	})
 
 	api.PostTrackRequestHandler = operations.PostTrackRequestHandlerFunc(func(params operations.PostTrackRequestParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":    "apiserver",
-			"function":  "PostTrackRequestHandler",
-			"query":     *params.Request.Query,
-			"submitter": *params.Request.Submitter,
-		})
-
 		err := isAuthorized(principal, "allowTrackRequest")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "PostTrackRequestHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewPostTrackRequestForbidden()
 		}
 
 		track, err := mgr.Request(*params.Request.Query, *params.Request.Submitter)
 		if err != nil {
-			log.Warnf("mgr.Search: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackRequestHandler",
+				"call":      "mgr.Request",
+				"principal": principal.(*config.ApiUser).Name,
+				"query":     *params.Request.Query,
+				"submitter": *params.Request.Submitter,
+			}, err.Error())
 			return operations.NewPostTrackRequestNotFound()
 		}
 
 		if track.Filename == "" {
-			log.Warnf("mgr.Search: no results", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackRequestHandler",
+				"call":      "mgr.Request",
+				"principal": principal.(*config.ApiUser).Name,
+				"query":     *params.Request.Query,
+				"submitter": *params.Request.Submitter,
+			}, "no results found")
 			return operations.NewPostTrackRequestNotFound()
 		}
 
@@ -374,33 +479,52 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			},
 		}
 
-		log.Infof("Handled request")
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackRequestHandler",
+			"call":      "mgr.Request",
+			"principal": principal.(*config.ApiUser).Name,
+			"query":     *params.Request.Query,
+			"submitter": *params.Request.Submitter,
+			"filename":  *response.Track.Filename,
+		}, "track queued")
 
 		return operations.NewPostTrackRequestOK().WithPayload(&response)
 	})
 
 	api.PostTrackSearchHandler = operations.PostTrackSearchHandlerFunc(func(params operations.PostTrackSearchParams, principal interface{}) middleware.Responder {
-		log := logrus.WithFields(logrus.Fields{
-			"module":    "apiserver",
-			"function":  "PostTrackSearchHandler",
-			"query":     *params.Request.Query,
-			"submitter": *params.Request.Submitter,
-		})
-
 		err := isAuthorized(principal, "allowTrackSearch")
 		if err != nil {
-			log.Warnf("isAuthorized: %v", err)
+			log.Warningf(log.Fields{
+				"package":  "apiserver",
+				"function": "PostTrackSearchHandler",
+				"call":     "isAuthorized",
+			}, err.Error())
 			return operations.NewPostTrackSearchForbidden()
 		}
 
 		tracks, err := mgr.Search(*params.Request.Query, *params.Request.Submitter)
 		if err != nil {
-			log.Warnf("mgr.Search: %v", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackSearchHandler",
+				"call":      "mgr.Search",
+				"principal": principal.(*config.ApiUser).Name,
+				"query":     *params.Request.Query,
+				"submitter": *params.Request.Submitter,
+			}, err.Error())
 			return operations.NewPostTrackSearchNotFound()
 		}
 
 		if len(tracks) == 0 {
-			log.Warnf("mgr.Search: no results", err)
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackSearchHandler",
+				"call":      "mgr.Search",
+				"principal": principal.(*config.ApiUser).Name,
+				"query":     *params.Request.Query,
+				"submitter": *params.Request.Submitter,
+			}, "no results found")
 			return operations.NewPostTrackSearchNotFound()
 		}
 
@@ -424,7 +548,15 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			foundTracks = append(foundTracks, responseTrack)
 		}
 
-		log.Infof("Handled search")
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackSearchHandler",
+			"call":      "mgr.Search",
+			"principal": principal.(*config.ApiUser).Name,
+			"query":     *params.Request.Query,
+			"submitter": *params.Request.Submitter,
+			"num_found": len(foundTracks),
+		}, "returning results")
 
 		return operations.NewPostTrackSearchOK().WithPayload(foundTracks)
 	})

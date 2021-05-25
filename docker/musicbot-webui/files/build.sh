@@ -9,4 +9,4 @@ export GOPATH
 #export GO111MODULE
 cd $GOPATH
 cd "${GOPATH}/src/github.com/r3boot/go-musicbot"
-make clean musicbot
+make musicbot-webui
