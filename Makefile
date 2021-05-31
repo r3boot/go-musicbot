@@ -74,6 +74,17 @@ container_musicbot_ircbot:
 	docker build --no-cache --rm -t $(MUSICBOT_IRCBOT_LATEST_TAG) -f $(DOCKER_DIR)/musicbot-ircbot/Dockerfile \
 		$(DOCKER_DIR)/musicbot-ircbot/
 
+push: push_musicbot push_musicbot_webui push_musicbot_ircbot
+
+push_musicbot:
+	docker push $(MUSICBOT_LATEST_TAG)
+
+push_musicbot_webui:
+	docker push $(MUSICBOT_WEBUI_LATEST_TAG)
+
+push_musicbot_ircbot:
+	docker push $(MUSICBOT_IRCBOT_LATEST_TAG)
+
 graphs:
 	cd $(DOC_DIR) ; make -f Makefile all
 

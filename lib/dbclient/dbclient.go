@@ -9,6 +9,7 @@ import (
 )
 
 /*
+TODO: migrate to pg/v10
 TODO: create extension pg_trgm;
 */
 

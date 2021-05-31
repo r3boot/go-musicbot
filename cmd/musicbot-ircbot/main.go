@@ -75,7 +75,7 @@ func main() {
 		}, "no value set, please pass -port or set %s", envVarPort)
 	}
 
-	token, err := utils.ArgOrEnvVar(*Token, envVarToken, cfg.WebUi.Token)
+	token, err := utils.ArgOrEnvVar(*Token, envVarToken, cfg.IrcBot.Token)
 	if err != nil {
 		log.Fatalf(log.Fields{
 			"package":  "main",

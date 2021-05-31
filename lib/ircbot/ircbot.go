@@ -322,8 +322,6 @@ func (c *IrcBot) HandleRequest(channel, line, user string) {
 		response = fmt.Sprintf("Need a query to search .. stupid!")
 		c.conn.Privmsg(channel, response)
 	}
-
-	c.conn.Privmsg(channel, response)
 }
 
 func (c *IrcBot) HandleSearch(channel, line, user string) {

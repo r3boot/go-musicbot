@@ -61,10 +61,16 @@ type WebApi struct {
 	Users   []ApiUser `yaml:"users"`
 }
 
+type Discogs struct {
+	CacheDir string `yaml:"cache_dir"`
+	Token    string `yaml:"token"`
+}
+
 type WebUi struct {
-	Address string `yaml:"address"`
-	Port    int    `yaml:"port"`
-	Token   string `yaml:"token"`
+	Address string   `yaml:"address"`
+	Port    int      `yaml:"port"`
+	Token   string   `yaml:"token"`
+	Discogs *Discogs `yaml:"discogs"`
 }
 
 type IrcBot struct {

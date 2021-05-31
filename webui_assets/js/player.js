@@ -20,9 +20,12 @@ const msgInformation    = 0;
 const msgWarning        = 1;
 const msgError          = 2;
 
+const sourceUrl = "/stream/2600nl.mp3";
+
 // Leave this global
 var ws = null;
 var playing = false;
+var firstPlaying = false;
 
 function filenameToTrack(fname) {
     return fname.substring(0, fname.length - 16);
@@ -56,23 +59,44 @@ function ShowNotification(type, message) {
     }
 }
 
-function ToggleMediaPlayer() {
-    var player = document.getElementById("audioControls")
+function TogglePlayPause() {
+    var player = document.getElementById("audioControls");
     if (playing) {
         player.pause();
+        player.src = "";
+        player.currentTime = 0;
         playing = false;
+        $("#btnPlay").html("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" fill=\"currentColor\" className=\"bi bi-play-fill\" viewBox=\"0 0 16 16\"><path d=\"m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z\"/></svg>\n");
     } else {
+        player.src = sourceUrl;
+        player.load();
         player.play();
         playing = true;
+        $("#btnPlay").html("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" fill=\"currentColor\" className=\"bi bi-pause-fill\" viewBox=\"0 0 16 16\"><path d=\"M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z\"/></svg>\n");
     }
 }
+
 
 function UpdateNowPlaying(data) {
     var track = filenameToTrack(data.Filename);
 
-    $("#divNowPlaying").html(track);
-    $("#divRating").html(data.Rating + "/10");
-    $("#divDuration").html(prettyDuration(data.Duration));
+    $("#idNowPlaying").html(track);
+    $("#idRating").html(data.Rating + "/10");
+    $("#idDuration").html(prettyDuration(data.Duration));
+
+    var newAlbumArt = "";
+    if (data.AlbumArt == "notfound.png") {
+        newAlbumArt = "/img/" + data.AlbumArt;
+    } else {
+        newAlbumArt = "/art/" + data.AlbumArt;
+    }
+
+    if ($("#idAlbumArt").attr("src") !== newAlbumArt) {
+        $("#idAlbumArt").attr("src", newAlbumArt);
+    }
+
+    document.getElementById("idElapsedSlider").setAttribute("max", data.Duration);
+    document.getElementById("idElapsedSlider").setAttribute("value", data.Elapsed);
 }
 
 function RequestTrack(parent) {
@@ -84,7 +108,7 @@ function RequestTrack(parent) {
 }
 
 function ClearSearch() {
-    document.getElementById("txtQuery").value = "";
+    document.getElementById("inputSearch").value = "";
     UpdateSearchResults([]);
 }
 
@@ -94,7 +118,10 @@ function UpdateSearchResults(data) {
     if ((data != null) && data.length > 0) {
         for (var i = 0; i < data.length; i++) {
             yid = data[i].substring(data[i].length - 15, data[i].length - 4);
-            searchResults += "<div id=\"" + yid + "\" onClick=\"RequestTrack(this)\">Q</div>" + filenameToTrack(data[i]) + "<br/>";
+            searchResults += "<span id=\"" + yid + "\" onClick=\"RequestTrack(this)\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-file-earmark-play\" viewBox=\"0 0 16 16\">\n" +
+                "  <path d=\"M6 6.883v4.234a.5.5 0 0 0 .757.429l3.528-2.117a.5.5 0 0 0 0-.858L6.757 6.454a.5.5 0 0 0-.757.43z\"/>\n" +
+                "  <path d=\"M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z\"/>\n" +
+                "</svg></span> " + filenameToTrack(data[i]) + "<br/>";
         }
     }
     $("#divSearchResults").html(searchResults);
@@ -103,9 +130,11 @@ function UpdateSearchResults(data) {
 function UpdateQueueEntries(data) {
     var queueEntries = "";
 
+    queueEntries = "<ol>";
     for (const [idx, filename] of Object.entries(data)) {
-        queueEntries += idx + ") " + filenameToTrack(filename) + "<br/>";
+        queueEntries += "<li>" + filenameToTrack(filename) + "</li>";
     }
+    queueEntries += "</ol>";
     $("#divQueueEntries").html(queueEntries);
 }
 
@@ -152,14 +181,16 @@ function WebSocketHandler() {
             wsSendCommand(ws, wsRequestTune);
         });
 
-        $("#btnSearch").click(function (ev) {
-            ev.preventDefault();
-            var query = document.getElementById("txtQuery").value;
-            if ((query != null) && (query.length > 0)) {
-                wsSendCommandWithData(ws, wsRequestQuery, query);
-            } else {
-                ClearSearch();
-                console.log("No query")
+        $("#inputSearch").keyup(function (ev) {
+            if (ev.keyCode == 13) {
+                var query = document.getElementById("inputSearch").value;
+                console.log("searching for " + query)
+                if ((query != null) && (query.length > 0)) {
+                    wsSendCommandWithData(ws, wsRequestQuery, query);
+                } else {
+                    ClearSearch();
+                    console.log("No query")
+                }
             }
         })
 
@@ -242,6 +273,11 @@ $(document).ready(function() {
 
     $("#btnPlay").click(function(ev) {
         ev.preventDefault();
-        ToggleMediaPlayer();
+        TogglePlayPause();
+    });
+
+    $("#idVolumeSlider").on("input", function (ev) {
+        var newVolume = Math.round((ev.currentTarget.value / 100) * 10) / 10;
+        $("#audioControls").prop("volume", newVolume);
     });
 });

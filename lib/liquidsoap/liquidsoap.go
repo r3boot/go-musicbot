@@ -8,6 +8,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/log"
 	"io"
 	"net"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -198,7 +199,7 @@ func (ls *LSClient) GetQueue() ([]*PlaylistEntry, error) {
 
 		for _, line := range strings.Split(result, "\n") {
 			if strings.HasPrefix(line, "filename=") {
-				filename := strings.Split(strings.Split(line, "=")[1], "\"")[1]
+				filename := path.Base(strings.Split(strings.Split(line, "=")[1], "\"")[1])
 				entry := PlaylistEntry{
 					Filename: filename,
 				}

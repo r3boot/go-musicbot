@@ -13,6 +13,7 @@ require (
 	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.20.2
 	github.com/go-pg/pg v8.0.7+incompatible
+	github.com/go-pg/pg/v10 v10.9.3 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jinzhu/inflection v1.0.0 // indirect

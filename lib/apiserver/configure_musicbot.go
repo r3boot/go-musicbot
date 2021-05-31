@@ -142,6 +142,9 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			return operations.NewGetPlayerNextBadRequest()
 		}
 
+		// Wait for liquidsoap to load the next track
+		time.Sleep(500 * time.Millisecond)
+
 		track, err := mgr.NowPlaying()
 		if err != nil {
 			log.Warningf(log.Fields{
@@ -210,13 +213,6 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			Submitter: &track.Submitter,
 		}
 
-		log.Debugf(log.Fields{
-			"package":   "apiserver",
-			"function":  "GetPlayerNowplayingHandler",
-			"principal": principal.(*config.ApiUser).Name,
-			"filename":  track.Filename,
-		}, "currently playing")
-
 		return operations.NewGetPlayerNowplayingOK().WithPayload(&response)
 	})
 
@@ -261,13 +257,6 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 
 			foundTracks = append(foundTracks, &responseTrack)
 		}
-
-		log.Debugf(log.Fields{
-			"package":   "apiserver",
-			"function":  "GetPlayerQueueHandler",
-			"principal": principal.(*config.ApiUser).Name,
-			"qsize":     len(foundTracks),
-		}, "Returning current queue")
 
 		return operations.NewGetPlayerQueueOK().WithPayload(foundTracks)
 	})

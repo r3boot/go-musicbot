@@ -7,13 +7,14 @@ import (
 )
 
 type Track struct {
-	Yid       string        `pg:"yid,pk"`
-	Filename  string        `pg:"filename"`
-	Rating    int64         `pg:"rating"`
-	Submitter string        `pg:"submitter"`
-	Duration  float64       `pg:"duration"`
-	Elapsed   time.Duration `pg:"-"`
-	AddedOn   time.Time     `pg:"added_on"`
+	Yid       string        `sql:"type:varchar(11),pk"`
+	Filename  string        `sql:"filename"`
+	Rating    int64         `sql:"rating"`
+	Submitter string        `sql:"submitter"`
+	Duration  float64       `sql:"duration"`
+	AddedOn   time.Time     `sql:"added_on"`
+	AlbumArt  string        `sql:"-"`
+	Elapsed   time.Duration `sql:"-"`
 	tableName struct{}      `pg:",discard_unknown_columns"`
 }
 
@@ -51,7 +52,7 @@ func (obj *Track) Remove() error {
 func (db *DbClient) Search(q string) ([]Track, error) {
 	tracks := make([]Track, 0)
 
-	_, err := db.db.Query(&tracks, "SELECT *, filename <-> ? AS dist FROM tracks ORDER BY dist ASC LIMIT 10", q)
+	_, err := db.db.Query(&tracks, "SELECT *, filename <-> ? AS dist FROM tracks ORDER BY dist ASC LIMIT 5", q)
 	if err != nil {
 		return nil, fmt.Errorf("Query: %v", err)
 	}

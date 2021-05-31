@@ -209,7 +209,15 @@ func (m *Manager) IncreaseRating() error {
 	}
 
 	track.Rating += 1
-	track.Save()
+	err = track.Save()
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "IncreaseRating",
+			"call":     "track.Save",
+		}, err.Error())
+		return fmt.Errorf("failed to increase rating")
+	}
 
 	log.Infof(log.Fields{
 		"package":  "manager",
@@ -233,7 +241,15 @@ func (m *Manager) DecreaseRating() error {
 	}
 
 	track.Rating -= 1
-	track.Save()
+	err = track.Save()
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "manager",
+			"function": "IncreaseRating",
+			"call":     "track.Save",
+		}, err.Error())
+		return fmt.Errorf("failed to increase rating")
+	}
 
 	// TODO: Handle track delete on rating == 0
 

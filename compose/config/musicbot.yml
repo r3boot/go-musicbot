@@ -58,6 +58,9 @@ webui:
   address: "0.0.0.0"
   port: 8768
   token: "340b7527b27544372ef52ebccde35b830e1bfe02"
+  discogs:
+    cache_dir: /Users/r3boot/go/src/github.com/r3boot/go-musicbot/compose/data/cache
+    token: GLXsrCZGDuAYdZrBibudYGBpXyAtBRtdmdzHkoaE
 
 liquidsoap:
   address: liquidsoap:2323

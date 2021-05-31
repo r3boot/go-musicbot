@@ -21,20 +21,10 @@ func NewLogger(level string, useJson bool) {
 	switch strings.ToUpper(level) {
 	case "INFO":
 		{
-			Infof(Fields{
-				"package":   "log",
-				"function":  "NewLogger",
-				"log_level": "info",
-			}, "loglevel set")
 			logger.SetLevel(logrus.InfoLevel)
 		}
 	case "DEBUG":
 		{
-			Infof(Fields{
-				"package":   "log",
-				"function":  "NewLogger",
-				"log_level": "debug",
-			}, "loglevel set")
 			logger.SetLevel(logrus.DebugLevel)
 		}
 	}

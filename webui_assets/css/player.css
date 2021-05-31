@@ -1,0 +1,232 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #002b36;
+}
+
+/*
+ * Artists search box
+ */
+#inputSearch {
+  background-image: url('../img/search.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  background-color: #eee8d5;
+  width: 95%;
+  margin-left: 10px;
+  margin-right: 5px;
+  font-size: 16px;
+  padding: 7px 20px 9px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+  -webkit-border-radius: 8px !important;
+  -moz-border-radius: 8px !important;
+  border-radius: 8px !important;
+  -webkit-border-top: 8px !important;
+  -moz-border-top: 8px !important;
+  border-top: 8px !important;
+  -webkit-border-bottom: 8px !important;
+  -moz-border-bottom: 8px !important;
+  border-bottom: 8px !important;
+}
+input[type=search]::-webkit-search-cancel-button {
+  -webkit-appearance: searchfield-cancel-button;
+}
+
+/*
+ * Album Art
+ */
+#idAlbumArt {
+  width: 150px;
+  height: 150px;
+}
+
+/*
+ * Now playing title
+ */
+#idNowPlaying {
+  color: #b58900;
+}
+
+/*
+ * Elapsed track time slider
+ */
+#idElapsedSlider {
+  color: #93a1a1;
+}
+
+/*
+ * Queue icon
+ */
+.bi-file-earmark-play {
+  cursor: pointer;
+}
+
+/*
+ * Items next to now playing
+ */
+#idDuration {
+  color: #eee8d5;
+}
+
+#idRating {
+  color: #eee8d5;
+}
+
+/*
+ * Buttons
+ */
+#btnPlay {
+  color: #eee8d5;
+  background-color: #268bd2;
+}
+
+#btnNext {
+  color: #eee8d5;
+  background-color: #93a1a1;
+}
+
+#btnTune {
+  color: #eee8d5;
+  background-color: #859900;
+}
+
+#btnBoo {
+  color: #eee8d5;
+  background-color: #dc322f;
+}
+
+/*
+ * Search results and queue
+ */
+#divQueueEntries {
+  color: #93a1a1;
+}
+
+#divSearchResults {
+  color: #93a1a1;
+}
+
+/*
+ * Range sliders
+ */
+input[type=range] {
+  -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+  width: 100%; /* Specific width is required for Firefox. */
+  background: transparent; /* Otherwise white in Chrome */
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+input[type=range]:focus {
+  outline: none; /* Removes the blue border. You should probably do some kind of focus styling for accessibility reasons though. */
+}
+
+input[type=range]::-ms-track {
+  width: 100%;
+  cursor: pointer;
+
+  /* Hides the slider so custom styles can be added */
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+/* Special styling for WebKit/Blink */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: 1px solid #586e75;
+  height: 24px;
+  width: 16px;
+  border-radius: 3px;
+  background: #268bd2;
+  cursor: pointer;
+  margin-top: -8px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75; */
+}
+
+/* All the same stuff for Firefox */
+input[type=range]::-moz-range-thumb {
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;*/
+  border: 1px solid #586e75;
+  height: 24px;
+  width: 16px;
+  border-radius: 3px;
+  background: #268bd2;
+  cursor: pointer;
+}
+
+/* All the same stuff for IE */
+input[type=range]::-ms-thumb {
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;*/
+  border: 1px solid #586e75;
+  height: 24px;
+  width: 16px;
+  border-radius: 3px;
+  background: #268bd2;
+  cursor: pointer;
+}
+
+/*
+ * Background of slider bar
+ */
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8.4px;
+  cursor: pointer;
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;*/
+  background: #93a1a1;
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #367ebd;
+}
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 8.4px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;
+  background: #93a1a1;
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 8.4px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  border-width: 16px 0;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #2a6495;
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;*/
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #93a1a1;
+}
+input[type=range]::-ms-fill-upper {
+  background: #93a1a1;
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+  /*box-shadow: 1px 1px 1px #657b83, 0px 0px 1px #586e75;*/
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #367ebd;
+}

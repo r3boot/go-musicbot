@@ -64,7 +64,7 @@ func HandleIncreaseRating(client *apiclient.Musicbot, token runtime.ClientAuthIn
 
 	track := resp.GetPayload()
 
-	fmt.Printf("Ratinf for %s is %d/10\n", *track.Filename, *track.Rating)
+	fmt.Printf("Rating for %s is %d/10\n", *track.Filename, *track.Rating)
 	return nil
 }
 

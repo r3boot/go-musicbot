@@ -3,12 +3,13 @@ MAINTAINER Lex van Roon <r3boot@r3blog.nl>
 
 RUN apk update \
     && apk upgrade \
-    && apk add ca-certificates youtube-dl ffmpeg \
-    && addgroup -S -g 836 git \
-    && adduser -S -G git -u 836 git -s /bin/sh
+    && apk add ca-certificates \
+    && addgroup -S -g 842 musicbot-ircbot \
+    && adduser -S -G musicbot-ircbot -u 842 musicbot-ircbot -s /bin/sh
 
 COPY files/run_musicbot-ircbot /run_musicbot-ircbot
 COPY files/musicbot-ircbot /usr/bin/musicbot-ircbot
 
+USER musicbot-ircbot
 ENTRYPOINT ["/run_musicbot-ircbot"]
 CMD [""]
