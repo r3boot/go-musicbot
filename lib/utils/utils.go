@@ -10,6 +10,14 @@ var (
 	reYid = regexp.MustCompile(".*([a-zA-Z0-9_-]{11}).mp3$")
 )
 
+func IsYid(value string) bool {
+	results := reYid.FindAllStringSubmatch(value, -1)
+	if len(results) == 0 {
+		return false
+	}
+	return true
+}
+
 func GetYidFromFilename(fname string) (string, error) {
 	results := reYid.FindAllStringSubmatch(fname, -1)
 	if len(results) == 0 {

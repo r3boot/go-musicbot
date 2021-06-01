@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/r3boot/go-musicbot/lib/utils"
@@ -177,14 +178,23 @@ func (m *Manager) Request(query, submitter string) (dbclient.Track, error) {
 		return dbclient.Track{}, fmt.Errorf("Search: %v", err)
 	}
 	if len(tracks) == 0 {
-		return dbclient.Track{}, fmt.Errorf("No results found")
+		return dbclient.Track{}, fmt.Errorf("no results found")
 	}
 
-	track := tracks[0]
-	entry := liquidsoap.PlaylistEntry{
-		Filename: m.cfg.Datastore.Directory + "/" + track.Filename,
+	numTracks := len(tracks)
+	queueRequest := liquidsoap.PlaylistEntry{}
+	track := dbclient.Track{}
+
+	if numTracks > 1 {
+		idx := rand.Intn(numTracks)
+		queueRequest.Filename = m.cfg.Datastore.Directory + "/" + tracks[idx].Filename
+		track = tracks[idx]
+	} else {
+		queueRequest.Filename = m.cfg.Datastore.Directory + "/" + tracks[0].Filename
+		track = tracks[0]
 	}
-	m.ls.Enqueue(&entry)
+
+	m.ls.Enqueue(&queueRequest)
 
 	log.Infof(log.Fields{
 		"package":   "manager",

@@ -52,7 +52,13 @@ func (obj *Track) Remove() error {
 func (db *DbClient) Search(q string) ([]Track, error) {
 	tracks := make([]Track, 0)
 
-	_, err := db.db.Query(&tracks, "SELECT *, filename <-> ? AS dist FROM tracks ORDER BY dist ASC LIMIT 5", q)
+	track, err := db.GetTrackByYid(q)
+	if err == nil {
+		tracks = append(tracks, *track)
+		return tracks, nil
+	}
+
+	_, err = db.db.Query(&tracks, "WITH query_results AS (SELECT *, filename <-> ? AS dist FROM tracks) SELECT * FROM query_results WHERE dist < 0.9", q)
 	if err != nil {
 		return nil, fmt.Errorf("Query: %v", err)
 	}
