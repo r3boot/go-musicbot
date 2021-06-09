@@ -371,6 +371,69 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		return operations.NewGetRatingIncreaseOK().WithPayload(&response)
 	})
 
+	api.PostTrackHasHandler = operations.PostTrackHasHandlerFunc(func(params operations.PostTrackHasParams, principal interface{}) middleware.Responder {
+		if mgr.HasYid(*params.Body.Yid) {
+			log.Debugf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackHasHandler",
+				"principal": principal.(*config.ApiUser).Name,
+				"yid":       *params.Body.Yid,
+				"submitter": *params.Body.Submitter,
+			}, "track found in database")
+			return operations.NewPostTrackHasNoContent()
+		}
+
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackHasHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"yid":       *params.Body.Yid,
+			"submitter": *params.Body.Submitter,
+		}, "track not found in database")
+		return operations.NewPostTrackHasNotFound()
+	})
+
+	api.PostTrackLengthHandler = operations.PostTrackLengthHandlerFunc(func(params operations.PostTrackLengthParams, principal interface{}) middleware.Responder {
+		if mgr.IsAllowedLength(*params.Body.Yid) {
+			log.Debugf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackHasHandler",
+				"call":      "mgr.IsAllowedLength",
+				"principal": principal.(*config.ApiUser).Name,
+				"yid":       *params.Body.Yid,
+				"submitter": *params.Body.Submitter,
+			}, "song is short enough for stream")
+			return operations.NewPostTrackLengthNoContent()
+		}
+
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackLengthHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"yid":       *params.Body.Yid,
+			"submitter": *params.Body.Submitter,
+		}, "song is too long for stream")
+		return operations.NewPostTrackLengthNotFound()
+	})
+
+	api.PostTrackTitleHandler = operations.PostTrackTitleHandlerFunc(func(params operations.PostTrackTitleParams, principal interface{}) middleware.Responder {
+		title, err := mgr.GetTitle(*params.Body.Yid)
+		if err != nil {
+			return operations.NewPostTrackTitleNotFound()
+		}
+
+		log.Debugf(log.Fields{
+			"package":   "apiserver",
+			"function":  "PostTrackTitleHandler",
+			"principal": principal.(*config.ApiUser).Name,
+			"yid":       *params.Body.Yid,
+			"submitter": *params.Body.Submitter,
+			"title":     title,
+		}, "fetched title for track")
+
+		return operations.NewPostTrackTitleOK().WithPayload(title)
+	})
+
 	api.PostTrackDownloadHandler = operations.PostTrackDownloadHandlerFunc(func(params operations.PostTrackDownloadParams, principal interface{}) middleware.Responder {
 		err := isAuthorized(principal, "allowTrackDownload")
 		if err != nil {
@@ -380,6 +443,30 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 				"call":     "isAuthorized",
 			}, err.Error())
 			return operations.NewPostTrackDownloadForbidden()
+		}
+
+		if mgr.HasYid(*params.Body.Yid) {
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackDownloadHandler",
+				"call":      "mgr.HasYid",
+				"principal": principal.(*config.ApiUser).Name,
+				"yid":       *params.Body.Yid,
+				"submitter": *params.Body.Submitter,
+			}, "yid already downloaded")
+			return operations.NewPostTrackDownloadConflict()
+		}
+
+		if !mgr.IsAllowedLength(*params.Body.Yid) {
+			log.Warningf(log.Fields{
+				"package":   "apiserver",
+				"function":  "PostTrackDownloadHandler",
+				"call":      "mgr.IsAllowedLength",
+				"principal": principal.(*config.ApiUser).Name,
+				"yid":       *params.Body.Yid,
+				"submitter": *params.Body.Submitter,
+			}, "song is too long for stream")
+			return operations.NewPostTrackDownloadRequestEntityTooLarge()
 		}
 
 		track, err := mgr.AddTrack(*params.Body.Yid, *params.Body.Submitter)

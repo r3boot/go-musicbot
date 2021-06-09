@@ -157,38 +157,83 @@ func (c *IrcBot) HandleDownload(channel, line, user string) {
 	result := reDjHandler.FindAllStringSubmatch(line, -1)
 	response := "Undefined"
 
-	if len(result) == 1 {
-		yid := result[0][2]
-		params := operations.NewPostTrackDownloadParams()
-		params.Body = operations.PostTrackDownloadBody{
-			Yid:       &yid,
-			Submitter: &user,
-		}
+	if len(result) != 1 {
+		fmt.Printf("IrcBot.HandleDownload: no results found")
+		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
+		c.conn.Privmsg(channel, response)
+		return
+	}
 
-		resp, err := c.api.Operations.PostTrackDownload(params, c.token)
-		if err != nil {
-			fmt.Printf("IrcBot.HandleDownload: Failed to download track: %v", err)
-			errmsg := err.Error()
-			if strings.Contains(errmsg, "postTrackDownloadRequestEntityTooLarge") {
-				response = fmt.Sprintf("Track is too long for stream")
-				c.conn.Privmsg(channel, response)
-			} else if strings.Contains(errmsg, "postTrackDownloadConflict") {
-				response = fmt.Sprintf("Track is already downloaded")
-				c.conn.Privmsg(channel, response)
-			} else {
-				response = fmt.Sprintf("Failed to download track")
-				c.conn.Privmsg(channel, response)
-			}
-		}
+	yid := result[0][2]
 
+	hasParams := operations.NewPostTrackHasParams()
+	hasParams.Body = operations.PostTrackHasBody{
+		Yid:       &yid,
+		Submitter: &user,
+	}
+	_, err := c.api.Operations.PostTrackHas(hasParams, c.token)
+	if err == nil {
+		response = fmt.Sprintf("Track already downloaded")
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
+	lengthParams := operations.NewPostTrackLengthParams()
+	lengthParams.Body = operations.PostTrackLengthBody{
+		Yid:       &yid,
+		Submitter: &user,
+	}
+	_, err = c.api.Operations.PostTrackLength(lengthParams, c.token)
+	if err != nil {
+		response = fmt.Sprintf("Track too long for stream")
+		c.conn.Privmsg(channel, response)
+		return
+	}
+
+	titleParams := operations.NewPostTrackTitleParams()
+	titleParams.Body = operations.PostTrackTitleBody{
+		Yid:       &yid,
+		Submitter: &user,
+	}
+	titleResponse, err := c.api.Operations.PostTrackTitle(titleParams, c.token)
+	if err != nil {
+		response = fmt.Sprintf("Failed to fetch song title")
+		c.conn.Privmsg(channel, response)
+		return
+	}
+	title := titleResponse.GetPayload()
+
+	params := operations.NewPostTrackDownloadParams()
+	params.Body = operations.PostTrackDownloadBody{
+		Yid:       &yid,
+		Submitter: &user,
+	}
+
+	response = fmt.Sprintf("Adding %s (%s) to the download queue", title, yid)
+	c.conn.Privmsg(channel, response)
+
+	resp, err := c.api.Operations.PostTrackDownload(params, c.token)
+	if err != nil {
+		fmt.Printf("IrcBot.HandleDownload: Failed to download track: %v", err)
+		errmsg := err.Error()
+		if strings.Contains(errmsg, "postTrackDownloadRequestEntityTooLarge") {
+			response = fmt.Sprintf("Track is too long for stream")
+			c.conn.Privmsg(channel, response)
+		} else if strings.Contains(errmsg, "postTrackDownloadConflict") {
+			response = fmt.Sprintf("Track is already downloaded")
+			c.conn.Privmsg(channel, response)
+		} else if strings.Contains(errmsg, "postTrackDownloadBadRequest") {
+			response = fmt.Sprintf("Track is already downloaded")
+			c.conn.Privmsg(channel, response)
+		} else {
+			response = fmt.Sprintf("Failed to download track")
+			c.conn.Privmsg(channel, response)
+		}
+	} else {
 		track := resp.GetPayload()
 		fname := *track.Filename
 
-		response = fmt.Sprintf("Added %s to the playlist", fname[:len(fname)-16])
-		c.conn.Privmsg(channel, response)
-	} else {
-		fmt.Printf("IrcBot.HandleDownload: no results found")
-		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
+		response = fmt.Sprintf("Added %s (%s) to the playlist", fname[:len(fname)-16], yid)
 		c.conn.Privmsg(channel, response)
 	}
 }

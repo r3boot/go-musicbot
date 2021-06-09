@@ -22,6 +22,8 @@ MUSICBOT_IRCBOT_LATEST_TAG = $(NAMESPACE)/musicbot-ircbot:latest
 
 all: $(TARGETS)
 
+release: compile containers push
+
 $(BUILD_DIR):
 	mkdir -p "$(BUILD_DIR)"
 

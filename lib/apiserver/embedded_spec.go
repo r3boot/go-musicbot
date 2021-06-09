@@ -176,6 +176,50 @@ func init() {
         }
       }
     },
+    "/track/has": {
+      "post": {
+        "description": "Checks if the yid is already downloaded",
+        "summary": "Check for yid",
+        "parameters": [
+          {
+            "$ref": "#/parameters/Download"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/HasTrackFound"
+          },
+          "404": {
+            "$ref": "#/responses/HasTrackNotFound"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/track/length": {
+      "post": {
+        "description": "Checks if the yid is not too long for the stream",
+        "summary": "Check song length",
+        "parameters": [
+          {
+            "$ref": "#/parameters/Download"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/TrackLengthAllowed"
+          },
+          "404": {
+            "$ref": "#/responses/TrackLengthNotAllowed"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
     "/track/request": {
       "post": {
         "description": "Search for a track and add it to the play queue.",
@@ -225,6 +269,28 @@ func init() {
           },
           "404": {
             "$ref": "#/responses/NoQueryResultsFoundResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/track/title": {
+      "post": {
+        "description": "Fetches the title for a yid",
+        "summary": "Get title",
+        "parameters": [
+          {
+            "$ref": "#/parameters/Download"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/TrackTitleFound"
+          },
+          "404": {
+            "$ref": "#/responses/TrackTitleNotFound"
           },
           "500": {
             "$ref": "#/responses/Standard500ErrorResponse"
@@ -386,6 +452,11 @@ func init() {
         }
       }
     },
+    "TrackTitle": {
+      "type": "string",
+      "maxLength": 1024,
+      "minLength": 1
+    },
     "Tracks": {
       "type": "array",
       "maxItems": 16384,
@@ -446,6 +517,12 @@ func init() {
     "FailedToSearchResponse": {
       "description": "Failed to search"
     },
+    "HasTrackFound": {
+      "description": "Track found"
+    },
+    "HasTrackNotFound": {
+      "description": "Track not found"
+    },
     "NoQueryResultsFoundResponse": {
       "description": "No results found for your query."
     },
@@ -493,6 +570,21 @@ func init() {
     },
     "TooLargeForStreamResponse": {
       "description": "Track is too large for stream"
+    },
+    "TrackLengthAllowed": {
+      "description": "Track length allowed"
+    },
+    "TrackLengthNotAllowed": {
+      "description": "Track length not allowed"
+    },
+    "TrackTitleFound": {
+      "description": "Track title found",
+      "schema": {
+        "$ref": "#/definitions/TrackTitle"
+      }
+    },
+    "TrackTitleNotFound": {
+      "description": "Track title not found"
     },
     "YidAlreadyExistsResponse": {
       "description": "Yid already downloaded"
@@ -1121,6 +1213,148 @@ func init() {
         }
       }
     },
+    "/track/has": {
+      "post": {
+        "description": "Checks if the yid is already downloaded",
+        "summary": "Check for yid",
+        "parameters": [
+          {
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Track found"
+          },
+          "404": {
+            "description": "Track not found"
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/track/length": {
+      "post": {
+        "description": "Checks if the yid is not too long for the stream",
+        "summary": "Check song length",
+        "parameters": [
+          {
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Track length allowed"
+          },
+          "404": {
+            "description": "Track length not allowed"
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/track/request": {
       "post": {
         "description": "Search for a track and add it to the play queue.",
@@ -1317,6 +1551,82 @@ func init() {
           },
           "404": {
             "description": "No results found for your query."
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/track/title": {
+      "post": {
+        "description": "Fetches the title for a yid",
+        "summary": "Get title",
+        "parameters": [
+          {
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track title found",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            }
+          },
+          "404": {
+            "description": "Track title not found"
           },
           "500": {
             "description": "An unexpected error occurred.",
@@ -1554,6 +1864,26 @@ func init() {
         }
       }
     },
+    "PostTrackHasInternalServerErrorBodySource": {
+      "type": "object",
+      "properties": {
+        "pointer": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        }
+      }
+    },
+    "PostTrackLengthInternalServerErrorBodySource": {
+      "type": "object",
+      "properties": {
+        "pointer": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        }
+      }
+    },
     "PostTrackRequestInternalServerErrorBodySource": {
       "type": "object",
       "properties": {
@@ -1672,6 +2002,16 @@ func init() {
           "minimum": 0
         },
         "submitter": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        }
+      }
+    },
+    "PostTrackTitleInternalServerErrorBodySource": {
+      "type": "object",
+      "properties": {
+        "pointer": {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
@@ -1889,6 +2229,11 @@ func init() {
         }
       }
     },
+    "TrackTitle": {
+      "type": "string",
+      "maxLength": 1024,
+      "minLength": 1
+    },
     "Tracks": {
       "type": "array",
       "maxItems": 16384,
@@ -2084,6 +2429,12 @@ func init() {
     },
     "FailedToSearchResponse": {
       "description": "Failed to search"
+    },
+    "HasTrackFound": {
+      "description": "Track found"
+    },
+    "HasTrackNotFound": {
+      "description": "Track not found"
     },
     "NoQueryResultsFoundResponse": {
       "description": "No results found for your query."
@@ -2377,6 +2728,23 @@ func init() {
     },
     "TooLargeForStreamResponse": {
       "description": "Track is too large for stream"
+    },
+    "TrackLengthAllowed": {
+      "description": "Track length allowed"
+    },
+    "TrackLengthNotAllowed": {
+      "description": "Track length not allowed"
+    },
+    "TrackTitleFound": {
+      "description": "Track title found",
+      "schema": {
+        "type": "string",
+        "maxLength": 1024,
+        "minLength": 1
+      }
+    },
+    "TrackTitleNotFound": {
+      "description": "Track title not found"
     },
     "YidAlreadyExistsResponse": {
       "description": "Yid already downloaded"

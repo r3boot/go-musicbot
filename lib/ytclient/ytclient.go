@@ -17,8 +17,13 @@ import (
 	"github.com/r3boot/go-musicbot/lib/log"
 )
 
+const (
+	ytUrl = "https://www.youtube.com/watch?v=%s"
+)
+
 var (
-	reAllowedSongLength = regexp.MustCompile("approxDurationMs..:..([0-9]{4,10})..")
+	reAllowedSongLength = regexp.MustCompile("approxDurationMs\":\"([0-9]{4,10})\"")
+	reSongTitle         = regexp.MustCompile("<title>(.*) - YouTube</title>")
 )
 
 type DownloadJob struct {
@@ -77,8 +82,49 @@ func (yt *YoutubeClient) FindBinary() (string, error) {
 	return "", fmt.Errorf("youtube-dl not found")
 }
 
+func (yt *YoutubeClient) SongTitle(yid string) (string, error) {
+	url := fmt.Sprintf(ytUrl, yid)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "SongTitle",
+			"call":     "http.Get",
+			"yid":      yid,
+		}, err.Error())
+		return "", fmt.Errorf("failed to get url")
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "SongTitle",
+			"call":     "ioutil.ReadAll",
+			"yid":      yid,
+		}, err.Error())
+		return "", fmt.Errorf("failed to read url")
+	}
+
+	results := reSongTitle.FindAllStringSubmatch(string(body), -1)
+	if len(results) == 0 {
+		log.Warningf(log.Fields{
+			"package":  "ytclient",
+			"function": "SongTitle",
+			"yid":      yid,
+		}, "no results found")
+		return "", fmt.Errorf("no results found")
+	}
+
+	title := results[0][1]
+
+	return title, nil
+}
+
 func (yt *YoutubeClient) IsAllowedLength(yid string) error {
-	url := fmt.Sprintf("https://www.youtube.com/watch?v=%s", yid)
+	url := fmt.Sprintf(ytUrl, yid)
 
 	resp, err := http.Get(url)
 	if err != nil {

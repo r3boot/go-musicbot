@@ -97,7 +97,27 @@ func (m *Manager) HasYid(yid string) bool {
 	return false
 }
 
+func (m *Manager) GetTitle(yid string) (string, error) {
+	title, err := m.yt.SongTitle(yid)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch song title")
+	}
+	return title, nil
+}
+
 func (m *Manager) AddTrack(yid, submitter string) (*dbclient.Track, error) {
+	foundTrack, err := m.db.GetTrackByYid(yid)
+	if foundTrack != nil {
+		log.Warningf(log.Fields{
+			"package":   "manager",
+			"function":  "AddTrack",
+			"call":      "m.yt.Download",
+			"yid":       yid,
+			"submitter": submitter,
+		}, "track already downloaded")
+		return nil, fmt.Errorf("db.GetTrackByYid: track already downloaded")
+	}
+
 	fname, err := m.yt.Download(&ytclient.DownloadJob{
 		Yid:       yid,
 		Submitter: submitter,

@@ -71,7 +71,7 @@ func (db *DbClient) GetTrackByYid(yid string) (*Track, error) {
 
 	err := db.db.Model(track).Where("yid = ?", yid).Select()
 	if err != nil {
-		return nil, fmt.Errorf("Query: %v", err)
+		return nil, fmt.Errorf("query: %v", err)
 	}
 
 	return track, nil

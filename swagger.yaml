@@ -142,6 +142,45 @@ paths:
           $ref: "#/responses/TooLargeForStreamResponse"
         500:
           $ref: "#/responses/Standard500ErrorResponse"
+  /track/has:
+    post:
+      summary: "Check for yid"
+      description: "Checks if the yid is already downloaded"
+      parameters:
+        - $ref: "#/parameters/Download"
+      responses:
+        204:
+          $ref: "#/responses/HasTrackFound"
+        404:
+          $ref: "#/responses/HasTrackNotFound"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /track/length:
+    post:
+      summary: "Check song length"
+      description: "Checks if the yid is not too long for the stream"
+      parameters:
+        - $ref: "#/parameters/Download"
+      responses:
+        204:
+          $ref: "#/responses/TrackLengthAllowed"
+        404:
+          $ref: "#/responses/TrackLengthNotAllowed"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+  /track/title:
+    post:
+      summary: "Get title"
+      description: "Fetches the title for a yid"
+      parameters:
+        - $ref: "#/parameters/Download"
+      responses:
+        200:
+          $ref: "#/responses/TrackTitleFound"
+        404:
+          $ref: "#/responses/TrackTitleNotFound"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
 
 definitions:
   ErrorPointer:
@@ -269,6 +308,10 @@ definitions:
         $ref: "#/definitions/Track"
       submitter:
         $ref: "#/definitions/Submitter"
+  TrackTitle:
+    type: string
+    minLength: 1
+    maxLength: 1024
 
 responses:
   Standard500ErrorResponse:
@@ -323,6 +366,20 @@ responses:
     description: "Failed to download yid"
   NotAuthorizedResponse:
     description: "Not authorized"
+  TrackTitleFound:
+    description: "Track title found"
+    schema:
+      $ref: "#/definitions/TrackTitle"
+  TrackTitleNotFound:
+    description: "Track title not found"
+  HasTrackFound:
+    description: "Track found"
+  HasTrackNotFound:
+    description: "Track not found"
+  TrackLengthAllowed:
+    description: "Track length allowed"
+  TrackLengthNotAllowed:
+    description: "Track length not allowed"
 
 parameters:
   Request:
