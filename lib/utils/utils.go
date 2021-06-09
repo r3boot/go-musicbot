@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	reYid = regexp.MustCompile(".*([a-zA-Z0-9_-]{11}).mp3$")
+	reYid = regexp.MustCompile("^([a-zA-Z0-9_-]{11})$")
 )
 
 func IsYid(value string) bool {

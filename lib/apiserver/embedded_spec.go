@@ -363,9 +363,6 @@ func init() {
       "minLength": 16,
       "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
     },
-    "Id": {
-      "type": "integer"
-    },
     "Priority": {
       "type": "integer",
       "maximum": 10
@@ -418,7 +415,7 @@ func init() {
     "Track": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -438,9 +435,6 @@ func init() {
         "filename": {
           "$ref": "#/definitions/Filename"
         },
-        "id": {
-          "$ref": "#/definitions/Id"
-        },
         "priority": {
           "$ref": "#/definitions/Priority"
         },
@@ -449,6 +443,9 @@ func init() {
         },
         "submitter": {
           "$ref": "#/definitions/Submitter"
+        },
+        "yid": {
+          "$ref": "#/definitions/Yid"
         }
       }
     },
@@ -638,7 +635,7 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id",
+                "yid",
                 "filename",
                 "rating",
                 "submitter",
@@ -667,9 +664,6 @@ func init() {
                   "minLength": 16,
                   "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                 },
-                "id": {
-                  "type": "integer"
-                },
                 "priority": {
                   "type": "integer",
                   "maximum": 10,
@@ -684,6 +678,12 @@ func init() {
                   "type": "string",
                   "maxLength": 128,
                   "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
                 }
               }
             }
@@ -736,7 +736,7 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id",
+                "yid",
                 "filename",
                 "rating",
                 "submitter",
@@ -765,9 +765,6 @@ func init() {
                   "minLength": 16,
                   "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                 },
-                "id": {
-                  "type": "integer"
-                },
                 "priority": {
                   "type": "integer",
                   "maximum": 10,
@@ -782,6 +779,12 @@ func init() {
                   "type": "string",
                   "maxLength": 128,
                   "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
                 }
               }
             }
@@ -892,7 +895,7 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id",
+                "yid",
                 "filename",
                 "rating",
                 "submitter",
@@ -921,9 +924,6 @@ func init() {
                   "minLength": 16,
                   "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                 },
-                "id": {
-                  "type": "integer"
-                },
                 "priority": {
                   "type": "integer",
                   "maximum": 10,
@@ -938,6 +938,12 @@ func init() {
                   "type": "string",
                   "maxLength": 128,
                   "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
                 }
               }
             }
@@ -990,7 +996,7 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id",
+                "yid",
                 "filename",
                 "rating",
                 "submitter",
@@ -1019,9 +1025,6 @@ func init() {
                   "minLength": 16,
                   "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                 },
-                "id": {
-                  "type": "integer"
-                },
                 "priority": {
                   "type": "integer",
                   "maximum": 10,
@@ -1036,6 +1039,12 @@ func init() {
                   "type": "string",
                   "maxLength": 128,
                   "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
                 }
               }
             }
@@ -1116,7 +1125,7 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id",
+                "yid",
                 "filename",
                 "rating",
                 "submitter",
@@ -1145,9 +1154,6 @@ func init() {
                   "minLength": 16,
                   "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                 },
-                "id": {
-                  "type": "integer"
-                },
                 "priority": {
                   "type": "integer",
                   "maximum": 10,
@@ -1162,6 +1168,12 @@ func init() {
                   "type": "string",
                   "maxLength": 128,
                   "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
                 }
               }
             }
@@ -1405,7 +1417,7 @@ func init() {
                 "track": {
                   "type": "object",
                   "required": [
-                    "id",
+                    "yid",
                     "filename",
                     "rating",
                     "submitter",
@@ -1434,9 +1446,6 @@ func init() {
                       "minLength": 16,
                       "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
                     },
-                    "id": {
-                      "type": "integer"
-                    },
                     "priority": {
                       "type": "integer",
                       "maximum": 10,
@@ -1451,6 +1460,12 @@ func init() {
                       "type": "string",
                       "maxLength": 128,
                       "minLength": 1
+                    },
+                    "yid": {
+                      "type": "string",
+                      "maxLength": 11,
+                      "minLength": 11,
+                      "pattern": "[a-zA-Z0-9_-]{11}"
                     }
                   }
                 }
@@ -1782,7 +1797,7 @@ func init() {
     "GetPlayerQueueOKBodyItems0": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -1811,9 +1826,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -1828,6 +1840,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -1850,9 +1868,6 @@ func init() {
           "minLength": 1
         }
       }
-    },
-    "Id": {
-      "type": "integer"
     },
     "PostTrackDownloadInternalServerErrorBodySource": {
       "type": "object",
@@ -1897,7 +1912,7 @@ func init() {
     "PostTrackRequestOKBodyTrack": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -1926,9 +1941,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -1943,6 +1955,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -1959,7 +1977,7 @@ func init() {
     "PostTrackSearchOKBodyItems0": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -1988,9 +2006,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -2005,6 +2020,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -2044,7 +2065,7 @@ func init() {
         "track": {
           "type": "object",
           "required": [
-            "id",
+            "yid",
             "filename",
             "rating",
             "submitter",
@@ -2073,9 +2094,6 @@ func init() {
               "minLength": 16,
               "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
             },
-            "id": {
-              "type": "integer"
-            },
             "priority": {
               "type": "integer",
               "maximum": 10,
@@ -2090,6 +2108,12 @@ func init() {
               "type": "string",
               "maxLength": 128,
               "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
             }
           }
         }
@@ -2098,7 +2122,7 @@ func init() {
     "QueueItemTrack": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -2127,9 +2151,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -2144,6 +2165,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -2180,7 +2207,7 @@ func init() {
     "Track": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -2209,9 +2236,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -2226,6 +2250,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -2246,7 +2276,7 @@ func init() {
     "TracksItems0": {
       "type": "object",
       "required": [
-        "id",
+        "yid",
         "filename",
         "rating",
         "submitter",
@@ -2275,9 +2305,6 @@ func init() {
           "minLength": 16,
           "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
-        "id": {
-          "type": "integer"
-        },
         "priority": {
           "type": "integer",
           "maximum": 10,
@@ -2292,6 +2319,12 @@ func init() {
           "type": "string",
           "maxLength": 128,
           "minLength": 1
+        },
+        "yid": {
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -2365,7 +2398,7 @@ func init() {
       "schema": {
         "type": "object",
         "required": [
-          "id",
+          "yid",
           "filename",
           "rating",
           "submitter",
@@ -2394,9 +2427,6 @@ func init() {
             "minLength": 16,
             "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
           },
-          "id": {
-            "type": "integer"
-          },
           "priority": {
             "type": "integer",
             "maximum": 10,
@@ -2411,6 +2441,12 @@ func init() {
             "type": "string",
             "maxLength": 128,
             "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
           }
         }
       }
@@ -2450,7 +2486,7 @@ func init() {
       "schema": {
         "type": "object",
         "required": [
-          "id",
+          "yid",
           "filename",
           "rating",
           "submitter",
@@ -2479,9 +2515,6 @@ func init() {
             "minLength": 16,
             "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
           },
-          "id": {
-            "type": "integer"
-          },
           "priority": {
             "type": "integer",
             "maximum": 10,
@@ -2496,6 +2529,12 @@ func init() {
             "type": "string",
             "maxLength": 128,
             "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
           }
         }
       }
@@ -2516,7 +2555,7 @@ func init() {
         "items": {
           "type": "object",
           "required": [
-            "id",
+            "yid",
             "filename",
             "rating",
             "submitter",
@@ -2545,9 +2584,6 @@ func init() {
               "minLength": 16,
               "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
             },
-            "id": {
-              "type": "integer"
-            },
             "priority": {
               "type": "integer",
               "maximum": 10,
@@ -2562,6 +2598,12 @@ func init() {
               "type": "string",
               "maxLength": 128,
               "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
             }
           }
         }
@@ -2577,7 +2619,7 @@ func init() {
         "items": {
           "type": "object",
           "required": [
-            "id",
+            "yid",
             "filename",
             "rating",
             "submitter",
@@ -2606,9 +2648,6 @@ func init() {
               "minLength": 16,
               "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
             },
-            "id": {
-              "type": "integer"
-            },
             "priority": {
               "type": "integer",
               "maximum": 10,
@@ -2623,6 +2662,12 @@ func init() {
               "type": "string",
               "maxLength": 128,
               "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
             }
           }
         }
@@ -2674,7 +2719,7 @@ func init() {
           "track": {
             "type": "object",
             "required": [
-              "id",
+              "yid",
               "filename",
               "rating",
               "submitter",
@@ -2703,9 +2748,6 @@ func init() {
                 "minLength": 16,
                 "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
               },
-              "id": {
-                "type": "integer"
-              },
               "priority": {
                 "type": "integer",
                 "maximum": 10,
@@ -2720,6 +2762,12 @@ func init() {
                 "type": "string",
                 "maxLength": 128,
                 "minLength": 1
+              },
+              "yid": {
+                "type": "string",
+                "maxLength": 11,
+                "minLength": 11,
+                "pattern": "[a-zA-Z0-9_-]{11}"
               }
             }
           }

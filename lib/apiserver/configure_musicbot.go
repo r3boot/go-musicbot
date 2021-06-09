@@ -160,6 +160,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		duration := int64(track.Duration)
 
 		response := operations.GetPlayerNextOKBody{
+			Yid:       &track.Yid,
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
@@ -205,6 +206,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		elapsed := int64(track.Elapsed / time.Second)
 
 		response := operations.GetPlayerNowplayingOKBody{
+			Yid:       &track.Yid,
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
@@ -241,6 +243,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		foundTracks := make([]*operations.GetPlayerQueueOKBodyItems0, 0)
 
 		for _, track := range entries {
+			yid := track.Yid
 			filename := track.Filename
 			addedOnTs := track.AddedOn.String()
 			duration := int64(track.Duration)
@@ -248,6 +251,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			submitter := track.Submitter
 
 			responseTrack := operations.GetPlayerQueueOKBodyItems0{
+				Yid:       &yid,
 				Filename:  &filename,
 				Addedon:   &addedOnTs,
 				Duration:  &duration,
@@ -298,6 +302,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		duration := int64(track.Duration)
 
 		response := operations.GetRatingDecreaseOKBody{
+			Yid:       &track.Yid,
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
@@ -353,6 +358,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		duration := int64(track.Duration)
 
 		response := operations.GetRatingIncreaseOKBody{
+			Yid:       &track.Yid,
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
@@ -486,6 +492,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		duration := int64(track.Duration)
 
 		response := operations.PostTrackDownloadOKBody{
+			Yid:       &track.Yid,
 			Filename:  &track.Filename,
 			Addedon:   &addedOnTs,
 			Duration:  &duration,
@@ -547,6 +554,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		response := operations.PostTrackRequestOKBody{
 			Submitter: params.Request.Submitter,
 			Track: &operations.PostTrackRequestOKBodyTrack{
+				Yid:       &track.Yid,
 				Filename:  &track.Filename,
 				Addedon:   &addedOnTs,
 				Duration:  &duration,
@@ -607,6 +615,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 		foundTracks := make([]*operations.PostTrackSearchOKBodyItems0, 0)
 
 		for _, track := range tracks {
+			yid := track.Yid
 			filename := track.Filename
 			addedOnTs := track.AddedOn.String()
 			duration := int64(track.Duration)
@@ -614,6 +623,7 @@ func configureAPI(api *operations.MusicbotAPI) http.Handler {
 			submitter := track.Submitter
 
 			responseTrack := &operations.PostTrackSearchOKBodyItems0{
+				Yid:       &yid,
 				Filename:  &filename,
 				Addedon:   &addedOnTs,
 				Duration:  &duration,

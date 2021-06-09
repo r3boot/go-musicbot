@@ -7,6 +7,7 @@ import (
 	"github.com/r3boot/go-musicbot/lib/apiclient"
 	"github.com/r3boot/go-musicbot/lib/apiclient/operations"
 	"github.com/r3boot/go-musicbot/lib/config"
+	"github.com/r3boot/go-musicbot/lib/utils"
 	irc "github.com/thoj/go-ircevent"
 	"math/rand"
 	"regexp"
@@ -154,17 +155,22 @@ func (c *IrcBot) HandleHelp(channel string) {
 }
 
 func (c *IrcBot) HandleDownload(channel, line, user string) {
-	result := reDjHandler.FindAllStringSubmatch(line, -1)
 	response := "Undefined"
+	yid := ""
+	if utils.IsYid(line) {
+		yid = line
+	} else {
+		result := reDjHandler.FindAllStringSubmatch(line, -1)
 
-	if len(result) != 1 {
-		fmt.Printf("IrcBot.HandleDownload: no results found")
-		response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
-		c.conn.Privmsg(channel, response)
-		return
+		if len(result) != 1 {
+			fmt.Printf("IrcBot.HandleDownload: no results found")
+			response = fmt.Sprintf("No yid found in message .. Anta BAKA??")
+			c.conn.Privmsg(channel, response)
+			return
+		}
+
+		yid = result[0][2]
 	}
-
-	yid := result[0][2]
 
 	hasParams := operations.NewPostTrackHasParams()
 	hasParams.Body = operations.PostTrackHasBody{
@@ -350,10 +356,24 @@ func (c *IrcBot) HandleRequest(channel, line, user string) {
 
 		response, err := c.api.Operations.PostTrackRequest(params, c.token)
 		if err != nil {
-			fmt.Printf("IrcBot.HandleRequest: failed to submit query: %v", err)
-			msg := fmt.Sprintf("Failed to submit query")
+			msg := fmt.Sprintf("No results found")
 			c.conn.Privmsg(channel, msg)
-			return
+
+			if !utils.IsYid(query) {
+				return
+			}
+
+			c.HandleDownload(channel, query, user)
+
+			params = operations.NewPostTrackRequestParams()
+			params.Request = operations.PostTrackRequestBody{
+				Query:     &query,
+				Submitter: &user,
+			}
+			response, err = c.api.Operations.PostTrackRequest(params, c.token)
+			if err != nil {
+				return
+			}
 		}
 
 		track := response.GetPayload()
@@ -401,7 +421,8 @@ func (c *IrcBot) HandleSearch(channel, line, user string) {
 		c.conn.Privmsg(user, "Found the following tracks:")
 		for i := 0; i < len(foundEntries); i++ {
 			fname := *foundEntries[i].Filename
-			msg := fmt.Sprintf("%d) %s\n", i, fname[:len(fname)-16])
+			yid := *foundEntries[i].Yid
+			msg := fmt.Sprintf("%s) %s\n", yid, fname[:len(fname)-16])
 			c.conn.Privmsg(user, msg)
 		}
 	}

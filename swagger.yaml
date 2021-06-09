@@ -204,8 +204,6 @@ definitions:
         maxLength: 3
       source:
         $ref: "#/definitions/ErrorPointer"
-  Id:
-    type: integer
   Filename:
     type: string
     pattern: ".*[a-zA-Z0-9_-]{11}.mp3"
@@ -248,15 +246,15 @@ definitions:
   Track:
     type: object
     required:
-      - id
+      - yid
       - filename
       - rating
       - submitter
       - duration
       - addedon
     properties:
-      id:
-        $ref: "#/definitions/Id"
+      yid:
+        $ref: "#/definitions/Yid"
       filename:
         $ref: "#/definitions/Filename"
       rating:
