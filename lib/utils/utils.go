@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	reYid = regexp.MustCompile("^([a-zA-Z0-9_-]{11})$")
+	reYid         = regexp.MustCompile("^([a-zA-Z0-9_-]{11})$")
+	reYidFilename = regexp.MustCompile(".*-([a-zA-Z0-9_-]{11}).mp3$")
 )
 
 func IsYid(value string) bool {
@@ -19,7 +20,7 @@ func IsYid(value string) bool {
 }
 
 func GetYidFromFilename(fname string) (string, error) {
-	results := reYid.FindAllStringSubmatch(fname, -1)
+	results := reYidFilename.FindAllStringSubmatch(fname, -1)
 	if len(results) == 0 {
 		return "", fmt.Errorf("FindAllStringSubmatch: No yid found for %s", fname)
 	}
