@@ -50,17 +50,33 @@ func (obj *Track) Remove() error {
 }
 
 func (db *DbClient) Search(q string) ([]Track, error) {
+	/*
+	 * Search takes a three-fold approach in order to be as efficient as possible
+	 *
+	 * Pass 1: See if the query matches a yid as found in the database
+	 * Pass 2: Perform a full-text search
+	 * Pass 3: Perform a levenstein distance match
+	 */
 	tracks := make([]Track, 0)
 
+	// Pass 1
 	track, err := db.GetTrackByYid(q)
 	if err == nil {
 		tracks = append(tracks, *track)
 		return tracks, nil
 	}
 
+	// Pass 2; Limit input data using levenstein with a larger distance to increase performance
+	queryToAnd := strings.Replace(q, " ", "&", -1)
+	_, err = db.db.Query(&tracks, "WITH query_results AS (WITH limited_results AS (SELECT *, filename <-> ? AS dist FROM tracks) SELECT * FROM limited_results WHERE dist < 0.95) SELECT * FROM query_results WHERE to_tsvector('english', filename) @@ to_tsquery(?)", q, queryToAnd)
+	if err == nil {
+		return tracks, nil
+	}
+
+	// Pass 3
 	_, err = db.db.Query(&tracks, "WITH query_results AS (SELECT *, filename <-> ? AS dist FROM tracks) SELECT * FROM query_results WHERE dist < 0.9", q)
 	if err != nil {
-		return nil, fmt.Errorf("Query: %v", err)
+		return nil, fmt.Errorf("db.query: %v", err)
 	}
 
 	return tracks, nil
