@@ -240,7 +240,6 @@ definitions:
     maxLength: 11
   Query:
     type: string
-    pattern: "[a-zA-Z0-9_-]{1,128}"
     minLength: 1
     maxLength: 128
   Track:

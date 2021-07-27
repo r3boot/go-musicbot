@@ -54,8 +54,8 @@ var (
 	// TODO: Make these dependent on the control character
 	reCmd       = regexp.MustCompile("^(\\![a-z0-9\\+\\-]{2,8})")
 	reDjHandler = regexp.MustCompile("(\\!dj\\+) ([a-zA-Z0-9_-]{11})")
-	reRequest   = regexp.MustCompile("(\\!request) ([a-zA-Z0-9_\\-\\.\\ ]+)$")
-	reSearch    = regexp.MustCompile("(\\!search) ([a-zA-Z0-9_\\-\\.\\ ]+)$")
+	reRequest   = regexp.MustCompile("(\\!request) ([a-zA-Z0-9_\\-\\.\\ \\']+)$")
+	reSearch    = regexp.MustCompile("(\\!search) ([a-zA-Z0-9_\\-\\.\\ \\']+)$")
 )
 
 func NewIrcBot(config *config.Config, client *apiclient.Musicbot, token runtime.ClientAuthInfoWriter, params *IrcBotParams) (*IrcBot, error) {

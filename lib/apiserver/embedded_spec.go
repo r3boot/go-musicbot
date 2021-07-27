@@ -370,8 +370,7 @@ func init() {
     "Query": {
       "type": "string",
       "maxLength": 128,
-      "minLength": 1,
-      "pattern": "[a-zA-Z0-9_-]{1,128}"
+      "minLength": 1
     },
     "QueueItem": {
       "type": "object",
@@ -1387,8 +1386,7 @@ func init() {
                 "query": {
                   "type": "string",
                   "maxLength": 128,
-                  "minLength": 1,
-                  "pattern": "[a-zA-Z0-9_-]{1,128}"
+                  "minLength": 1
                 },
                 "submitter": {
                   "type": "string",
@@ -1533,8 +1531,7 @@ func init() {
                 "query": {
                   "type": "string",
                   "maxLength": 128,
-                  "minLength": 1,
-                  "pattern": "[a-zA-Z0-9_-]{1,128}"
+                  "minLength": 1
                 },
                 "submitter": {
                   "type": "string",
@@ -2047,8 +2044,7 @@ func init() {
     "Query": {
       "type": "string",
       "maxLength": 128,
-      "minLength": 1,
-      "pattern": "[a-zA-Z0-9_-]{1,128}"
+      "minLength": 1
     },
     "QueueItem": {
       "type": "object",
@@ -2189,8 +2185,7 @@ func init() {
         "query": {
           "type": "string",
           "maxLength": 128,
-          "minLength": 1,
-          "pattern": "[a-zA-Z0-9_-]{1,128}"
+          "minLength": 1
         },
         "submitter": {
           "type": "string",
@@ -2377,8 +2372,7 @@ func init() {
           "query": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 1,
-            "pattern": "[a-zA-Z0-9_-]{1,128}"
+            "minLength": 1
           },
           "submitter": {
             "type": "string",

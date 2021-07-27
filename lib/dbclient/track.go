@@ -92,3 +92,23 @@ func (db *DbClient) GetTrackByYid(yid string) (*Track, error) {
 
 	return track, nil
 }
+
+func (db *DbClient) NumTracks() (int, error) {
+	var count int
+	_, err := db.db.Query(&count, "SELECT COUNT(yid) FROM tracks")
+	if err != nil {
+		return -1, fmt.Errorf("query: %v", err)
+	}
+
+	return count, nil
+}
+
+func (db *DbClient) NumSubmitters() (int, error) {
+	var count int
+	_, err := db.db.Query(&count, "SELECT COUNT(DISTINCT submitter) FROM tracks")
+	if err != nil {
+		return -1, fmt.Errorf("query: %v", err)
+	}
+
+	return count, nil
+}
