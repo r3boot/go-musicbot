@@ -1,10 +1,6 @@
 datastore:
   directory: "/music"
 
-mpd:
-  address: "mpd:6600"
-  password: ""
-
 postgres:
   address: "postgres:5432"
   username: "musicbot"
@@ -15,6 +11,11 @@ youtube:
   base_url: "https://youtube.com/watch?v="
   tmpdir: "/tmp"
   max_allowed_length: 30
+
+liquidsoap:
+  address: liquidsoap:2323
+  output: 2600nl(dot)mp3
+  queue: request
 
 webapi:
   address: "0.0.0.0"
@@ -53,56 +54,3 @@ webapi:
         - "allowTrackSearch"
         - "allowTrackRequest"
         - "allowTrackDownload"
-
-webui:
-  address: "0.0.0.0"
-  port: 8768
-  token: "340b7527b27544372ef52ebccde35b830e1bfe02"
-  discogs:
-    cache_dir: /Users/r3boot/go/src/github.com/r3boot/go-musicbot/compose/data/cache
-    token: GLXsrCZGDuAYdZrBibudYGBpXyAtBRtdmdzHkoaE
-
-liquidsoap:
-  address: liquidsoap:2323
-  output: 2600nl(dot)mp3
-  queue: request
-
-ircbot:
-  nickname: "RadioBot"
-  server: "irc.mononoke.nl"
-  port: 6697
-  channel: "#bottest"
-  tls: true
-  verify_tls: false
-  token: "760436f744a6f1b4f197a7a5a6e6f7baa91d4f8c"
-  command_character: "!"
-  valid_commands:
-    - "dj+"
-    - "next"
-    - "np"
-    - "radio"
-    - "boo"
-    - "tune"
-    - "request"
-    - "queue"
-    - "search"
-    - "help"
-  stream_url: "https://radio.as65342.net/2600nl"
-  radio_replies:
-    - "Tired of waiting for DJShuffle?"
-    - "Fed up with the youtube links of an unnamed individual?"
-    - "Cant wait till friday?"
-    - "Gaat de meet nog door?"
-    - "Feeling lonely?"
-    - "Are you missing DJShuffle?"
-    - "Did you miss Sjaak?"
-  ch00n_replies:
-    - "%s tunes into 2600nl radio"
-    - "%s goes wild on the dancefloor"
-    - "%s is a bit drunk, strips naked and starts to dance on the table"
-    - "%s slowly bangs his head to the tunes of 2600nl"
-    - "%s is exhausted from the dancing to the tunes, but cannot stop dancing"
-    - "%s jumps and crowdsurfs towards the channel"
-    - "%s is showing off his best disco moves on the dancefloor"
-    - "%s is raving to the tunes of 2600nl"
-    - "%s bounces his lowrider in tune with the beat"

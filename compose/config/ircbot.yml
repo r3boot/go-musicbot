@@ -1,0 +1,43 @@
+webapi:
+  address: "musicbot"
+  port: 8080
+
+ircbot:
+  nickname: "TestBot"
+  server: "irc.smurfnet.ch"
+  port: 6697
+  channel: "#musicbot-test"
+  tls: true
+  verify_tls: false
+  token: "760436f744a6f1b4f197a7a5a6e6f7baa91d4f8c"
+  command_character: "!"
+  valid_commands:
+    - "dj+"
+    - "next"
+    - "np"
+    - "radio"
+    - "boo"
+    - "tune"
+    - "request"
+    - "queue"
+    - "search"
+    - "help"
+  stream_url: "https://radio.as65342.net/2600nl"
+  radio_replies:
+    - "Tired of waiting for DJShuffle?"
+    - "Fed up with the youtube links of an unnamed individual?"
+    - "Cant wait till friday?"
+    - "Gaat de meet nog door?"
+    - "Feeling lonely?"
+    - "Are you missing DJShuffle?"
+    - "Did you miss Sjaak?"
+  ch00n_replies:
+    - "%s tunes into 2600nl radio"
+    - "%s goes wild on the dancefloor"
+    - "%s is a bit drunk, strips naked and starts to dance on the table"
+    - "%s slowly bangs his head to the tunes of 2600nl"
+    - "%s is exhausted from the dancing to the tunes, but cannot stop dancing"
+    - "%s jumps and crowdsurfs towards the channel"
+    - "%s is showing off his best disco moves on the dancefloor"
+    - "%s is raving to the tunes of 2600nl"
+    - "%s bounces his lowrider in tune with the beat"

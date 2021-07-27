@@ -1,0 +1,11 @@
+webapi:
+  address: "musicbot"
+  port: 8080
+
+webui:
+  address: "0.0.0.0"
+  port: 8768
+  token: "340b7527b27544372ef52ebccde35b830e1bfe02"
+  discogs:
+    cache_dir: /cache
+    token: GLXsrCZGDuAYdZrBibudYGBpXyAtBRtdmdzHkoaE

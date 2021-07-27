@@ -43,6 +43,29 @@ services:
     volumes:
       - './config/musicbot.yml:/etc/musicbot.yml'
       - './data/liquidsoap:/music'
+  musicbot-ircbot :
+    image: 'as65342/musicbot-ircbot'
+    environment:
+      DOCKER_COMPOSE: 1
+    depends_on:
+      - 'musicbot'
+    networks:
+      musicbot:
+    volumes:
+      - './config/ircbot.yml:/etc/musicbot.yml'
+  musicbot-webui :
+    image: 'as65342/musicbot-webui'
+    environment:
+      DOCKER_COMPOSE: 1
+    depends_on:
+      - 'musicbot'
+    networks:
+      musicbot:
+    ports:
+      - '8768:8768'
+    volumes:
+      - './config/webui.yml:/etc/musicbot.yml'
+      - './data/cache:/cache'
 
 networks:
   musicbot:
