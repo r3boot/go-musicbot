@@ -45,16 +45,93 @@ func init() {
         "summary": "Skip to the next track.",
         "responses": {
           "200": {
-            "$ref": "#/responses/NowPlayingResponse"
+            "description": "Succesfully fetched nowplaying info.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "filename",
+                "rating",
+                "submitter",
+                "duration",
+                "addedon"
+              ],
+              "properties": {
+                "addedon": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "duration": {
+                  "type": "integer",
+                  "maximum": 65535,
+                  "minimum": 1
+                },
+                "elapsed": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 16,
+                  "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                },
+                "priority": {
+                  "type": "integer",
+                  "maximum": 10
+                },
+                "rating": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/FailedToAddTrackResponse"
+            "description": "Failed to skip to the next track."
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -65,16 +142,93 @@ func init() {
         "summary": "Get information for current track.",
         "responses": {
           "200": {
-            "$ref": "#/responses/NowPlayingResponse"
+            "description": "Succesfully fetched nowplaying info.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "filename",
+                "rating",
+                "submitter",
+                "duration",
+                "addedon"
+              ],
+              "properties": {
+                "addedon": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "duration": {
+                  "type": "integer",
+                  "maximum": 65535,
+                  "minimum": 1
+                },
+                "elapsed": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 16,
+                  "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                },
+                "priority": {
+                  "type": "integer",
+                  "maximum": 10
+                },
+                "rating": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/NowPlayingFailedResponse"
+            "description": "Failed fetch nowplaying info."
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -85,19 +239,101 @@ func init() {
         "summary": "Get the play queue",
         "responses": {
           "200": {
-            "$ref": "#/responses/QueueResponse"
+            "description": "Succesfully requested a track.",
+            "schema": {
+              "type": "array",
+              "maxItems": 16384,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "yid",
+                  "filename",
+                  "rating",
+                  "submitter",
+                  "duration",
+                  "addedon"
+                ],
+                "properties": {
+                  "addedon": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 1
+                  },
+                  "elapsed": {
+                    "type": "integer",
+                    "maximum": 65535
+                  },
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 1024,
+                    "minLength": 16,
+                    "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "maximum": 10
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "maximum": 65535
+                  },
+                  "submitter": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1
+                  },
+                  "yid": {
+                    "type": "string",
+                    "maxLength": 11,
+                    "minLength": 11,
+                    "pattern": "[a-zA-Z0-9_-]{11}"
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/QueueFailedResponse"
+            "description": "Failed to fetch queue"
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "404": {
-            "$ref": "#/responses/QueueEmptyResponse"
+            "description": "No items found for query."
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -108,16 +344,93 @@ func init() {
         "summary": "Decrease rating.",
         "responses": {
           "200": {
-            "$ref": "#/responses/NowPlayingResponse"
+            "description": "Succesfully fetched nowplaying info.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "filename",
+                "rating",
+                "submitter",
+                "duration",
+                "addedon"
+              ],
+              "properties": {
+                "addedon": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "duration": {
+                  "type": "integer",
+                  "maximum": 65535,
+                  "minimum": 1
+                },
+                "elapsed": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 16,
+                  "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                },
+                "priority": {
+                  "type": "integer",
+                  "maximum": 10
+                },
+                "rating": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/FailedToDecreaseRatingResponse"
+            "description": "Failed to decrease rating."
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -128,16 +441,93 @@ func init() {
         "summary": "Increase rating.",
         "responses": {
           "200": {
-            "$ref": "#/responses/NowPlayingResponse"
+            "description": "Succesfully fetched nowplaying info.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "filename",
+                "rating",
+                "submitter",
+                "duration",
+                "addedon"
+              ],
+              "properties": {
+                "addedon": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "duration": {
+                  "type": "integer",
+                  "maximum": 65535,
+                  "minimum": 1
+                },
+                "elapsed": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 16,
+                  "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                },
+                "priority": {
+                  "type": "integer",
+                  "maximum": 10
+                },
+                "rating": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/FailedToIncreaseRatingResponse"
+            "description": "Failed to increase rating."
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -148,30 +538,130 @@ func init() {
         "summary": "Add download to queue.",
         "parameters": [
           {
-            "$ref": "#/parameters/Download"
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/DownloadSuccesfullyAddedResponse"
+            "description": "Download succesfully added.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "filename",
+                "rating",
+                "submitter",
+                "duration",
+                "addedon"
+              ],
+              "properties": {
+                "addedon": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "duration": {
+                  "type": "integer",
+                  "maximum": 65535,
+                  "minimum": 1
+                },
+                "elapsed": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "filename": {
+                  "type": "string",
+                  "maxLength": 1024,
+                  "minLength": 16,
+                  "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                },
+                "priority": {
+                  "type": "integer",
+                  "maximum": 10
+                },
+                "rating": {
+                  "type": "integer",
+                  "maximum": 65535
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/DownloadFailedResponse"
+            "description": "Failed to download yid"
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "404": {
-            "$ref": "#/responses/YidNotFoundResponse"
+            "description": "No file found at Youtube ID."
           },
           "409": {
-            "$ref": "#/responses/YidAlreadyExistsResponse"
+            "description": "Yid already downloaded"
           },
           "413": {
-            "$ref": "#/responses/TooLargeForStreamResponse"
+            "description": "Track is too large for stream"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -182,18 +672,67 @@ func init() {
         "summary": "Check for yid",
         "parameters": [
           {
-            "$ref": "#/parameters/Download"
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "204": {
-            "$ref": "#/responses/HasTrackFound"
+            "description": "Track found"
           },
           "404": {
-            "$ref": "#/responses/HasTrackNotFound"
+            "description": "Track not found"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -204,18 +743,67 @@ func init() {
         "summary": "Check song length",
         "parameters": [
           {
-            "$ref": "#/parameters/Download"
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "204": {
-            "$ref": "#/responses/TrackLengthAllowed"
+            "description": "Track length allowed"
           },
           "404": {
-            "$ref": "#/responses/TrackLengthNotAllowed"
+            "description": "Track length not allowed"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -226,24 +814,137 @@ func init() {
         "summary": "Requests a track.",
         "parameters": [
           {
-            "$ref": "#/parameters/Request"
+            "description": "The request body for the request.",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "query",
+                "submitter"
+              ],
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/SuccesfullyRequestedTrackResponse"
+            "description": "Track succesfully added to queue.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "track",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "track": {
+                  "type": "object",
+                  "required": [
+                    "yid",
+                    "filename",
+                    "rating",
+                    "submitter",
+                    "duration",
+                    "addedon"
+                  ],
+                  "properties": {
+                    "addedon": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "duration": {
+                      "type": "integer",
+                      "maximum": 65535,
+                      "minimum": 1
+                    },
+                    "elapsed": {
+                      "type": "integer",
+                      "maximum": 65535
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 1024,
+                      "minLength": 16,
+                      "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                    },
+                    "priority": {
+                      "type": "integer",
+                      "maximum": 10
+                    },
+                    "rating": {
+                      "type": "integer",
+                      "maximum": 65535
+                    },
+                    "submitter": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    },
+                    "yid": {
+                      "type": "string",
+                      "maxLength": 11,
+                      "minLength": 11,
+                      "pattern": "[a-zA-Z0-9_-]{11}"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/FailedToQueueTrackResponse"
+            "description": "Failed to add track to queue."
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "404": {
-            "$ref": "#/responses/NoQueryResultsFoundResponse"
+            "description": "No results found for your query."
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -254,24 +955,128 @@ func init() {
         "summary": "Search for a track.",
         "parameters": [
           {
-            "$ref": "#/parameters/Request"
+            "description": "The request body for the request.",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "query",
+                "submitter"
+              ],
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/SearchResultsResponse"
+            "description": "Results for query.",
+            "schema": {
+              "type": "array",
+              "maxItems": 16384,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "yid",
+                  "filename",
+                  "rating",
+                  "submitter",
+                  "duration",
+                  "addedon"
+                ],
+                "properties": {
+                  "addedon": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 1
+                  },
+                  "elapsed": {
+                    "type": "integer",
+                    "maximum": 65535
+                  },
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 1024,
+                    "minLength": 16,
+                    "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "maximum": 10
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "maximum": 65535
+                  },
+                  "submitter": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1
+                  },
+                  "yid": {
+                    "type": "string",
+                    "maxLength": 11,
+                    "minLength": 11,
+                    "pattern": "[a-zA-Z0-9_-]{11}"
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "$ref": "#/responses/FailedToSearchResponse"
+            "description": "Failed to search"
           },
           "403": {
-            "$ref": "#/responses/NotAuthorizedResponse"
+            "description": "Not authorized"
           },
           "404": {
-            "$ref": "#/responses/NoQueryResultsFoundResponse"
+            "description": "No results found for your query."
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -282,18 +1087,72 @@ func init() {
         "summary": "Get title",
         "parameters": [
           {
-            "$ref": "#/parameters/Download"
+            "description": "The request body for the download.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "yid",
+                "submitter"
+              ],
+              "properties": {
+                "submitter": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "yid": {
+                  "type": "string",
+                  "maxLength": 11,
+                  "minLength": 11,
+                  "pattern": "[a-zA-Z0-9_-]{11}"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/TrackTitleFound"
+            "description": "Track title found",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 1
+            }
           },
           "404": {
-            "$ref": "#/responses/TrackTitleNotFound"
+            "description": "Track title not found"
           },
           "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "minLength": 1
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "pattern": "^[2345][0-9]{2}$"
+                }
+              }
+            }
           }
         }
       }
@@ -312,10 +1171,15 @@ func init() {
       ],
       "properties": {
         "submitter": {
-          "$ref": "#/definitions/Submitter"
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
         },
         "yid": {
-          "$ref": "#/definitions/Yid"
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -337,7 +1201,14 @@ func init() {
           "minLength": 1
         },
         "source": {
-          "$ref": "#/definitions/ErrorPointer"
+          "type": "object",
+          "properties": {
+            "pointer": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 1
+            }
+          }
         },
         "status": {
           "type": "string",
@@ -380,10 +1251,60 @@ func init() {
       ],
       "properties": {
         "submitter": {
-          "$ref": "#/definitions/Submitter"
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
         },
         "track": {
-          "$ref": "#/definitions/Track"
+          "type": "object",
+          "required": [
+            "yid",
+            "filename",
+            "rating",
+            "submitter",
+            "duration",
+            "addedon"
+          ],
+          "properties": {
+            "addedon": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "duration": {
+              "type": "integer",
+              "maximum": 65535,
+              "minimum": 1
+            },
+            "elapsed": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "filename": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 16,
+              "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+            },
+            "priority": {
+              "type": "integer",
+              "maximum": 10
+            },
+            "rating": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "submitter": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
+            }
+          }
         }
       }
     },
@@ -399,10 +1320,14 @@ func init() {
       ],
       "properties": {
         "query": {
-          "$ref": "#/definitions/Query"
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
         },
         "submitter": {
-          "$ref": "#/definitions/Submitter"
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
         }
       }
     },
@@ -423,28 +1348,42 @@ func init() {
       ],
       "properties": {
         "addedon": {
-          "$ref": "#/definitions/AddedOn"
+          "type": "string",
+          "maxLength": 128
         },
         "duration": {
-          "$ref": "#/definitions/Duration"
+          "type": "integer",
+          "maximum": 65535,
+          "minimum": 1
         },
         "elapsed": {
-          "$ref": "#/definitions/Elapsed"
+          "type": "integer",
+          "maximum": 65535
         },
         "filename": {
-          "$ref": "#/definitions/Filename"
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 16,
+          "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
         },
         "priority": {
-          "$ref": "#/definitions/Priority"
+          "type": "integer",
+          "maximum": 10
         },
         "rating": {
-          "$ref": "#/definitions/Rating"
+          "type": "integer",
+          "maximum": 65535
         },
         "submitter": {
-          "$ref": "#/definitions/Submitter"
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
         },
         "yid": {
-          "$ref": "#/definitions/Yid"
+          "type": "string",
+          "maxLength": 11,
+          "minLength": 11,
+          "pattern": "[a-zA-Z0-9_-]{11}"
         }
       }
     },
@@ -458,7 +1397,55 @@ func init() {
       "maxItems": 16384,
       "uniqueItems": true,
       "items": {
-        "$ref": "#/definitions/Track"
+        "type": "object",
+        "required": [
+          "yid",
+          "filename",
+          "rating",
+          "submitter",
+          "duration",
+          "addedon"
+        ],
+        "properties": {
+          "addedon": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "duration": {
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1
+          },
+          "elapsed": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 16,
+            "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
+          }
+        }
       }
     },
     "Yid": {
@@ -475,7 +1462,24 @@ func init() {
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/Download"
+        "type": "object",
+        "required": [
+          "yid",
+          "submitter"
+        ],
+        "properties": {
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
+          }
+        }
       }
     },
     "Request": {
@@ -484,7 +1488,23 @@ func init() {
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/Request"
+        "type": "object",
+        "required": [
+          "query",
+          "submitter"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          }
+        }
       }
     }
   },
@@ -495,7 +1515,55 @@ func init() {
     "DownloadSuccesfullyAddedResponse": {
       "description": "Download succesfully added.",
       "schema": {
-        "$ref": "#/definitions/Track"
+        "type": "object",
+        "required": [
+          "yid",
+          "filename",
+          "rating",
+          "submitter",
+          "duration",
+          "addedon"
+        ],
+        "properties": {
+          "addedon": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "duration": {
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1
+          },
+          "elapsed": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 16,
+            "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
+          }
+        }
       }
     },
     "FailedToAddTrackResponse": {
@@ -531,7 +1599,55 @@ func init() {
     "NowPlayingResponse": {
       "description": "Succesfully fetched nowplaying info.",
       "schema": {
-        "$ref": "#/definitions/Track"
+        "type": "object",
+        "required": [
+          "yid",
+          "filename",
+          "rating",
+          "submitter",
+          "duration",
+          "addedon"
+        ],
+        "properties": {
+          "addedon": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "duration": {
+            "type": "integer",
+            "maximum": 65535,
+            "minimum": 1
+          },
+          "elapsed": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 16,
+            "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 65535
+          },
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "yid": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "[a-zA-Z0-9_-]{11}"
+          }
+        }
       }
     },
     "QueueEmptyResponse": {
@@ -543,25 +1659,216 @@ func init() {
     "QueueResponse": {
       "description": "Succesfully requested a track.",
       "schema": {
-        "$ref": "#/definitions/Tracks"
+        "type": "array",
+        "maxItems": 16384,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "required": [
+            "yid",
+            "filename",
+            "rating",
+            "submitter",
+            "duration",
+            "addedon"
+          ],
+          "properties": {
+            "addedon": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "duration": {
+              "type": "integer",
+              "maximum": 65535,
+              "minimum": 1
+            },
+            "elapsed": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "filename": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 16,
+              "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+            },
+            "priority": {
+              "type": "integer",
+              "maximum": 10
+            },
+            "rating": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "submitter": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
+            }
+          }
+        }
       }
     },
     "SearchResultsResponse": {
       "description": "Results for query.",
       "schema": {
-        "$ref": "#/definitions/Tracks"
+        "type": "array",
+        "maxItems": 16384,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "required": [
+            "yid",
+            "filename",
+            "rating",
+            "submitter",
+            "duration",
+            "addedon"
+          ],
+          "properties": {
+            "addedon": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "duration": {
+              "type": "integer",
+              "maximum": 65535,
+              "minimum": 1
+            },
+            "elapsed": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "filename": {
+              "type": "string",
+              "maxLength": 1024,
+              "minLength": 16,
+              "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+            },
+            "priority": {
+              "type": "integer",
+              "maximum": 10
+            },
+            "rating": {
+              "type": "integer",
+              "maximum": 65535
+            },
+            "submitter": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 1
+            },
+            "yid": {
+              "type": "string",
+              "maxLength": 11,
+              "minLength": 11,
+              "pattern": "[a-zA-Z0-9_-]{11}"
+            }
+          }
+        }
       }
     },
     "Standard500ErrorResponse": {
       "description": "An unexpected error occurred.",
       "schema": {
-        "$ref": "#/definitions/Error"
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "pointer": {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "pattern": "^[2345][0-9]{2}$"
+          }
+        }
       }
     },
     "SuccesfullyRequestedTrackResponse": {
       "description": "Track succesfully added to queue.",
       "schema": {
-        "$ref": "#/definitions/QueueItem"
+        "type": "object",
+        "required": [
+          "track",
+          "submitter"
+        ],
+        "properties": {
+          "submitter": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "track": {
+            "type": "object",
+            "required": [
+              "yid",
+              "filename",
+              "rating",
+              "submitter",
+              "duration",
+              "addedon"
+            ],
+            "properties": {
+              "addedon": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "duration": {
+                "type": "integer",
+                "maximum": 65535,
+                "minimum": 1
+              },
+              "elapsed": {
+                "type": "integer",
+                "maximum": 65535
+              },
+              "filename": {
+                "type": "string",
+                "maxLength": 1024,
+                "minLength": 16,
+                "pattern": ".*[a-zA-Z0-9_-]{11}.mp3"
+              },
+              "priority": {
+                "type": "integer",
+                "maximum": 10
+              },
+              "rating": {
+                "type": "integer",
+                "maximum": 65535
+              },
+              "submitter": {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              "yid": {
+                "type": "string",
+                "maxLength": 11,
+                "minLength": 11,
+                "pattern": "[a-zA-Z0-9_-]{11}"
+              }
+            }
+          }
+        }
       }
     },
     "TooLargeForStreamResponse": {
@@ -576,7 +1883,9 @@ func init() {
     "TrackTitleFound": {
       "description": "Track title found",
       "schema": {
-        "$ref": "#/definitions/TrackTitle"
+        "type": "string",
+        "maxLength": 1024,
+        "minLength": 1
       }
     },
     "TrackTitleNotFound": {

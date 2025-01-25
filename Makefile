@@ -51,13 +51,13 @@ build_container:
 		$(DOCKER_DIR)/
 
 build_musicbot:
-	docker run -it --rm -v ${GOPATH}:/go -v $(DOCKER_DIR)/musicbot/files/build.sh:/build.sh $(BUILD_TAG)
+	docker run -it --rm -v ${PWD}:/workspace -v $(DOCKER_DIR)/musicbot/files/build.sh:/build.sh $(BUILD_TAG)
 
 build_musicbot_webui:
-	docker run -it --rm -v ${GOPATH}:/go -v $(DOCKER_DIR)/musicbot-webui/files/build.sh:/build.sh $(BUILD_TAG)
+	docker run -it --rm -v ${PWD}:/workspace -v $(DOCKER_DIR)/musicbot-webui/files/build.sh:/build.sh $(BUILD_TAG)
 
 build_musicbot_ircbot:
-	docker run -it --rm -v ${GOPATH}:/go -v $(DOCKER_DIR)/musicbot-ircbot/files/build.sh:/build.sh $(BUILD_TAG)
+	docker run -it --rm -v ${PWD}:/workspace -v $(DOCKER_DIR)/musicbot-ircbot/files/build.sh:/build.sh $(BUILD_TAG)
 
 containers: container_musicbot container_musicbot_webui container_musicbot_ircbot
 
